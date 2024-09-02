@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "buvis-pybase"
+version = "0.1.0"
+description = "Foundation of BUVIS python projects"
+authors = ["Tomáš Bouška <tomas@buvis.net>"]
+license = "MIT License"
+readme = "README.md"
+packages = [
+  { include = "buvis", from = "src" }
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.12"
+tzlocal = "^5.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
