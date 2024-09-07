@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "buvis-pybase"
-version = "0.1.0"
+version = "0.1.1"
 description = "Foundation of BUVIS python projects"
 authors = ["Tomáš Bouška <tomas@buvis.net>"]
 license = "MIT License"
@@ -12,6 +12,9 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.12"
+inflection = "^0.5.1"
+pywin32 = {version = "^306", platform = "win32"}
+rich = "^13.8.0"
 tzlocal = "^5.2"
 
 
