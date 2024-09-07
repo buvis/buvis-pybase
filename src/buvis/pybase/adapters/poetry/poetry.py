@@ -13,15 +13,12 @@ class PoetryAdapter:
 
         sys.path.insert(0, str(pkg_src))
 
+        subprocess.run(  # noqa: S603
+            ["poetry", "--directory", pkg_src, "install"],  # noqa: S607
+            capture_output=True,
+            check=False,
+        )
         venv_activator = PoetryAdapter.get_activator_path(pkg_src)
-
-        if not venv_activator.is_file():
-            subprocess.run(  # noqa: S603
-                ["poetry", "--directory", pkg_src, "install"],  # noqa: S607
-                capture_output=True,
-                check=False,
-            )
-            venv_activator = PoetryAdapter.get_activator_path(pkg_src)
 
         if venv_activator.is_file():
             # Activate package's virtual environment
