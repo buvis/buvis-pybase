@@ -18,6 +18,11 @@ class PoetryAdapter:
             capture_output=True,
             check=False,
         )
+        subprocess.run(  # noqa: S603
+            ["poetry", "--directory", pkg_src, "update"],  # noqa: S607
+            capture_output=True,
+            check=False,
+        )
         venv_activator = PoetryAdapter.get_activator_path(pkg_src)
 
         if venv_activator.is_file():
