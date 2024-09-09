@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath("../../src/"))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "BUVIS Scripts"
+project = "BUVIS Python Base"
 copyright = "2024, Tomáš Bouška"
 author = "Tomáš Bouška"
 
