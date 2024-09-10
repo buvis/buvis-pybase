@@ -6,8 +6,21 @@ from pathlib import Path
 
 
 class PoetryAdapter:
+    """
+    A class to handle running scripts within a Poetry-managed project environment.
+    """
+
     @staticmethod
     def run_script(launcher: Path, arguments: list) -> None:
+        """
+        Run a script within a Poetry-managed project environment.
+
+        :param launcher: The path to the launcher script.
+        :type launcher: Path
+        :param arguments: List of arguments to pass to the script.
+        :type arguments: list[str]
+        :return: None
+        """
         pkg_name = Path(launcher).stem.replace("-", "_")
         pkg_src = Path(launcher, "../../src/", pkg_name).resolve()
 
@@ -38,6 +51,14 @@ class PoetryAdapter:
 
     @staticmethod
     def get_activator_path(directory: Path) -> Path:
+        """
+        Get the path to the virtual environment activator script.
+
+        :param directory: The directory of the Poetry project.
+        :type directory: Path
+        :return: The path to the activator script, or the current working directory if not found.
+        :rtype: Path
+        """
         venv_dir_stdout = subprocess.run(  # noqa: S603
             ["poetry", "--directory", directory, "env", "info", "--path"],  # noqa: S607
             stdout=subprocess.PIPE,
