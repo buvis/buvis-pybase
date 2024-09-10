@@ -17,6 +17,12 @@ rich = "13.8.0"
 tzlocal = "5.2"
 pyyaml = "6.0.2"
 
+[tool.poetry.group.dev.dependencies]
+pre-commit = "3.8.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "8.3.2"
+
 [tool.poetry.group.docs.dependencies]
 sphinx = "8.0.2"
 sphinx-rtd-theme = "3.0.0rc1"
