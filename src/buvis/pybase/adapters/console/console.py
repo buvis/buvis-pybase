@@ -39,7 +39,7 @@ class ConsoleAdapter:
             f" {CROSSMARK} [{STYLE_FAILURE_MSG}]{message}[/{STYLE_FAILURE_MSG}]"
         )
         if details:
-            formatted_message += " \n\n Details:\n\n {details}"
+            formatted_message += f" \n\n Details:\n\n {details}"
 
         return formatted_message
 
