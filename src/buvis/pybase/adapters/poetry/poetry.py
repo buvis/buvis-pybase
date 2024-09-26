@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib
 import runpy
 import subprocess
@@ -11,7 +13,7 @@ class PoetryAdapter:
     """
 
     @staticmethod
-    def run_script(launcher: Path, arguments: list) -> None:
+    def run_script(launcher: Path | str, arguments: list) -> None:
         """
         Run a script within a Poetry-managed project environment.
 
