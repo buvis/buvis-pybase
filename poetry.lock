@@ -650,13 +650,13 @@ test = ["cython (>=3.0)", "defusedxml (>=0.7.1)", "pytest (>=8.0)", "setuptools 
 
 [[package]]
 name = "sphinx-rtd-theme"
-version = "3.0.0rc2"
+version = "3.0.0rc3"
 description = "Read the Docs theme for Sphinx"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "sphinx_rtd_theme-3.0.0rc2-py2.py3-none-any.whl", hash = "sha256:63a94bc3f472cfdd3d2c8ffe229a38576e4d61400b4c3447a1a087f4db3cec9e"},
-    {file = "sphinx_rtd_theme-3.0.0rc2.tar.gz", hash = "sha256:13bedf97a8357aa3b5641dd6355092555881aa92f15dffad3656e74f4c9bcfb9"},
+    {file = "sphinx_rtd_theme-3.0.0rc3-py2.py3-none-any.whl", hash = "sha256:e3be0842d7d67ac1c0e50737d159fb319a26c6c46f5bd36cf55f66439456c52f"},
+    {file = "sphinx_rtd_theme-3.0.0rc3.tar.gz", hash = "sha256:37dec5b9d5f16e5f41dbf226895d254235559c34de4fde2e309587c626c2d0cd"},
 ]
 
 [package.dependencies]
@@ -843,4 +843,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "41f9860f7215bddc83b0276fa8a81850e7d5294eb28cfbd80b5746b7376a3582"
+content-hash = "28deee4a5bbd418a6f25ab802c3e72579df492ba665575fed234d053500e4817"
