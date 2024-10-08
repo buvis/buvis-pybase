@@ -18,7 +18,7 @@ tzlocal = "5.2"
 pyyaml = "6.0.2"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "4.0.0"
+pre-commit = "4.0.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "8.3.3"
