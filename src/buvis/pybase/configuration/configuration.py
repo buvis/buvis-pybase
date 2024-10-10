@@ -112,5 +112,8 @@ class Configuration:
         error_message = f"{key} not found in configuration."
         raise ConfigurationKeyNotFoundError(error_message)
 
+    def __repr__(self: Configuration) -> str:
+        return f"---\n{yaml.dump(self._config_dict, default_flow_style=False)}"
+
 
 cfg = Configuration()
