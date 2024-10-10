@@ -55,8 +55,9 @@ class Configuration:
         :raises FileNotFoundError: If the provided `file_path` does not exist.
         """
         if file_path is not None:
-            if file_path.exists():
-                return file_path.absolute()
+            resolved_file_path = file_path.resolve()
+            if resolved_file_path.exists():
+                return resolved_file_path.absolute()
             message = f"The configuration file at {file_path} was not found."
             raise FileNotFoundError(message)
 
