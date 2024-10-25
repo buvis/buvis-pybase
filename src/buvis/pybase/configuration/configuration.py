@@ -112,6 +112,26 @@ class Configuration:
         error_message = f"{key} not found in configuration."
         raise ConfigurationKeyNotFoundError(error_message)
 
+    def get_configuration_item_or_default(
+        self: Configuration,
+        key: str,
+        default: object,
+    ) -> object:
+        """
+        Retrieves a configuration item by key.
+
+        :param key: The configuration item key to retrieve.
+        :type key: str
+        :param default: Default value to use if no value found.
+        :type default: object
+        :return: Contains the configuration value or default value.
+        :rtype: object
+        """
+        if key in self._config_dict:
+            return self._config_dict[key]
+
+        return default
+
     def __repr__(self: Configuration) -> str:
         return f"---\n{yaml.dump(self._config_dict, default_flow_style=False)}"
 
