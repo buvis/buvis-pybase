@@ -7,6 +7,9 @@ from buvis.pybase.filesystem.dir_tree.delete_by_extension import delete_by_exten
 from buvis.pybase.filesystem.dir_tree.lowercase_file_extensions import (
     lowercase_file_extensions,
 )
+from buvis.pybase.filesystem.dir_tree.merge_mac_metadata import (
+    merge_mac_metadata,
+)
 from buvis.pybase.filesystem.dir_tree.remove_empty_directories import (
     remove_empty_directories,
 )
@@ -80,3 +83,7 @@ class DirTree:
     @staticmethod
     def remove_empty_directories(directory: Path) -> None:
         remove_empty_directories(directory)
+
+    @staticmethod
+    def merge_mac_metadata(directory: Path) -> None:
+        merge_mac_metadata(directory)
