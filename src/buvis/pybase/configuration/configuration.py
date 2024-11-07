@@ -55,8 +55,9 @@ class Configuration:
         :raises FileNotFoundError: If the provided `file_path` does not exist.
         """
         if file_path is not None:
-            if file_path.exists():
-                return file_path.absolute()
+            resolved_file_path = file_path.resolve()
+            if resolved_file_path.exists():
+                return resolved_file_path.absolute()
             message = f"The configuration file at {file_path} was not found."
             raise FileNotFoundError(message)
 
@@ -110,6 +111,29 @@ class Configuration:
 
         error_message = f"{key} not found in configuration."
         raise ConfigurationKeyNotFoundError(error_message)
+
+    def get_configuration_item_or_default(
+        self: Configuration,
+        key: str,
+        default: object,
+    ) -> object:
+        """
+        Retrieves a configuration item by key.
+
+        :param key: The configuration item key to retrieve.
+        :type key: str
+        :param default: Default value to use if no value found.
+        :type default: object
+        :return: Contains the configuration value or default value.
+        :rtype: object
+        """
+        if key in self._config_dict:
+            return self._config_dict[key]
+
+        return default
+
+    def __repr__(self: Configuration) -> str:
+        return f"---\n{yaml.dump(self._config_dict, default_flow_style=False)}"
 
 
 cfg = Configuration()
