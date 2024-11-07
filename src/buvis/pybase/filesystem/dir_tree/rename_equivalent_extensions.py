@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 
@@ -28,5 +29,7 @@ def rename_equivalent_extensions(
             current_ext = file_path.suffix.lower()
             if current_ext in extension_map:
                 new_ext = extension_map[current_ext]
-                new_name = file_path.with_name(file_path.stem + new_ext)
-                file_path.rename(new_name)
+                new_name = file_path.stem + new_ext
+                new_path = file_path.with_name(new_name)
+                file_path.rename(new_path)
+                logging.info("Renamed %s -> %s", file_path, new_name)

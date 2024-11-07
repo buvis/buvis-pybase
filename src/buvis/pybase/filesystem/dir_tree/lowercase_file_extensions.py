@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 
@@ -12,6 +13,8 @@ def lowercase_file_extensions(directory: Path) -> None:
     for file_path in directory.rglob("*"):
         if file_path.is_file():
             lowercase_ext = file_path.suffix.lower()
-            new_name = file_path.with_name(file_path.stem + lowercase_ext)
-            if new_name != file_path:
+            new_name = file_path.stem + lowercase_ext
+            new_path = file_path.with_name(new_name)
+            if new_path != file_path:
                 file_path.rename(new_name)
+                logging.info("Renamed %s -> %s", file_path, new_name)

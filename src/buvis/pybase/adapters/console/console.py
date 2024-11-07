@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import io
+import logging
 import sys
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rich.console import Capture
     from rich.status import Status
 
+from buvis.pybase.adapters.console.capturing_rich_handler import CapturingRichHandler
 from rich.console import Console
 from rich.prompt import Confirm
 
@@ -67,3 +71,25 @@ class ConsoleAdapter:
 
 
 console = ConsoleAdapter()
+
+
+@contextmanager
+def logging_to_console():
+    handler = CapturingRichHandler(
+        console=console,
+        show_time=False,
+        show_path=False,
+        rich_tracebacks=False,
+        tracebacks_show_locals=False,
+    )
+
+    logger = logging.getLogger()
+    logger.addHandler(handler)
+    original_level = logger.level
+    logger.setLevel(logging.INFO)
+
+    try:
+        yield
+    finally:
+        logger.removeHandler(handler)
+        logger.setLevel(original_level)

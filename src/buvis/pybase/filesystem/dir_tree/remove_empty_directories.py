@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 
@@ -12,3 +13,4 @@ def remove_empty_directories(directory: Path) -> None:
     for dir_path in sorted(directory.rglob("*"), reverse=True):
         if dir_path.is_dir() and not any(dir_path.iterdir()):
             dir_path.rmdir()
+            logging.info("Removed empty directory %s", dir_path)
