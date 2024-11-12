@@ -1,7 +1,9 @@
 import logging
+import os
 from pathlib import Path
 
-import xattr
+if os.name != "nt":
+    import xattr
 
 
 def merge_mac_metadata(directory: Path) -> None:
@@ -21,7 +23,7 @@ def merge_mac_metadata(directory: Path) -> None:
     for apple_double in directory.rglob("._*"):
         if apple_double.is_file():
             data_file = apple_double.with_name(apple_double.name[2:])
-            if data_file.exists():
+            if os.name != "nt" and data_file.exists():
                 try:
                     # Read the resource fork from the ._ file
                     with apple_double.open("rb") as f:
