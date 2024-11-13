@@ -25,19 +25,7 @@ class PoetryAdapter:
         """
         pkg_name = Path(launcher).stem.replace("-", "_")
         pkg_src = Path(launcher, "../../src/", pkg_name).resolve()
-
         sys.path.insert(0, str(pkg_src))
-
-        subprocess.run(  # noqa: S603
-            ["poetry", "--directory", pkg_src, "install"],  # noqa: S607
-            capture_output=True,
-            check=False,
-        )
-        subprocess.run(  # noqa: S603
-            ["poetry", "--directory", pkg_src, "update"],  # noqa: S607
-            capture_output=True,
-            check=False,
-        )
         venv_activator = PoetryAdapter.get_activator_path(pkg_src)
 
         if venv_activator.is_file():
@@ -50,6 +38,23 @@ class PoetryAdapter:
             print(
                 f"Script preparation failed. Make sure `poetry install` can complete successfully in {pkg_src}.",
             )
+
+    @staticmethod
+    def update_script(launcher: Path) -> None:
+        pkg_name = Path(launcher).stem.replace("-", "_")
+        pkg_src = Path(launcher, "../../src/", pkg_name).resolve()
+
+        sys.path.insert(0, str(pkg_src))
+        subprocess.run(  # noqa: S603
+            ["poetry", "--directory", pkg_src, "install"],  # noqa: S607
+            capture_output=True,
+            check=False,
+        )
+        subprocess.run(  # noqa: S603
+            ["poetry", "--directory", pkg_src, "update"],  # noqa: S607
+            capture_output=True,
+            check=False,
+        )
 
     @staticmethod
     def get_activator_path(directory: Path) -> Path:
