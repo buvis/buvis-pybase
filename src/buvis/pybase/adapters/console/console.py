@@ -74,11 +74,16 @@ console = ConsoleAdapter()
 
 
 @contextmanager
-def logging_to_console():
+def logging_to_console(
+    show_level: bool = True,
+    show_time: bool = False,
+    show_path: bool = False,
+):
     handler = CapturingRichHandler(
         console=console,
-        show_time=False,
-        show_path=False,
+        show_level=show_level,
+        show_time=show_time,
+        show_path=show_path,
         rich_tracebacks=False,
         tracebacks_show_locals=False,
     )

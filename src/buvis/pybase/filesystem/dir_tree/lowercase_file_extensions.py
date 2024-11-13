@@ -12,9 +12,9 @@ def lowercase_file_extensions(directory: Path) -> None:
     """
     for file_path in directory.rglob("*"):
         if file_path.is_file():
-            lowercase_ext = file_path.suffix.lower()
-            new_name = file_path.stem + lowercase_ext
+            new_name = file_path.stem + file_path.suffix.lower()
             new_path = file_path.with_name(new_name)
+
             if new_path != file_path:
-                file_path.rename(new_name)
+                file_path.rename(new_path)
                 logging.info("Renamed %s -> %s", file_path, new_name)

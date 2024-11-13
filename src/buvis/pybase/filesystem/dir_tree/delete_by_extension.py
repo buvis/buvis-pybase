@@ -16,6 +16,8 @@ def delete_by_extension(directory: Path, extensions_to_delete: list[str]) -> Non
     """
     directory = Path(directory)
     for file_path in directory.rglob("*"):
+        if file_path.parent.stem == ".stfolder":  ## keep content of sensitive folders
+            continue
         if file_path.is_file() and file_path.suffix.lower() in extensions_to_delete:
             file_path.unlink()
             logging.info("Removed extra file %s", file_path)
