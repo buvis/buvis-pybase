@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import io
 import logging
 import sys
 from contextlib import contextmanager
@@ -12,7 +11,7 @@ if TYPE_CHECKING:
 
 from buvis.pybase.adapters.console.capturing_rich_handler import CapturingRichHandler
 from rich.columns import Columns
-from rich.console import Console
+from rich.console import Console, Group, RenderableType
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.prompt import Confirm
@@ -68,41 +67,8 @@ class ConsoleAdapter:
     def confirm(self: ConsoleAdapter, message: str) -> bool:
         return Confirm.ask(message)
 
-    def print(self: ConsoleAdapter, message: str) -> None:
-        return self.console.print(message)
-
-    def print_raw(self: ConsoleAdapter, text: str) -> None:
-        return self.console.print(Text(text))
-
-    def print_markdown_with_yaml_header(
-        self: ConsoleAdapter,
-        markdown_text: str,
-    ) -> None:
-        yaml_content, _, markdown_content = markdown_text.partition("\n---\n")
-
-        def highlight_yaml(yaml_text: str) -> list:
-            lines = yaml_text.split("\n")
-            highlighted_lines = []
-
-            for line in lines:
-                if ":" in line:
-                    key, value = line.split(":", 1)
-                    highlighted_line = Text()
-                    highlighted_line.append(key.strip(), style="#859900")
-                    highlighted_line.append(":", style="bold gray")
-                    highlighted_line.append(value, style="#b58900")
-                else:
-                    highlighted_line = Text(line, style="#859900")
-
-                highlighted_lines.append(highlighted_line)
-
-            return highlighted_lines
-
-        md = Markdown(markdown_content)
-        for line in highlight_yaml(yaml_content):
-            if str(line).rstrip() != "---":
-                self.console.print(line)
-        self.console.print(md)
+    def print(self: ConsoleAdapter, message: str, *, mode: str = "normal") -> None:
+        return self.console.print(_stylize_text(message, mode))
 
     def print_side_by_side(
         self: ConsoleAdapter,
@@ -110,10 +76,22 @@ class ConsoleAdapter:
         text_left: str,
         title_right: str,
         text_right: str,
+        *,
+        mode_left: str = "normal",
+        mode_right: str = "normal",
     ) -> None:
         width = self.console.width // 2
-        panel_left = Panel(text_left, title=title_left, width=width)
-        panel_right = Panel(text_right, title=title_right, width=width)
+
+        panel_left = Panel.fit(
+            _stylize_text(text_left, mode_left),
+            title=title_left,
+            width=width,
+        )
+        panel_right = Panel.fit(
+            _stylize_text(text_right, mode_right),
+            title=title_right,
+            width=width,
+        )
 
         columns = Columns(
             [panel_left, panel_right],
@@ -126,6 +104,46 @@ class ConsoleAdapter:
 
     def nl(self: ConsoleAdapter) -> None:
         return self.console.out("")
+
+
+def _stylize_text(text: str, mode: str) -> RenderableType:
+    if mode == "raw":
+        return Text(text)
+    if mode == "markdown_with_frontmatter":
+        return Group(*_stylize_text_md_frontmatter(text))
+
+    return text
+
+
+def _stylize_text_md_frontmatter(markdown_text: str) -> list:
+    yaml_content, _, markdown_content = markdown_text.partition("\n---\n")
+
+    def highlight_yaml(yaml_text: str) -> list:
+        lines = yaml_text.split("\n")
+        highlighted_lines = []
+
+        for line in lines:
+            if ":" in line:
+                key, value = line.split(":", 1)
+                highlighted_line = Text()
+                highlighted_line.append(key.strip(), style="#859900")
+                highlighted_line.append(":", style="bold gray")
+                highlighted_line.append(value, style="#b58900")
+            else:
+                highlighted_line = Text(line, style="#859900")
+
+            highlighted_lines.append(highlighted_line)
+
+        return highlighted_lines
+
+    output_lines = []
+    md = Markdown(markdown_content)
+    for line in highlight_yaml(yaml_content):
+        if str(line).rstrip() != "---":
+            output_lines.append(line)
+    output_lines.append(md)
+
+    return output_lines
 
 
 console = ConsoleAdapter()
