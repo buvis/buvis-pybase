@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import platform
 from pathlib import Path
 
 import yaml
@@ -25,6 +26,7 @@ class Configuration:
         :raises FileNotFoundError: If the configuration file does not exist.
         """
         self._config_dict = {}
+        self._config_dict["hostname"] = platform.node()
 
         existing_file_path = self._determine_config_path(file_path)
 

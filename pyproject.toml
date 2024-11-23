@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "buvis-pybase"
-version = "0.1.5-alpha.4"
+version = "0.1.5-alpha.5"
 description = "Foundation of BUVIS python projects"
 authors = ["Tomáš Bouška <tomas@buvis.net>"]
 license = "MIT License"
