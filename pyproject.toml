@@ -12,12 +12,13 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.12"
 inflection = "0.5.1"
+jira = "3.8.0"
+pexpect = "4.9.0"
 pywin32 = { version = "308", markers = "sys_platform == 'win32'" }
+pyyaml = "6.0.2"
 rich = "13.9.4"
 tzlocal = "5.2"
-pyyaml = "6.0.2"
 xattr = { version = "1.1.0", markers = "sys_platform != 'win32'" }
-pexpect = "4.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "4.0.1"
