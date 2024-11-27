@@ -4,6 +4,7 @@ import re
 
 from buvis.pybase.formatting.string_operator.abbr import Abbr
 from buvis.pybase.formatting.string_operator.string_case_tools import StringCaseTools
+from buvis.pybase.formatting.string_operator.tag_suggester import TagSuggester
 from buvis.pybase.formatting.string_operator.word_level_tools import WordLevelTools
 
 
@@ -96,3 +97,9 @@ class StringOperator:
         level: int = 0,
     ) -> str:
         return Abbr.replace_abbreviations(text, abbreviations, level)
+
+    @staticmethod
+    def suggest_tags(text: str, limit_count: int = 10) -> list:
+        tag_suggester = TagSuggester()
+
+        return tag_suggester.suggest(text)[:limit_count]

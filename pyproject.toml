@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "buvis-pybase"
-version = "0.1.4"
+version = "0.1.5-alpha.5"
 description = "Foundation of BUVIS python projects"
 authors = ["Tomáš Bouška <tomas@buvis.net>"]
 license = "MIT License"
@@ -16,7 +16,10 @@ jira = "3.8.0"
 pexpect = "4.9.0"
 pywin32 = { version = "308", markers = "sys_platform == 'win32'" }
 pyyaml = "6.0.2"
+rake-nltk = "1.0.6"
 rich = "13.9.4"
+torch = "2.5.1"
+transformers = "4.46.3"
 tzlocal = "5.2"
 xattr = { version = "1.1.0", markers = "sys_platform != 'win32'" }
 
