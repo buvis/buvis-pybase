@@ -1,2 +1,0 @@
-class IssueCreateFailed(Exception):
-    pass

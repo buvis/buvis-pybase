@@ -1,12 +1,10 @@
 import os
 from jira import JIRA
-from buvis.pybase.adapters.jira.domain.jira_issue import JiraIssue
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.configuration import Configuration
 
 
 class JiraAdapter:
-
     def __init__(self: "JiraAdapter", cfg: Configuration) -> None:
         self._cfg = cfg
         if self._cfg["proxy"]:
@@ -30,7 +28,8 @@ class JiraAdapter:
                 "project": {"key": issue.project},
                 "reporter": {"key": issue.reporter, "name": issue.reporter},
                 "summary": issue.title,
-            })
+            }
+        )
         # some custom fields aren't populated on issue creation
         # so I have to update them after issue creation
         new_issue = self._jira.issue(new_issue.key)
@@ -53,3 +52,4 @@ class JiraAdapter:
             id=new_issue.key,
             link=new_issue.permalink(),
         )
+
