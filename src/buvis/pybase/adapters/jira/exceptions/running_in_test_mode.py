@@ -1,2 +1,0 @@
-class RunningInTestMode(Exception):
-    pass
