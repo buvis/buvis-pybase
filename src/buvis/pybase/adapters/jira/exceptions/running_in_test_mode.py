@@ -1,0 +1,2 @@
+class RunningInTestMode(Exception):
+    pass

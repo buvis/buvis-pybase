@@ -1,0 +1,2 @@
+class IssueCreateFailed(Exception):
+    pass
