@@ -1,17 +1,30 @@
 import os
-from jira import JIRA
+
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.configuration import Configuration
+from jira import JIRA
 
 
 class JiraAdapter:
     def __init__(self: "JiraAdapter", cfg: Configuration) -> None:
         self._cfg = cfg
-        if self._cfg["proxy"]:
+        if self._cfg.get_configuration_item_or_default("proxy", None):
             os.environ.pop("https_proxy")
             os.environ.pop("http_proxy")
-            os.environ["https_proxy"] = self._cfg["proxy"]
-        self._jira = JIRA(server=self._cfg["server"], token_auth=self._cfg["token"])
+            os.environ["https_proxy"] = str(self._cfg.get_configuration_item("proxy"))
+        if not self._cfg.get_configuration_item_or_default(
+            "server",
+            None,
+        ) or not self._cfg.get_configuration_item_or_default(
+            "token",
+            None,
+        ):
+            msg = "Server and token must be provided"
+            raise ValueError(msg)
+        self._jira = JIRA(
+            server=str(self._cfg.get_configuration_item("server")),
+            token_auth=str(self._cfg.get_configuration_item("token")),
+        )
 
     def create(self, issue: JiraIssueDTO) -> JiraIssueDTO:
         new_issue = self._jira.create_issue(
@@ -52,4 +65,3 @@ class JiraAdapter:
             id=new_issue.key,
             link=new_issue.permalink(),
         )
-

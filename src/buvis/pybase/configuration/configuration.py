@@ -34,6 +34,15 @@ class Configuration:
             self.path_config_file = existing_file_path
             self._load_configuration()
 
+    def copy(self: Configuration, key: str) -> Configuration:
+        copied_configuration = Configuration(self.path_config_file)
+
+        if key:
+            copied_configuration._config_dict = {}
+            copied_configuration._config_dict = self.get_configuration_item(key)
+
+        return copied_configuration
+
     def _determine_config_path(
         self: Configuration,
         file_path: Path | None,
