@@ -20,7 +20,7 @@ xattr = { version = "1.1.4", markers = "sys_platform != 'win32'" }
 pexpect = "4.9.0"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "4.1.0"
+pre-commit = "4.2.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "8.3.5"
