@@ -13,7 +13,7 @@ packages = [
 python = "^3.12"
 inflection = "0.5.1"
 pywin32 = { version = "310", markers = "sys_platform == 'win32'" }
-rich = "13.9.4"
+rich = "14.0.0"
 tzlocal = "5.3.1"
 pyyaml = "6.0.2"
 xattr = { version = "1.1.4", markers = "sys_platform != 'win32'" }
