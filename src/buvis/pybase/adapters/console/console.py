@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import io
 import logging
 import sys
 from contextlib import contextmanager
@@ -11,8 +10,13 @@ if TYPE_CHECKING:
     from rich.status import Status
 
 from buvis.pybase.adapters.console.capturing_rich_handler import CapturingRichHandler
-from rich.console import Console
+from rich.columns import Columns
+from rich.console import Console, Group, RenderableType
+from rich.markdown import Markdown
+from rich.panel import Panel
 from rich.prompt import Confirm
+from rich.syntax import Syntax
+from rich.text import Text
 
 CHECKMARK = "[bold green1]\u2714[/bold green1]"
 WARNING = "[bold orange3]\u26a0[/bold orange3]"
@@ -63,11 +67,83 @@ class ConsoleAdapter:
     def confirm(self: ConsoleAdapter, message: str) -> bool:
         return Confirm.ask(message)
 
-    def print(self: ConsoleAdapter, message: str) -> None:
-        return self.console.print(message)
+    def print(self: ConsoleAdapter, message: str, *, mode: str = "normal") -> None:
+        return self.console.print(_stylize_text(message, mode))
+
+    def print_side_by_side(
+        self: ConsoleAdapter,
+        title_left: str,
+        text_left: str,
+        title_right: str,
+        text_right: str,
+        *,
+        mode_left: str = "normal",
+        mode_right: str = "normal",
+    ) -> None:
+        width = self.console.width // 2
+
+        panel_left = Panel.fit(
+            _stylize_text(text_left, mode_left),
+            title=title_left,
+            width=width,
+        )
+        panel_right = Panel.fit(
+            _stylize_text(text_right, mode_right),
+            title=title_right,
+            width=width,
+        )
+
+        columns = Columns(
+            [panel_left, panel_right],
+            expand=True,
+            equal=True,
+            padding=(0, 1),
+        )
+
+        return self.console.print(columns)
 
     def nl(self: ConsoleAdapter) -> None:
         return self.console.out("")
+
+
+def _stylize_text(text: str, mode: str) -> RenderableType:
+    if mode == "raw":
+        return Text(text)
+    if mode == "markdown_with_frontmatter":
+        return Group(*_stylize_text_md_frontmatter(text))
+
+    return text
+
+
+def _stylize_text_md_frontmatter(markdown_text: str) -> list:
+    yaml_content, _, markdown_content = markdown_text.partition("\n---\n")
+
+    def highlight_yaml(yaml_text: str) -> list:
+        lines = yaml_text.split("\n")
+        highlighted_lines = []
+
+        for line in lines:
+            if ":" in line:
+                key, value = line.split(":", 1)
+                highlighted_line = Text()
+                highlighted_line.append(key.strip(), style="#859900")
+                highlighted_line.append(":", style="bold gray")
+                highlighted_line.append(value, style="#b58900")
+            else:
+                highlighted_line = Text(line, style="#859900")
+
+            highlighted_lines.append(highlighted_line)
+
+        return highlighted_lines
+
+    output_lines = []
+    md = Markdown(markdown_content)
+    for line in highlight_yaml(yaml_content):
+        if str(line).rstrip() != "---":
+            output_lines.append(line)
+    output_lines.append(md)
+
+    return output_lines
 
 
 console = ConsoleAdapter()

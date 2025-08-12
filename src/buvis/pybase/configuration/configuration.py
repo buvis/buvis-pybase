@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import platform
 from pathlib import Path
 
 import yaml
@@ -25,12 +26,22 @@ class Configuration:
         :raises FileNotFoundError: If the configuration file does not exist.
         """
         self._config_dict = {}
+        self._config_dict["hostname"] = platform.node()
 
         existing_file_path = self._determine_config_path(file_path)
 
         if existing_file_path is not None:
             self.path_config_file = existing_file_path
             self._load_configuration()
+
+    def copy(self: Configuration, key: str) -> Configuration:
+        copied_configuration = Configuration(self.path_config_file)
+
+        if key:
+            copied_configuration._config_dict = {}
+            copied_configuration._config_dict = self.get_configuration_item(key)
+
+        return copied_configuration
 
     def _determine_config_path(
         self: Configuration,
