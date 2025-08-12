@@ -21,7 +21,7 @@ priority = "explicit"
 [tool.poetry.dependencies]
 python = "^3.12"
 inflection = "0.5.1"
-jira = "3.8.0"
+jira = "3.10.5"
 pexpect = "4.9.0"
 pyyaml = "6.0.2"
 rake-nltk = "1.0.6"
