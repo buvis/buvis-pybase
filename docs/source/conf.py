@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath("../../src/"))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "BUVIS Scripts"
+project = "BUVIS Python Base"
 copyright = "2024, Tomáš Bouška"
 author = "Tomáš Bouška"
 
@@ -28,5 +28,5 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "agogo"
+html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
