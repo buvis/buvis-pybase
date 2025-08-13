@@ -31,17 +31,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-package
     steps:
-      - name: Check version change
-        uses: raven-wing/did-python-package-version-change@v1
-        id: did-version-change
       - name: Download packages built by build-and-inspect-python-package
-        if: steps.did-version-change.outputs.is_version_greater == 'true'
         uses: actions/download-artifact@v5
         with:
           name: Packages
           path: dist
       - name: Upload package to Test PyPI
-        if: steps.did-version-change.outputs.is_version_greater == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
