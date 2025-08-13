@@ -4,7 +4,7 @@ name: Build and upload pre-relase PyPI package
 on:
   push:
     branches:
-      - "dev-*"
+      - "[0-9]*-*"
   workflow_dispatch:
 
 permissions:
