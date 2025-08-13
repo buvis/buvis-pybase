@@ -45,6 +45,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#buvis.pybase.configuration.configuration.Configuration"><code class="docutils literal notranslate"><span class="pre">Configuration</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#buvis.pybase.configuration.configuration.Configuration.copy"><code class="docutils literal notranslate"><span class="pre">Configuration.copy()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#buvis.pybase.configuration.configuration.Configuration.get_configuration_item"><code class="docutils literal notranslate"><span class="pre">Configuration.get_configuration_item()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#buvis.pybase.configuration.configuration.Configuration.get_configuration_item_or_default"><code class="docutils literal notranslate"><span class="pre">Configuration.get_configuration_item_or_default()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#buvis.pybase.configuration.configuration.Configuration.set_configuration_item"><code class="docutils literal notranslate"><span class="pre">Configuration.set_configuration_item()</span></code></a></li>
@@ -88,6 +89,11 @@
 Provides functionality to load from YAML file, access, and modify configuration settings.</p>
 <p>If no configuration file path is provided, then it tries to find the path from the <cite>BUVIS_CONFIG_FILE</cite>
 environment variable. If the environment variable is not set, it defaults to <cite>~/.config/buvis/config.yaml</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="buvis.pybase.configuration.configuration.Configuration.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#buvis.pybase.configuration.configuration.Configuration" title="buvis.pybase.configuration.configuration.Configuration"><span class="pre">Configuration</span></a></span></span><a class="headerlink" href="#buvis.pybase.configuration.configuration.Configuration.copy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.configuration.configuration.Configuration.get_configuration_item">
 <span class="sig-name descname"><span class="pre">get_configuration_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#buvis.pybase.configuration.configuration.Configuration.get_configuration_item" title="Link to this definition"></a></dt>
