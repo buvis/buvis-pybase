@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "buvis-pybase"
-version = "0.1.6-alpha.2"
+version = "0.1.6"
 description = "Foundation of BUVIS python projects"
 authors = ["Tomáš Bouška <tomas@buvis.net>"]
 license = "MIT License"
