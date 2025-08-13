@@ -1,10 +1,10 @@
 ---
-name: Build & upload released PyPI package
+name: Build and upload released PyPI package
 
 on:
-  release:
-    types:
-      - published
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
 
 permissions:
