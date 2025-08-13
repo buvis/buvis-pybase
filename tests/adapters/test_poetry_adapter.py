@@ -30,7 +30,6 @@ def test_run_script(
     launcher = Path("script_launcher")
     arguments = ["arg1", "arg2"]
     pkg_name = "script_launcher"
-    pkg_src = Path(launcher, "../../src/", pkg_name).resolve()
 
     mock_activator = MagicMock(spec=Path)
     mock_activator.is_file.return_value = True
@@ -40,6 +39,22 @@ def test_run_script(
 
     with patch.object(PoetryAdapter, "get_activator_path", return_value=mock_activator):
         PoetryAdapter.run_script(launcher, arguments)
+
+    # run_script() should NOT call subprocess.run for poetry install/update
+    # Those calls are in update_script(), not run_script()
+    
+    mock_runpy_run_path.assert_called_once_with(str(mock_activator))
+    mock_importlib_import_module.assert_called_once_with(f"{pkg_name}.cli")
+    mock_launcher_module.cli.assert_called_once_with(arguments)
+
+
+def test_update_script(mock_subprocess_run):
+    """Test the update_script method which actually does the poetry install/update."""
+    launcher = Path("script_launcher")
+    pkg_name = "script_launcher"
+    pkg_src = Path(launcher, "../../src/", pkg_name).resolve()
+
+    PoetryAdapter.update_script(launcher)
 
     mock_subprocess_run.assert_any_call(
         ["poetry", "--directory", pkg_src, "install"],
@@ -51,9 +66,6 @@ def test_run_script(
         capture_output=True,
         check=False,
     )
-    mock_runpy_run_path.assert_called_once_with(str(mock_activator))
-    mock_importlib_import_module.assert_called_once_with(f"{pkg_name}.cli")
-    mock_launcher_module.cli.assert_called_once_with(arguments)
 
 
 def test_run_script_activator_not_found(mock_subprocess_run, capsys):
