@@ -35,7 +35,7 @@ version = "308"
 markers = "sys_platform == 'win32'"
 
 [tool.poetry.dependencies.xattr]
-version = "1.1.4"
+version = "1.2.0"
 markers = "sys_platform != 'win32'"
 
 [tool.poetry.group.dev.dependencies]
