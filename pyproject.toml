@@ -42,7 +42,7 @@ markers = "sys_platform != 'win32'"
 pre-commit = "4.3.0"
 
 [tool.poetry.group.test.dependencies]
-pytest = "8.4.2"
+pytest = "9.0.1"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "8.2.3"
