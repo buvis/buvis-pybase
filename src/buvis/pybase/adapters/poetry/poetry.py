@@ -81,3 +81,51 @@ class PoetryAdapter:
             return activator_win
 
         return Path.cwd()
+
+    @classmethod
+    def update_all_scripts(cls, scripts_root: Path = None):
+        """Update all scripts in bin/ and all Poetry projects in src/."""
+
+        if scripts_root is None:
+            scripts_root = Path.cwd()
+
+        # Update bin scripts using existing method
+
+        bin_directory = scripts_root / "bin"
+
+        if bin_directory.exists():
+            for file_path in bin_directory.iterdir():
+                if file_path.is_file() and cls._contains_poetry_adapter(file_path):
+                    cls.update_script(str(file_path))
+
+        # Update individual script projects in src/
+
+        src_directory = scripts_root / "src"
+
+        if src_directory.exists():
+            for project_dir in src_directory.iterdir():
+                if project_dir.is_dir() and (project_dir / "pyproject.toml").exists():
+                    cls._update_poetry_project(project_dir)
+
+    @staticmethod
+    def _contains_poetry_adapter(file_path: Path) -> bool:
+        try:
+            return (
+                "from buvis.pybase.adapters import PoetryAdapter"
+                in file_path.read_text()
+            )
+
+        except UnicodeDecodeError:
+            return False
+
+    @staticmethod
+    def _update_poetry_project(project_path: Path):
+        import subprocess
+
+        try:
+            subprocess.run(
+                ["poetry", "update"], cwd=project_path, check=True, capture_output=True
+            )
+
+        except subprocess.CalledProcessError:
+            pass  # Silently continue on failure
