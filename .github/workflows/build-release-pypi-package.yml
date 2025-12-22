@@ -31,7 +31,7 @@ jobs:
     needs: build-package
     steps:
       - name: Download packages built by build-and-inspect-python-package
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: Packages
           path: dist
@@ -47,7 +47,7 @@ jobs:
     needs: build-package
     steps:
       - name: Download packages built by build-and-inspect-python-package
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: Packages
           path: dist
@@ -75,7 +75,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download release artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: Packages
           path: dist
