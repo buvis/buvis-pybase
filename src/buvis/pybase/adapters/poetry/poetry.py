@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import subprocess
 import sys
 from pathlib import Path
@@ -10,33 +11,32 @@ class PoetryAdapter:
     A class to handle running scripts within a Poetry-managed project environment.
     """
 
-    @staticmethod
-    def run_script(launcher: Path | str, arguments: list) -> None:
-        """
-        Run a script within a Poetry-managed project environment.
+    @classmethod
+    def run_script(cls, script_path: str, args: list):
+        script_file = Path(script_path)
+        pkg_name = script_file.stem
 
-        :param launcher: The path to the launcher script.
-        :type launcher: Path
-        :param arguments: List of arguments to pass to the script.
-        :type arguments: list[str]
-        :return: None
-        """
-        pkg_name = Path(launcher).stem.replace("-", "_")
-        pkg_src = Path(launcher, "../../src/", pkg_name).resolve()
+        # Find the corresponding project directory
+        scripts_root = script_file.parent.parent
+        project_dir = scripts_root / "src" / pkg_name
 
-        # Use poetry run to execute the CLI module
-        cmd = [
-            "poetry",
-            "--directory",
-            str(pkg_src),
-            "run",
-            "python",
-            "-m",
-            f"{pkg_name}.cli",
-        ] + arguments
+        if project_dir.exists() and (project_dir / "pyproject.toml").exists():
+            # Run using the project's virtual environment
+            import subprocess
 
-        result = subprocess.run(cmd, check=False)
-        sys.exit(result.returncode)
+            cmd = [
+                "poetry",
+                "run",
+                "python",
+                "-c",
+                f"import sys; sys.path.insert(0, '{project_dir}'); "
+                f"from {pkg_name}.cli import main; main({args!r})",
+            ]
+            subprocess.run(cmd, cwd=project_dir)
+        else:
+            # Fallback to current behavior
+            launcher_module = importlib.import_module(f"{pkg_name}.cli")
+            launcher_module.main(args)
 
     @staticmethod
     def update_script(launcher: Path) -> None:
