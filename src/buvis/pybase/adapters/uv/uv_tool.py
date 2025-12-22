@@ -36,7 +36,7 @@ class UvToolManager:
             )
             console.success(f"Installed {pkg_name}")
         except subprocess.CalledProcessError as e:
-            console.error(f"Failed to install {pkg_name}: {e}")
+            console.failure(f"Failed to install {pkg_name}: {e}")
 
     @staticmethod
     def update_all(scripts_root: Path | None = None) -> None:
@@ -70,4 +70,4 @@ class UvToolManager:
             )
             console.success(f"Updated lock file for {project_path.name}")
         except subprocess.CalledProcessError:
-            console.error(f"Failed to update lock file for {project_path.name}")
+            console.failure(f"Failed to update lock file for {project_path.name}")
