@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "buvis-pybase"
-version = "0.3.0"
+version = "0.3.1"
 description = "Foundation of BUVIS python projects"
 authors = ["Tomáš Bouška <tomas@buvis.net>"]
 license = "MIT License"
@@ -19,7 +19,7 @@ url = "https://test.pypi.org/simple/"
 priority = "explicit"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<4.0"
 inflection = "^0.5.1"
 jira = "^3.10.5"
 pexpect = "^4.9.0"
