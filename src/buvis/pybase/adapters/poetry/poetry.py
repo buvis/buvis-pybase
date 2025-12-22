@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import importlib
-import runpy
 import subprocess
 import sys
 from pathlib import Path
@@ -25,19 +23,20 @@ class PoetryAdapter:
         """
         pkg_name = Path(launcher).stem.replace("-", "_")
         pkg_src = Path(launcher, "../../src/", pkg_name).resolve()
-        sys.path.insert(0, str(pkg_src))
-        venv_activator = PoetryAdapter.get_activator_path(pkg_src)
 
-        if venv_activator.is_file():
-            # Activate package's virtual environment
-            runpy.run_path(str(venv_activator))
+        # Use poetry run to execute the CLI module
+        cmd = [
+            "poetry",
+            "--directory",
+            str(pkg_src),
+            "run",
+            "python",
+            "-m",
+            f"{pkg_name}.cli",
+        ] + arguments
 
-            launcher_module = importlib.import_module(f"{pkg_name}.cli")
-            launcher_module.cli(arguments)
-        else:
-            print(
-                f"Script preparation failed. Make sure `poetry install` can complete successfully in {pkg_src}.",
-            )
+        result = subprocess.run(cmd, check=False)
+        sys.exit(result.returncode)
 
     @staticmethod
     def update_script(launcher: Path) -> None:
