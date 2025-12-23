@@ -81,10 +81,12 @@ jobs:
 
       - name: Inject release date
         id: final_changelog
+        env:
+          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
+          RELEASE_DATE: ${{ steps.date.outputs.date }}
         run: |
-          changelog="${{ steps.changelog.outputs.changelog }}"
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "${changelog//__RELEASE_DATE__/${{ steps.date.outputs.date }}}" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" | sed "s/__RELEASE_DATE__/$RELEASE_DATE/g" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Download release artifacts
