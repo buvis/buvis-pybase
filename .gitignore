@@ -1,5 +1,6 @@
 # Coding assistant
 .claude/
+.serena/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
