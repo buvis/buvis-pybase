@@ -31,7 +31,7 @@ STYLE_FAILURE_MSG = "bold light_salmon3"
 class ConsoleAdapter:
     def __init__(self: ConsoleAdapter) -> None:
         if sys.platform == "win32" and hasattr(sys.stdout, "buffer"):
-            utf8_stdout = io.TetxtIOWrapper(sys.stdout.buffer, encoding="utf-8")
+            utf8_stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
             self.console = Console(file=utf8_stdout, log_path=False)
         else:
             self.console = Console(log_path=False)
