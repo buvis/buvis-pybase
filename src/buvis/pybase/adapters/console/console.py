@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from rich.console import Capture
     from rich.status import Status
 
-from buvis.pybase.adapters.console.capturing_rich_handler import CapturingRichHandler
 from rich.columns import Columns
 from rich.console import Console, Group, RenderableType
 from rich.markdown import Markdown
@@ -17,6 +16,8 @@ from rich.panel import Panel
 from rich.prompt import Confirm
 from rich.syntax import Syntax
 from rich.text import Text
+
+from buvis.pybase.adapters.console.capturing_rich_handler import CapturingRichHandler
 
 CHECKMARK = "[bold green1]\u2714[/bold green1]"
 WARNING = "[bold orange3]\u26a0[/bold orange3]"
@@ -28,7 +29,9 @@ STYLE_FAILURE_MSG = "bold light_salmon3"
 
 class ConsoleAdapter:
     def __init__(self: ConsoleAdapter) -> None:
-        self.console = Console(log_path=False)
+        self.console = Console(
+            log_path=False, force_terminal=True, legacy_windows=False
+        )
 
     def format_success(self: ConsoleAdapter, message: str) -> str:
         return f" {CHECKMARK} [{STYLE_SUCCESS_MSG}]{message}[/{STYLE_SUCCESS_MSG}]"
@@ -46,6 +49,7 @@ class ConsoleAdapter:
         formatted_message = (
             f" {CROSSMARK} [{STYLE_FAILURE_MSG}]{message}[/{STYLE_FAILURE_MSG}]"
         )
+
         if details:
             formatted_message += f" \n\n Details:\n\n {details}"
 
@@ -109,6 +113,7 @@ class ConsoleAdapter:
 def _stylize_text(text: str, mode: str) -> RenderableType:
     if mode == "raw":
         return Text(text)
+
     if mode == "markdown_with_frontmatter":
         return Group(*_stylize_text_md_frontmatter(text))
 
@@ -138,6 +143,7 @@ def _stylize_text_md_frontmatter(markdown_text: str) -> list:
 
     output_lines = []
     md = Markdown(markdown_content)
+
     for line in highlight_yaml(yaml_content):
         if str(line).rstrip() != "---":
             output_lines.append(line)
