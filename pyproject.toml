@@ -55,5 +55,5 @@ src = "pyproject.toml"
 search = '''version = "{current_version}"'''
 
 [tool.tbump.git]
-message_template = '"chore(release): bump to {new_version}"'
+message_template = "chore(release): bump to {new_version}"
 tag_template = "v{new_version}"
