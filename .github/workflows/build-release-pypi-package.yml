@@ -70,7 +70,7 @@ jobs:
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v6
         with:
-          fromTag: ${{ github.event.inputs.tag || github.ref_name }}
+          configuration: .github/changelog-config.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
