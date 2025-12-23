@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "buvis-pybase"
-version = "0.5.3"
+version = "0.5.4"
 description = "Foundation of BUVIS python projects"
 authors = [{ name = "Tomáš Bouška", email = "tomas@buvis.net" }]
 license = "MIT"
@@ -41,7 +41,7 @@ explicit = true
 github_url = "https://github.com/buvis/buvis-pybase"
 
 [tool.tbump.version]
-current = "0.5.3"
+current = "0.5.4"
 regex = '''
   (?P<major>\d+)
   \.
