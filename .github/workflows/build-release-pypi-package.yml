@@ -71,6 +71,7 @@ jobs:
         uses: mikepenz/release-changelog-builder-action@v6
         with:
           configuration: .github/changelog-config.json
+          mode: HYBRID
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

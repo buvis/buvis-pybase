@@ -3,7 +3,7 @@ name: Deploy Sphinx Documentation to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - "docs/**"
       - "src/**"
