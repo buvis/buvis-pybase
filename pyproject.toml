@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pre-commit>=4.5.1"]
+dev = ["pre-commit>=4.5.1", "tbump>=6.11.0", "toml>=0.10.2"]
 test = ["pytest>=9.0.2", "pytest-mock>=3.14.0"]
 docs = ["sphinx>=8.2.3", "sphinx-rtd-theme>=3.0.2"]
 
@@ -36,3 +36,24 @@ packages = ["src/buvis"]
 name = "test-pypi"
 url = "https://test.pypi.org/simple/"
 explicit = true
+
+[tool.tbump]
+github_url = "https://github.com/buvis/buvis-pybase"
+
+[tool.tbump.version]
+current = "0.5.0"
+regex = '''
+  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  '''
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+search = '''version = "{current_version}"'''
+
+[tool.tbump.git]
+message_template = '"chore(release): bump to {new_version}"'
+tag_template = "v{new_version}"

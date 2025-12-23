@@ -66,6 +66,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
       - name: Generate changelog
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v6
@@ -74,6 +78,14 @@ jobs:
           mode: HYBRID
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Inject release date
+        id: final_changelog
+        run: |
+          changelog="${{ steps.changelog.outputs.changelog }}"
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "${changelog//__RELEASE_DATE__/${{ steps.date.outputs.date }}}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Download release artifacts
         uses: actions/download-artifact@v7
@@ -87,7 +99,7 @@ jobs:
           files: |
             dist/*.tar.gz
             dist/*.whl
-          body: ${{ steps.changelog.outputs.changelog }}
+          body: ${{ steps.final_changelog.outputs.changelog }}
           generate_release_notes: false # Use custom changelog
           draft: false
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
