@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import logging
 import sys
 from contextlib import contextmanager
@@ -29,9 +30,11 @@ STYLE_FAILURE_MSG = "bold light_salmon3"
 
 class ConsoleAdapter:
     def __init__(self: ConsoleAdapter) -> None:
-        self.console = Console(
-            log_path=False, force_terminal=True, legacy_windows=False
-        )
+        if sys.platform == "win32" and hasattr(sys.stdout, "buffer"):
+            utf8_stdout = io.TetxtIOWrapper(sys.stdout.buffer, encoding="utf-8")
+            self.console = Console(file=utf8_stdout, log_path=False)
+        else:
+            self.console = Console(log_path=False)
 
     def format_success(self: ConsoleAdapter, message: str) -> str:
         return f" {CHECKMARK} [{STYLE_SUCCESS_MSG}]{message}[/{STYLE_SUCCESS_MSG}]"
