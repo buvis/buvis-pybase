@@ -3,27 +3,33 @@
   "extends": "config:recommended",
   "packageRules": [
     {
-      "description": "Major updates: widen range, manual review",
+      "description": "Major updates: manual review",
       "matchUpdateTypes": [
         "major"
       ],
-      "rangeStrategy": "widen",
       "automerge": false,
       "labels": [
         "type:breaking-change"
       ]
     },
     {
-      "description": "Minor/patch: update lockfile only, automerge",
+      "description": "Minor/patch: automerge",
       "matchUpdateTypes": [
         "minor",
         "patch"
       ],
-      "rangeStrategy": "update-lockfile",
       "automerge": true
     },
     {
-      "description": "Group dev/test/docs dependency-groups from pyproject.toml",
+      "description": "Use lockfile strategy for non-majors",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "rangeStrategy": "update-lockfile"
+    },
+    {
+      "description": "Group dev/test/docs from pyproject.toml",
       "matchManagers": [
         "uv"
       ],
