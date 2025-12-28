@@ -4,7 +4,7 @@
   "rangeStrategy": "update-lockfile",
   "packageRules": [
     {
-      "description": "Production deps: minor/patch lockfile updates",
+      "description": "Production deps: automerge minors/patches (lockfile only)",
       "matchManagers": [
         "uv"
       ],
@@ -14,18 +14,17 @@
       "automerge": true
     },
     {
-      "description": "Majors: widen ranges (all deps)",
+      "description": "Major updates: manual review (lockfile only, no range widening)\nSee: https://github.com/renovatebot/renovate/discussions/16407",
       "matchUpdateTypes": [
         "major"
       ],
-      "rangeStrategy": "widen",
       "automerge": false,
       "labels": [
         "type:breaking-change"
       ]
     },
     {
-      "description": "Dev/test/docs groups",
+      "description": "Dev/test/docs groups from pyproject.toml",
       "matchManagers": [
         "uv"
       ],
