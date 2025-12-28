@@ -32,6 +32,9 @@ docs = ["sphinx>=8.2.3", "sphinx-rtd-theme>=3.0.2"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/buvis"]
 
+[tool.uv]
+add-bounds = "major"
+
 [[tool.uv.index]]
 name = "test-pypi"
 url = "https://test.pypi.org/simple/"

@@ -116,7 +116,7 @@ poetry.lock
 .pdm-build/
 
 # uv
-uv.lock
+# uv.lock - committed for CI/dev reproducibility (consumers ignore it)
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/

@@ -1,7 +1,28 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "description": "Major updates: widen range, manual review",
+      "matchUpdateTypes": ["major"],
+      "rangeStrategy": "widen",
+      "automerge": false,
+      "labels": ["type:breaking-change"]
+    },
+    {
+      "description": "Minor/patch: update lockfile only, automerge",
+      "matchUpdateTypes": ["minor", "patch"],
+      "rangeStrategy": "update-lockfile",
+      "automerge": true
+    },
+    {
+      "description": "Group dev dependencies",
+      "matchDepTypes": ["dependency-groups"],
+      "groupName": "dev dependencies",
+      "automerge": true
+    }
   ],
-  "rangeStrategy": "bump"
+  "lockFileMaintenance": {
+    "enabled": true
+  }
 }
