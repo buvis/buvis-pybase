@@ -4,18 +4,28 @@
   "rangeStrategy": "update-lockfile",
   "packageRules": [
     {
-      "description": "Major updates: manual review",
+      "description": "Production deps: minor/patch lockfile updates",
+      "matchManagers": [
+        "uv"
+      ],
+      "matchDepTypes": [
+        "dependencies"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Majors: widen ranges (all deps)",
       "matchUpdateTypes": [
         "major"
       ],
+      "rangeStrategy": "widen",
       "automerge": false,
       "labels": [
         "type:breaking-change"
-      ],
-      "rangeStrategy": "widen"
+      ]
     },
     {
-      "description": "Group dev/test/docs from pyproject.toml",
+      "description": "Dev/test/docs groups",
       "matchManagers": [
         "uv"
       ],
