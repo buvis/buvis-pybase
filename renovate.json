@@ -1,24 +1,36 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": "config:recommended",
   "packageRules": [
     {
       "description": "Major updates: widen range, manual review",
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "rangeStrategy": "widen",
       "automerge": false,
-      "labels": ["type:breaking-change"]
+      "labels": [
+        "type:breaking-change"
+      ]
     },
     {
       "description": "Minor/patch: update lockfile only, automerge",
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "rangeStrategy": "update-lockfile",
       "automerge": true
     },
     {
-      "description": "Group dev dependencies",
-      "matchDepTypes": ["dependency-groups"],
-      "groupName": "dev dependencies",
+      "description": "Group dev/test/docs dependency-groups from pyproject.toml",
+      "matchManagers": [
+        "uv"
+      ],
+      "matchDepTypes": [
+        "dependency-groups"
+      ],
+      "groupName": "dev test docs dependencies",
       "automerge": true
     }
   ],
