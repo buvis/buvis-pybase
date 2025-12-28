@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+current=$(tbump current-version)
+major=$(echo "$current" | cut -d. -f1)
+minor=$(echo "$current" | cut -d. -f2)
+patch=$(echo "$current" | cut -d. -f3)
+next="$major.$minor.$((patch + 1))"
+tbump "$next"

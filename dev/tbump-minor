@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+current=$(tbump current-version)
+major=$(echo "$current" | cut -d. -f1)
+minor=$(echo "$current" | cut -d. -f2)
+next="$major.$((minor + 1)).0"
+tbump "$next"
