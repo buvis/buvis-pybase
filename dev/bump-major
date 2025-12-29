@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-uv run bump-my-version bump major
+uv run bump-my-version bump major --config-file pyproject.toml

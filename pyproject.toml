@@ -42,13 +42,25 @@ explicit = true
 
 [tool.bumpversion]
 current_version = "0.5.7"
-parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
-serialize = ["{major}.{minor}.{patch}"]
+parse = """(?x)
+    (?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:-(?P<pre_l>dev|rc)(?P<pre_n>0|[1-9]\\d*))?
+"""
+serialize = [
+    "{major}.{minor}.{patch}-{pre_l}{pre_n}",
+    "{major}.{minor}.{patch}",
+]
 commit = true
 tag = true
 tag_name = "v{new_version}"
 message = "chore(release): bump to {new_version}"
 pre_commit_hooks = ["uv run pytest"]
+
+[tool.bumpversion.parts.pre_l]
+values = ["dev", "rc", "final"]
+optional_value = "final"
 
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"
