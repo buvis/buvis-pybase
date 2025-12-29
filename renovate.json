@@ -1,40 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "rangeStrategy": "update-lockfile",
+  "extends": [
+    "config:best-practices",
+    ":automergeMinor",
+    ":automergePatch"
+  ],
+  "rangeStrategy": "auto",
   "packageRules": [
     {
-      "description": "Production deps: automerge",
+      "description": "uv: update lockfile for in-range updates",
       "matchManagers": [
         "uv"
       ],
-      "matchDepTypes": [
-        "dependencies"
-      ],
-      "automerge": true
-    },
-    {
-      "description": "Major updates: manual review\nhttps://github.com/renovatebot/renovate/discussions/16407",
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "automerge": false,
-      "labels": [
-        "type:breaking-change"
-      ]
-    },
-    {
-      "description": "Dev/test/docs groups",
-      "matchManagers": [
-        "uv"
-      ],
-      "matchDepTypes": [
-        "dependency-groups"
-      ],
-      "groupName": "dev test docs dependencies",
-      "automerge": true
+      "rangeStrategy": "update-lockfile"
     }
-  ],
-  "lockFileMaintenance": {
-    "enabled": true
-  }
+  ]
 }
