@@ -6,6 +6,10 @@ _bmv() {
   uv run bump-my-version "$@"
 }
 
+_tag_exists() {
+  git tag -l "$1" | grep -q .
+}
+
 # Check if this is a pre_* bump command
 if [[ "$1" == "bump" ]]; then
   shift
@@ -34,9 +38,28 @@ if [[ "$1" == "bump" ]]; then
       major) new="$((major + 1)).0.0.dev0" ;;
     esac
 
-    _bmv bump --new-version "$new" "${args[@]}"
+    _bmv bump --new-version "$new" --no-tag "${args[@]}"
   else
-    _bmv bump "$@"
+    # For regular bumps, check tag conflicts and skip tags for pre-releases
+    no_tag=""
+    for arg in "$@"; do
+      if [[ "$arg" =~ ^(patch|minor|major|pre_l|pre_n)$ ]]; then
+        new=$(_bmv show -i "$arg" new_version 2>/dev/null) || true
+        if [[ -n "$new" ]]; then
+          # Skip tagging if result is a pre-release
+          if [[ "$new" =~ (\.dev|rc) ]]; then
+            no_tag="--no-tag"
+          elif _tag_exists "v$new"; then
+            echo "Error: Tag v$new already exists" >&2
+            echo "To fix:" >&2
+            echo "  git tag -d v$new  # delete local tag, then rerun" >&2
+            exit 1
+          fi
+        fi
+        break
+      fi
+    done
+    _bmv bump $no_tag "$@"
   fi
 else
   _bmv "$@"

@@ -2,7 +2,7 @@
 
 Uses [PEP 440](https://packaging.python.org/en/latest/discussions/versioning/) compliant versions.
 
-`bmv` is a wrapper script at `dev/bmv`.
+`bmv` is a wrapper script at `dev/bin/bmv`.
 
 ## Format
 
@@ -38,6 +38,18 @@ bmv bump pre_l       # 0.5.8rc0 → 0.5.8
 bmv bump --new-version "0.5.8"
 ```
 
+## Tagging
+
+Pre-releases (`dev`, `rc`) don't create git tags. Only final releases are tagged.
+
+| Command | Tags? |
+|---------|-------|
+| `pre_minor/major/patch` | No |
+| `pre_l` (dev→rc) | No |
+| `pre_l` (rc→final) | Yes |
+| `pre_n` | No |
+| `patch/minor/major` | Yes |
+
 ## CI Behavior
 
 | Trigger | Destination |
@@ -45,7 +57,7 @@ bmv bump --new-version "0.5.8"
 | Push to master with version change | test.pypi.org |
 | Push `v*` tag | pypi.org + GitHub Release |
 
-Tags with `alpha`, `beta`, or `rc` → marked as prerelease on GitHub.
+Tags with `rc` → marked as prerelease on GitHub.
 
 ## Useful Commands
 
