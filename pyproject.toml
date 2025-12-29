@@ -61,6 +61,7 @@ pre_commit_hooks = ["uv run pytest"]
 [tool.bumpversion.parts.pre_l]
 values = [".dev", "rc", "final"]
 optional_value = "final"
+first_value = "final"
 
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"

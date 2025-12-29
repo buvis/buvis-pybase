@@ -2,7 +2,7 @@
 
 Uses [PEP 440](https://packaging.python.org/en/latest/discussions/versioning/) compliant versions.
 
-`bmv` is an alias for `uv run bump-my-version`.
+`bmv` is a wrapper script at `dev/bmv` (alias it or add to PATH).
 
 ## Format
 
@@ -10,67 +10,47 @@ Uses [PEP 440](https://packaging.python.org/en/latest/discussions/versioning/) c
 
 Examples: `0.5.7`, `0.5.8.dev0`, `0.5.8rc1`
 
-Stages: `.dev` → `rc` → final (no suffix)
+## Direct Release
 
-## Workflows
-
-### Direct Release
-
-For hotfixes, small patches, or confident releases:
+Default workflow - bumps go straight to final version:
 
 ```bash
-# Get current version
-bmv show current_version
-
-# Direct patch: 0.5.7 → 0.5.8
-bmv bump --new-version "0.5.8"
-
-# Direct minor: 0.5.7 → 0.6.0
-bmv bump --new-version "0.6.0"
-
-# Direct major: 0.5.7 → 1.0.0
-bmv bump --new-version "1.0.0"
+bmv bump patch   # 0.5.7 → 0.5.8
+bmv bump minor   # 0.5.7 → 0.6.0
+bmv bump major   # 0.5.7 → 1.0.0
 ```
 
-### Pre-release Workflow
+## Pre-release Workflow
 
-For major features or breaking changes needing staged testing:
-
-```bash
-# Start pre-release cycle: 0.5.7 → 0.5.8.dev0
-bmv bump patch
-
-# Advance to RC: 0.5.8.dev0 → 0.5.8rc0
-bmv bump pre_l
-
-# Release: 0.5.8rc0 → 0.5.8
-bmv bump pre_l
-```
-
-### Escape Pre-release
-
-Jump from any pre-release directly to final:
+For staged releases needing dev/rc phases:
 
 ```bash
-# From 0.5.8.dev0 or 0.5.8rc1 → 0.5.8
+# Start pre-release
+bmv bump pre_patch   # 0.5.7 → 0.5.8.dev0
+bmv bump pre_minor   # 0.5.7 → 0.6.0.dev0
+bmv bump pre_major   # 0.5.7 → 1.0.0.dev0
+
+# Advance stages
+bmv bump pre_l       # 0.5.8.dev0 → 0.5.8rc0
+bmv bump pre_l       # 0.5.8rc0 → 0.5.8
+
+# Escape to final (skip remaining stages)
 bmv bump --new-version "0.5.8"
 ```
 
 ## CI Behavior
 
-| Trigger | Destination | Notes |
-|---------|-------------|-------|
-| Push to master with version change | test.pypi.org | Any version bump |
-| Push `v*` tag | pypi.org + GitHub Release | Production release |
+| Trigger | Destination |
+|---------|-------------|
+| Push to master with version change | test.pypi.org |
+| Push `v*` tag | pypi.org + GitHub Release |
 
-Tags containing `alpha`, `beta`, or `rc` are marked as prerelease on GitHub.
+Tags with `alpha`, `beta`, or `rc` → marked as prerelease on GitHub.
 
-## Common Commands
+## Useful Commands
 
 ```bash
-# Show what bumps are available
-bmv show-bump
-
-# Dry run (see what would happen)
-bmv bump --dry-run --new-version "0.5.8"
+bmv show-bump                    # Show available bumps
+bmv show current_version         # Current version
+bmv bump --dry-run patch         # Preview change
 ```
