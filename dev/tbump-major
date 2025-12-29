@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-current=$(tbump current-version)
-major=$(echo "$current" | cut -d. -f1)
-next="$((major + 1)).0.0"
-tbump "$next"
