@@ -2,7 +2,7 @@
 
 Uses [PEP 440](https://packaging.python.org/en/latest/discussions/versioning/) compliant versions.
 
-`bmv` is a wrapper script at `dev/bmv` (alias it or add to PATH).
+`bmv` is a wrapper script at `dev/bmv`.
 
 ## Format
 
