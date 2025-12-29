@@ -30,26 +30,22 @@ if [[ "$1" == "bump" ]]; then
     base=${current%%.dev*}
     base=${base%%rc*}
 
-    IFS='.' read -r major minor patch <<< "$base"
+    IFS='.' read -r major minor patch <<<"$base"
 
     case "$part" in
-      patch) new="$major.$minor.$((patch + 1)).dev0" ;;
-      minor) new="$major.$((minor + 1)).0.dev0" ;;
-      major) new="$((major + 1)).0.0.dev0" ;;
+    patch) new="$major.$minor.$((patch + 1)).dev0" ;;
+    minor) new="$major.$((minor + 1)).0.dev0" ;;
+    major) new="$((major + 1)).0.0.dev0" ;;
     esac
 
-    _bmv bump --new-version "$new" --no-tag "${args[@]}"
+    _bmv bump --new-version "$new" "${args[@]}"
   else
     # For regular bumps, check tag conflicts and skip tags for pre-releases
-    no_tag=""
     for arg in "$@"; do
       if [[ "$arg" =~ ^(patch|minor|major|pre_l|pre_n)$ ]]; then
         new=$(_bmv show -i "$arg" new_version 2>/dev/null) || true
         if [[ -n "$new" ]]; then
-          # Skip tagging if result is a pre-release
-          if [[ "$new" =~ (\.dev|rc) ]]; then
-            no_tag="--no-tag"
-          elif _tag_exists "v$new"; then
+          if _tag_exists "v$new"; then
             echo "Error: Tag v$new already exists" >&2
             echo "To fix:" >&2
             echo "  git tag -d v$new  # delete local tag, then rerun" >&2
@@ -59,7 +55,7 @@ if [[ "$1" == "bump" ]]; then
         break
       fi
     done
-    _bmv bump $no_tag "$@"
+    _bmv bump "$@"
   fi
 else
   _bmv "$@"
