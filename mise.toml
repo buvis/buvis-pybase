@@ -3,4 +3,4 @@ python = "3.12"
 uv = "latest"
 
 [env]
-_.path = ["./dev"]
+_.path = ["./dev/bin"]
