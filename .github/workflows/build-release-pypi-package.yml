@@ -17,10 +17,10 @@ jobs:
     name: Build & verify package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
-      - uses: hynek/build-and-inspect-python-package@v2
+      - uses: hynek/build-and-inspect-python-package@efb823f52190ad02594531168b7a2d5790e66516 # v2
         with:
           attest-build-provenance-github: "true"
 
@@ -31,7 +31,7 @@ jobs:
     needs: build-package
     steps:
       - name: Download packages built by build-and-inspect-python-package
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Packages
           path: dist
@@ -47,7 +47,7 @@ jobs:
     needs: build-package
     steps:
       - name: Download packages built by build-and-inspect-python-package
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Packages
           path: dist
@@ -62,7 +62,7 @@ jobs:
       contents: write # For release creation
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
 
@@ -72,7 +72,7 @@ jobs:
 
       - name: Generate changelog
         id: changelog
-        uses: mikepenz/release-changelog-builder-action@v6
+        uses: mikepenz/release-changelog-builder-action@439f79b5b5428107c7688c1d2b0e8bacc9b8792c # v6
         with:
           configuration: .github/changelog-config.json
           mode: HYBRID
@@ -90,13 +90,13 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Download release artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Packages
           path: dist
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
         with:
           files: |
             dist/*.tar.gz
