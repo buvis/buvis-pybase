@@ -8,6 +8,13 @@ from pathlib import Path
 
 import pexpect
 
+logger = logging.getLogger(__name__)
+
+# pexpect.expect() return indices
+_EXPECT_PROMPT = 0
+_EXPECT_EOF = 1
+_EXPECT_TIMEOUT = 2
+
 
 class ShellAdapter:
     """
@@ -57,14 +64,14 @@ class ShellAdapter:
             cwd = Path(working_dir)
 
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S602 - shell=True required for alias/env expansion
                 expanded_command,
                 shell=True,
                 check=True,
                 capture_output=True,
                 text=True,
                 cwd=cwd,
-                env=os.environ.copy(),  # Use the current environment variables
+                env=os.environ.copy(),
             )
             if self.is_logging:
                 self._log_normal_output(result.stdout, result.stderr)
@@ -76,7 +83,10 @@ class ShellAdapter:
             return result.stderr, result.stdout
 
     def interact(
-        self: ShellAdapter, command: str, prompt: str, working_dir: Path | None
+        self: ShellAdapter,
+        command: str,
+        prompt: str,
+        working_dir: Path | None,
     ) -> tuple[str, str]:
         expanded_command = self._expand_alias(command)
         expanded_command = self._expand_environment_variables(expanded_command)
@@ -98,7 +108,7 @@ class ShellAdapter:
                     ],
                 )
 
-                if index == 0:
+                if index == _EXPECT_PROMPT:
                     print(
                         self.child.before.decode("utf-8")
                         if isinstance(self.child.before, bytes)
@@ -106,14 +116,14 @@ class ShellAdapter:
                     )
                     user_input = input(prompt)
                     self.child.sendline(user_input)
-                elif index == 1:
+                elif index == _EXPECT_EOF:
                     break
-                elif index == 2:
-                    logging.error("Timeout occurred.")
+                elif index == _EXPECT_TIMEOUT:
+                    logger.error("Timeout occurred.")
                     break
 
-        except pexpect.ExceptionPexpect as _:
-            logging.exception("An error occurred")
+        except pexpect.ExceptionPexpect:
+            logger.exception("An error occurred")
         finally:
             if self.child:
                 self.child.close()
@@ -160,9 +170,9 @@ class ShellAdapter:
         :param stderr: The standard error output of the command.
         """
         if stdout:
-            logging.info(stdout)
+            logger.info(stdout)
         if stderr:
-            logging.error(stderr)
+            logger.error(stderr)
 
     def _log_error_output(self: ShellAdapter, e: subprocess.CalledProcessError) -> None:
         """
@@ -170,8 +180,8 @@ class ShellAdapter:
 
         :param e: The exception raised for the failed command execution.
         """
-        logging.error("Command failed with return code %s", e.returncode)
+        logger.error("Command failed with return code %s", e.returncode)
         if e.stdout:
-            logging.error("STDOUT: %s", e.stdout)
+            logger.error("STDOUT: %s", e.stdout)
         if e.stderr:
-            logging.error("STDERR: %s", e.stderr)
+            logger.error("STDERR: %s", e.stderr)

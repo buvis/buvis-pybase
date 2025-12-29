@@ -3,17 +3,17 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("../../src/buvis/"))
-sys.path.insert(0, os.path.abspath("../../src/"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src" / "buvis"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "BUVIS Python Base"
-copyright = "2024, Tomáš Bouška"
+copyright = "2024, Tomáš Bouška"  # noqa: A001 - required by Sphinx
 author = "Tomáš Bouška"
 
 # -- General configuration ---------------------------------------------------

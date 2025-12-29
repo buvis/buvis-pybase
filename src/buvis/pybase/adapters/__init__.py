@@ -1,8 +1,5 @@
 import os
 
-if os.name == "nt":
-    from .outlook_local.outlook_local import OutlookLocalAdapter
-
 from .console.console import console, logging_to_console
 from .jira.jira import JiraAdapter
 from .poetry.poetry import PoetryAdapter
@@ -19,3 +16,10 @@ __all__ = [
     "console",
     "logging_to_console",
 ]
+
+if os.name == "nt":
+    from .outlook_local.outlook_local import (
+        OutlookLocalAdapter as OutlookLocalAdapter,
+    )
+
+    __all__.append("OutlookLocalAdapter")

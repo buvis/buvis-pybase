@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+
 
 @dataclass
 class JiraIssueDTO:
@@ -15,5 +15,5 @@ class JiraIssueDTO:
     reporter: str
     team: str
     region: str
-    id: Optional[str] = None
-    link: Optional[str] = None
+    id: str | None = None
+    link: str | None = None

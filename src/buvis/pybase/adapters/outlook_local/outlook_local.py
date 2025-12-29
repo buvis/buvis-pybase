@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import tzlocal
+
 from buvis.pybase.adapters.outlook_local.exceptions import (
     OutlookAppointmentCreationFailedError,
 )
@@ -50,7 +51,7 @@ class OutlookLocalAdapter:
             appointment.Location = appointment_input["location"]
             appointment.Categories = appointment_input["categories"]
             appointment.Save()
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             msg = f"Appointment creation failed:\n{e}"
             raise OutlookAppointmentCreationFailedError(msg) from e
 
@@ -115,6 +116,8 @@ class OutlookLocalAdapter:
                 desired_end_time,
             ):
                 return appointment
+
+        return None
 
 
 def _is_colliding(

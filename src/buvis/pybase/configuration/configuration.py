@@ -5,6 +5,7 @@ import platform
 from pathlib import Path
 
 import yaml
+
 from buvis.pybase.configuration.exceptions import ConfigurationKeyNotFoundError
 
 

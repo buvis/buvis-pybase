@@ -4,8 +4,9 @@ Foundation of BUVIS python projects
 
 **Type:** Library
 
-## Dependency Strategy
+## Development
 
-- Dependencies use SemVer ranges (`>=x.y.z,<next-major`) for consumer compatibility
-- `uv.lock` committed for CI/dev reproducibility (consumers ignore it)
-- Renovate: `widen` for majors (manual), `update-lockfile` for minor/patch (automerge)
+### Prerequisites
+
+1. Install dependencies: `uv sync --all-groups`
+2. Initialize pre-commit hooks: `pre-commit install`

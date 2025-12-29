@@ -1,3 +1,3 @@
 from .configuration import Configuration, ConfigurationKeyNotFoundError, cfg
 
-__all__ = ["cfg", "Configuration", "ConfigurationKeyNotFoundError"]
+__all__ = ["Configuration", "ConfigurationKeyNotFoundError", "cfg"]

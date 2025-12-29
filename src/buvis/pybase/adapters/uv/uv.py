@@ -1,9 +1,9 @@
 import importlib
+import os
+import platform
+import shutil
 import subprocess
 import sys
-import shutil
-import platform
-import os
 from pathlib import Path
 
 
@@ -18,24 +18,35 @@ class UvAdapter:
         system = platform.system()
         try:
             if system == "Windows":
-                subprocess.check_call(["powershell", "-ExecutionPolicy", "ByPass", "-c", "irm https://astral.sh/uv/install.ps1 | iex"])
-                user_profile = os.environ.get("USERPROFILE", "")
+                subprocess.check_call(
+                    [  # noqa: S607 - trusted installer
+                        "powershell",
+                        "-ExecutionPolicy",
+                        "ByPass",
+                        "-c",
+                        "irm https://astral.sh/uv/install.ps1 | iex",
+                    ],
+                )
+                user_profile = Path(os.environ.get("USERPROFILE", ""))
                 possible_paths = [
-                    os.path.join(user_profile, ".cargo", "bin"),
-                    os.path.join(user_profile, "AppData", "Local", "uv"),
+                    user_profile / ".cargo" / "bin",
+                    user_profile / "AppData" / "Local" / "uv",
                 ]
             else:
-                subprocess.check_call("curl -LsSf https://astral.sh/uv/install.sh | sh", shell=True)
-                home = os.environ.get("HOME", "")
+                subprocess.check_call(  # noqa: S602 - trusted installer
+                    "curl -LsSf https://astral.sh/uv/install.sh | sh",  # noqa: S607
+                    shell=True,
+                )
+                home = Path(os.environ.get("HOME", ""))
                 possible_paths = [
-                    os.path.join(home, ".cargo", "bin"),
-                    os.path.join(home, ".local", "bin"),
+                    home / ".cargo" / "bin",
+                    home / ".local" / "bin",
                 ]
-            
+
             for p in possible_paths:
-                if os.path.exists(p):
-                    os.environ["PATH"] += os.pathsep + p
-                    
+                if p.exists():
+                    os.environ["PATH"] += os.pathsep + str(p)
+
         except subprocess.CalledProcessError as e:
             print(f"Failed to install uv: {e}", file=sys.stderr)
             sys.exit(1)
@@ -53,7 +64,12 @@ class UvAdapter:
             cmd = ["uv", "run", "python", "-m", f"{pkg_name}.cli", *args]
             env = os.environ.copy()
             env.pop("VIRTUAL_ENV", None)
-            result = subprocess.run(cmd, cwd=project_dir, check=False, env=env)
+            result = subprocess.run(  # noqa: S603 - uv is trusted
+                cmd,
+                cwd=project_dir,
+                check=False,
+                env=env,
+            )
             sys.exit(result.returncode)
         else:
             launcher_module = importlib.import_module(f"{pkg_name}.cli")
@@ -93,9 +109,8 @@ class UvAdapter:
     @staticmethod
     def _contains_uv_adapter(file_path: Path) -> bool:
         try:
-            return (
-                "from buvis.pybase.adapters import UvAdapter"
-                in file_path.read_text(encoding="utf-8")
+            return "from buvis.pybase.adapters import UvAdapter" in file_path.read_text(
+                encoding="utf-8",
             )
         except UnicodeDecodeError:
             return False
@@ -105,13 +120,13 @@ class UvAdapter:
         """Update dependencies for a uv project."""
         try:
             subprocess.run(
-                ["uv", "lock", "--upgrade"],
+                ["uv", "lock", "--upgrade"],  # noqa: S607
                 cwd=project_path,
                 check=True,
                 capture_output=True,
             )
             subprocess.run(
-                ["uv", "sync"],
+                ["uv", "sync"],  # noqa: S607
                 cwd=project_path,
                 check=True,
                 capture_output=True,

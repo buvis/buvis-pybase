@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import yaml
+
 from buvis.pybase.adapters.console.console import console
 from buvis.pybase.configuration.configuration import Configuration
 from buvis.pybase.configuration.exceptions import ConfigurationKeyNotFoundError

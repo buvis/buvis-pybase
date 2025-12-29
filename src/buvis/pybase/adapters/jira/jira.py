@@ -1,8 +1,9 @@
 import os
 
+from jira import JIRA
+
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.configuration import Configuration
-from jira import JIRA
 
 
 class JiraAdapter:
@@ -41,7 +42,7 @@ class JiraAdapter:
                 "project": {"key": issue.project},
                 "reporter": {"key": issue.reporter, "name": issue.reporter},
                 "summary": issue.title,
-            }
+            },
         )
         # some custom fields aren't populated on issue creation
         # so I have to update them after issue creation

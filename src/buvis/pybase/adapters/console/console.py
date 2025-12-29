@@ -7,6 +7,8 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from rich.console import Capture
     from rich.status import Status
 
@@ -15,7 +17,6 @@ from rich.console import Console, Group, RenderableType
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.prompt import Confirm
-from rich.syntax import Syntax
 from rich.text import Text
 
 from buvis.pybase.adapters.console.capturing_rich_handler import CapturingRichHandler
@@ -77,7 +78,7 @@ class ConsoleAdapter:
     def print(self: ConsoleAdapter, message: str, *, mode: str = "normal") -> None:
         return self.console.print(_stylize_text(message, mode))
 
-    def print_side_by_side(
+    def print_side_by_side(  # noqa: PLR0913
         self: ConsoleAdapter,
         title_left: str,
         text_left: str,
@@ -144,12 +145,10 @@ def _stylize_text_md_frontmatter(markdown_text: str) -> list:
 
         return highlighted_lines
 
-    output_lines = []
     md = Markdown(markdown_content)
-
-    for line in highlight_yaml(yaml_content):
-        if str(line).rstrip() != "---":
-            output_lines.append(line)
+    output_lines = [
+        line for line in highlight_yaml(yaml_content) if str(line).rstrip() != "---"
+    ]
     output_lines.append(md)
 
     return output_lines
@@ -160,10 +159,11 @@ console = ConsoleAdapter()
 
 @contextmanager
 def logging_to_console(
+    *,
     show_level: bool = True,
     show_time: bool = False,
     show_path: bool = False,
-):
+) -> Generator[None, None, None]:
     handler = CapturingRichHandler(
         console=console,
         show_level=show_level,

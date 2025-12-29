@@ -5,7 +5,6 @@ from __future__ import annotations
 import string
 from collections import Counter
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 import nltk
 import torch

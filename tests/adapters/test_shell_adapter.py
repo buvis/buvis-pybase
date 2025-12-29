@@ -1,10 +1,11 @@
 import os
 import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pexpect
 import pytest
+
 from buvis.pybase.adapters.shell.shell import ShellAdapter
 
 
@@ -125,7 +126,9 @@ class TestShellAdapterExe:
 
     @patch("subprocess.run")
     def test_exe_successful_command(
-        self, mock_run: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_run: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test executing a successful command."""
         mock_result = Mock()
@@ -142,7 +145,9 @@ class TestShellAdapterExe:
 
     @patch("subprocess.run")
     def test_exe_command_with_stderr(
-        self, mock_run: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_run: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test executing a command that produces stderr output."""
         mock_result = Mock()
@@ -158,7 +163,9 @@ class TestShellAdapterExe:
 
     @patch("subprocess.run")
     def test_exe_failed_command(
-        self, mock_run: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_run: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test executing a failed command."""
         error = subprocess.CalledProcessError(1, "false", "output", "error")
@@ -171,7 +178,9 @@ class TestShellAdapterExe:
 
     @patch("subprocess.run")
     def test_exe_with_working_directory(
-        self, mock_run: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_run: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test executing a command with a specific working directory."""
         mock_result = Mock()
@@ -181,17 +190,21 @@ class TestShellAdapterExe:
         mock_run.return_value = mock_result
 
         working_dir = Path("/tmp")
-        
+
         with patch.object(Path, "is_dir", return_value=True):
             stderr, stdout = shell_adapter.exe("pwd", working_dir)
 
         # Verify subprocess.run was called with the correct cwd
         call_args = mock_run.call_args
-        assert call_args[1]["cwd"] == Path.cwd()  # Should use current dir when working_dir doesn't exist
+        assert (
+            call_args[1]["cwd"] == Path.cwd()
+        )  # Should use current dir when working_dir doesn't exist
 
     @patch("subprocess.run")
     def test_exe_with_invalid_working_directory(
-        self, mock_run: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_run: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test executing a command with an invalid working directory."""
         mock_result = Mock()
@@ -201,7 +214,7 @@ class TestShellAdapterExe:
         mock_run.return_value = mock_result
 
         working_dir = Path("/nonexistent")
-        
+
         stderr, stdout = shell_adapter.exe("pwd", working_dir)
 
         # Should fall back to current directory
@@ -210,7 +223,9 @@ class TestShellAdapterExe:
 
     @patch("subprocess.run")
     def test_exe_expands_aliases(
-        self, mock_run: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_run: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test that exe expands aliases before execution."""
         mock_result = Mock()
@@ -229,7 +244,9 @@ class TestShellAdapterExe:
     @patch("subprocess.run")
     @patch.dict(os.environ, {"TEST_VAR": "test_value"})
     def test_exe_expands_env_vars(
-        self, mock_run: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_run: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test that exe expands environment variables before execution."""
         mock_result = Mock()
@@ -245,14 +262,17 @@ class TestShellAdapterExe:
         assert call_args[0][0] == "echo test_value"
 
     @patch("subprocess.run")
-    @patch("logging.info")
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.info")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_exe_logging_enabled(
-        self, mock_log_error: Mock, mock_log_info: Mock, mock_run: Mock
+        self,
+        mock_log_error: Mock,
+        mock_log_info: Mock,
+        mock_run: Mock,
     ) -> None:
         """Test that logging works when enabled."""
         adapter = ShellAdapter(suppress_logging=False)
-        
+
         mock_result = Mock()
         mock_result.stdout = "stdout content"
         mock_result.stderr = "stderr content"
@@ -265,14 +285,17 @@ class TestShellAdapterExe:
         mock_log_error.assert_called_once_with("stderr content")
 
     @patch("subprocess.run")
-    @patch("logging.info")
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.info")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_exe_logging_disabled(
-        self, mock_log_error: Mock, mock_log_info: Mock, mock_run: Mock
+        self,
+        mock_log_error: Mock,
+        mock_log_info: Mock,
+        mock_run: Mock,
     ) -> None:
         """Test that logging is disabled when suppress_logging=True."""
         adapter = ShellAdapter(suppress_logging=True)
-        
+
         mock_result = Mock()
         mock_result.stdout = "stdout content"
         mock_result.stderr = "stderr content"
@@ -292,7 +315,11 @@ class TestShellAdapterInteract:
     @patch("builtins.input")
     @patch("builtins.print")
     def test_interact_simple_session(
-        self, mock_print: Mock, mock_input: Mock, mock_spawn: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_print: Mock,
+        mock_input: Mock,
+        mock_spawn: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test a simple interactive session."""
         mock_child = Mock()
@@ -309,9 +336,12 @@ class TestShellAdapterInteract:
         mock_child.close.assert_called_once()
 
     @patch("pexpect.spawn")
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_interact_timeout(
-        self, mock_log_error: Mock, mock_spawn: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_log_error: Mock,
+        mock_spawn: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test interactive session with timeout."""
         mock_child = Mock()
@@ -324,9 +354,12 @@ class TestShellAdapterInteract:
         mock_child.close.assert_called_once()
 
     @patch("pexpect.spawn")
-    @patch("logging.exception")
+    @patch("buvis.pybase.adapters.shell.shell.logger.exception")
     def test_interact_exception(
-        self, mock_log_exception: Mock, mock_spawn: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_log_exception: Mock,
+        mock_spawn: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test interactive session with pexpect exception."""
         mock_spawn.side_effect = pexpect.ExceptionPexpect("Test error")
@@ -337,13 +370,15 @@ class TestShellAdapterInteract:
 
     @patch("pexpect.spawn")
     def test_interact_with_working_directory(
-        self, mock_spawn: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_spawn: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test interactive session with working directory."""
         mock_child = Mock()
         mock_child.expect.return_value = 1  # EOF
         mock_spawn.return_value = mock_child
-        
+
         working_dir = Path("/tmp")
         with patch.object(Path, "is_dir", return_value=True):
             shell_adapter.interact("python", ">>> ", working_dir)
@@ -352,13 +387,15 @@ class TestShellAdapterInteract:
 
     @patch("pexpect.spawn")
     def test_interact_expands_aliases(
-        self, mock_spawn: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_spawn: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test that interact expands aliases."""
         mock_child = Mock()
         mock_child.expect.return_value = 1  # EOF
         mock_spawn.return_value = mock_child
-        
+
         shell_adapter.alias("py", "python3")
         shell_adapter.interact("py", ">>> ", None)
 
@@ -370,7 +407,9 @@ class TestShellAdapterIsCommandAvailable:
 
     @patch("shutil.which")
     def test_is_command_available_true(
-        self, mock_which: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_which: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test checking for an available command."""
         mock_which.return_value = "/usr/bin/python"
@@ -380,7 +419,9 @@ class TestShellAdapterIsCommandAvailable:
 
     @patch("shutil.which")
     def test_is_command_available_false(
-        self, mock_which: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_which: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test checking for an unavailable command."""
         mock_which.return_value = None
@@ -392,67 +433,83 @@ class TestShellAdapterIsCommandAvailable:
 class TestShellAdapterLogging:
     """Test logging functionality."""
 
-    @patch("logging.info")
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.info")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_log_normal_output_both(
-        self, mock_log_error: Mock, mock_log_info: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_log_error: Mock,
+        mock_log_info: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test logging both stdout and stderr."""
         shell_adapter._log_normal_output("stdout content", "stderr content")
         mock_log_info.assert_called_once_with("stdout content")
         mock_log_error.assert_called_once_with("stderr content")
 
-    @patch("logging.info")
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.info")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_log_normal_output_stdout_only(
-        self, mock_log_error: Mock, mock_log_info: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_log_error: Mock,
+        mock_log_info: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test logging only stdout."""
         shell_adapter._log_normal_output("stdout content", None)
         mock_log_info.assert_called_once_with("stdout content")
         mock_log_error.assert_not_called()
 
-    @patch("logging.info")
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.info")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_log_normal_output_stderr_only(
-        self, mock_log_error: Mock, mock_log_info: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_log_error: Mock,
+        mock_log_info: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test logging only stderr."""
         shell_adapter._log_normal_output(None, "stderr content")
         mock_log_info.assert_not_called()
         mock_log_error.assert_called_once_with("stderr content")
 
-    @patch("logging.info")
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.info")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_log_normal_output_neither(
-        self, mock_log_error: Mock, mock_log_info: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_log_error: Mock,
+        mock_log_info: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test logging when both outputs are None."""
         shell_adapter._log_normal_output(None, None)
         mock_log_info.assert_not_called()
         mock_log_error.assert_not_called()
 
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_log_error_output(
-        self, mock_log_error: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_log_error: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test logging error output."""
         error = subprocess.CalledProcessError(1, "false", "stdout", "stderr")
         shell_adapter._log_error_output(error)
-        
+
         assert mock_log_error.call_count == 3
         mock_log_error.assert_any_call("Command failed with return code %s", 1)
         mock_log_error.assert_any_call("STDOUT: %s", "stdout")
         mock_log_error.assert_any_call("STDERR: %s", "stderr")
 
-    @patch("logging.error")
+    @patch("buvis.pybase.adapters.shell.shell.logger.error")
     def test_log_error_output_no_output(
-        self, mock_log_error: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_log_error: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test logging error output when stdout/stderr are None."""
         error = subprocess.CalledProcessError(1, "false", None, None)
         shell_adapter._log_error_output(error)
-        
+
         # Should only log the return code
         mock_log_error.assert_called_once_with("Command failed with return code %s", 1)
 
@@ -462,7 +519,9 @@ class TestShellAdapterIntegration:
 
     @patch("subprocess.run")
     def test_full_command_processing(
-        self, mock_run: Mock, shell_adapter: ShellAdapter
+        self,
+        mock_run: Mock,
+        shell_adapter: ShellAdapter,
     ) -> None:
         """Test complete command processing with aliases and env vars."""
         mock_result = Mock()
@@ -473,13 +532,13 @@ class TestShellAdapterIntegration:
 
         # Set up alias and environment variable
         shell_adapter.alias("test_cmd", "echo $TEST_VAR")
-        
+
         with patch.dict(os.environ, {"TEST_VAR": "hello"}):
             stderr, stdout = shell_adapter.exe("test_cmd", None)
 
         assert stdout == "processed output"
         assert stderr == ""
-        
+
         # Verify the command was properly expanded
         call_args = mock_run.call_args
         assert call_args[0][0] == "echo hello"
@@ -488,7 +547,7 @@ class TestShellAdapterIntegration:
         """Test that only the first matching alias is expanded."""
         shell_adapter.alias("a", "b")
         shell_adapter.alias("b", "c")
-        
+
         # Should only expand 'a' to 'b', not chain to 'c'
         result = shell_adapter._expand_alias("a")
         assert result == "b"

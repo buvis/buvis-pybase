@@ -1,9 +1,9 @@
 from typing import Any
 
 import pytest
-from buvis.pybase.adapters.console.console import ConsoleAdapter, console
-from rich.console import Console
 from rich.status import Status
+
+from buvis.pybase.adapters.console.console import ConsoleAdapter, console
 
 
 @pytest.fixture

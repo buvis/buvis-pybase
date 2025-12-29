@@ -28,8 +28,8 @@ class UvToolManager:
         console.status(f"Installing {pkg_name} as uv tool...")
 
         try:
-            subprocess.run(
-                ["uv", "tool", "install", "--force", "--upgrade", str(project_path)],
+            subprocess.run(  # noqa: S603 - uv is trusted
+                ["uv", "tool", "install", "--force", "--upgrade", str(project_path)],  # noqa: S607
                 check=True,
                 capture_output=True,
             )
