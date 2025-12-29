@@ -6,6 +6,8 @@
     ":automergePatch"
   ],
   "rangeStrategy": "auto",
+  "automergeType": "pr",
+  "automergeStrategy": "rebase-merge",
   "packageRules": [
     {
       "description": "uv: update lockfile for in-range updates",
