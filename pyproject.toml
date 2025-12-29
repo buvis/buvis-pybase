@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "buvis-pybase"
-version = "0.6.0.dev0"
+version = "0.6.0.dev1"
 description = "Foundation of BUVIS python projects"
 authors = [{ name = "Tomáš Bouška", email = "tomas@buvis.net" }]
 license = "MIT"
@@ -41,7 +41,7 @@ url = "https://test.pypi.org/simple/"
 explicit = true
 
 [tool.bumpversion]
-current_version = "0.6.0.dev0"
+current_version = "0.6.0.dev1"
 parse = """(?x)
     (?P<major>0|[1-9]\\d*)\\.
     (?P<minor>0|[1-9]\\d*)\\.
