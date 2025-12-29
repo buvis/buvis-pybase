@@ -40,13 +40,14 @@ name = "test-pypi"
 url = "https://test.pypi.org/simple/"
 explicit = true
 
-[[tool.bumpversion.files]]
-filename = "uv.lock"
-search = """name = "buvis-pybase"
-version = "{current_version}\""""
-replace = """name = "buvis-pybase"
-version = "{new_version}\""""
-
+[tool.bumpversion]
+current_version = "0.5.7"
+parse = """(?x)
+    (?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:(?P<pre_l>\\.dev|rc)(?P<pre_n>0|[1-9]\\d*))?
+"""
 serialize = ["{major}.{minor}.{patch}{pre_l}{pre_n}", "{major}.{minor}.{patch}"]
 commit = true
 tag = true
@@ -66,8 +67,10 @@ replace = 'version = "{new_version}"'
 
 [[tool.bumpversion.files]]
 filename = "uv.lock"
-search = 'name = "buvis-pybase"\nversion = "{current_version}"'
-replace = 'name = "buvis-pybase"\nversion = "{new_version}"'
+search = """name = "buvis-pybase"
+version = "{current_version}\""""
+replace = """name = "buvis-pybase"
+version = "{new_version}\""""
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
