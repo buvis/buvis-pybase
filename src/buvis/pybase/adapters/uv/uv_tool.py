@@ -12,6 +12,13 @@ class UvToolManager:
         """Install all projects in src/ as uv tools."""
         UvAdapter.ensure_uv()
 
+        # Clean cache to avoid stale dependency issues
+        subprocess.run(  # noqa: S603, S607
+            ["uv", "cache", "clean", "--force"],
+            check=False,
+            capture_output=True,
+        )
+
         if scripts_root is None:
             scripts_root = Path.cwd()
 
