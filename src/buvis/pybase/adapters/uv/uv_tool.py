@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -60,8 +61,7 @@ class UvToolManager:
         scripts_root = script.parent.parent
         project_dir = scripts_root / "src" / pkg_name
 
-        cwd = Path.cwd().resolve()
-        in_dev_mode = cwd == scripts_root or scripts_root in cwd.parents
+        in_dev_mode = os.environ.get("BUVIS_DEV_MODE") == "1"
 
         if in_dev_mode:
             venv_bin = project_dir / ".venv" / "bin" / tool_cmd
