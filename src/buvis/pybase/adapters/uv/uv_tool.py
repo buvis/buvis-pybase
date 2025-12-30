@@ -12,13 +12,6 @@ class UvToolManager:
         """Install all projects in src/ as uv tools."""
         UvAdapter.ensure_uv()
 
-        # Clean cache to avoid stale dependency issues
-        subprocess.run(  # noqa: S603, S607
-            ["uv", "cache", "clean", "--force"],
-            check=False,
-            capture_output=True,
-        )
-
         if scripts_root is None:
             scripts_root = Path.cwd()
 
@@ -35,15 +28,23 @@ class UvToolManager:
         pkg_name = project_path.name
         console.status(f"Installing {pkg_name} as uv tool...")
 
+        cmd = ["uv", "tool", "install", "--force", "--upgrade", str(project_path)]
+
         try:
-            subprocess.run(  # noqa: S603 - uv is trusted
-                ["uv", "tool", "install", "--force", "--upgrade", str(project_path)],  # noqa: S607
-                check=True,
+            subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603, S607
+            console.success(f"Installed {pkg_name}")
+        except subprocess.CalledProcessError:
+            # Clean only this tool's cache and retry
+            subprocess.run(  # noqa: S603, S607
+                ["uv", "cache", "clean", pkg_name],
+                check=False,
                 capture_output=True,
             )
-            console.success(f"Installed {pkg_name}")
-        except subprocess.CalledProcessError as e:
-            console.failure(f"Failed to install {pkg_name}: {e}")
+            try:
+                subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603, S607
+                console.success(f"Installed {pkg_name} (after cache clean)")
+            except subprocess.CalledProcessError as e:
+                console.failure(f"Failed to install {pkg_name}: {e}")
 
     @classmethod
     def run(cls, script_path: str, args: list[str] | None = None) -> None:
