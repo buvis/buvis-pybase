@@ -1,4 +1,3 @@
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -40,28 +39,51 @@ class UvToolManager:
             console.failure(f"Failed to install {pkg_name}: {e}")
 
     @classmethod
-    def run(cls, script_path: str, args: list[str]) -> None:
-        """Run a tool via its installed uv tool command."""
+    def run(cls, script_path: str, args: list[str] | None = None) -> None:
+        """Run from local venv, project source, or installed tool."""
         UvAdapter.ensure_uv()
-        script_file = Path(script_path)
-        tool_cmd = script_file.stem
 
-        if shutil.which(tool_cmd):
-            result = subprocess.run(  # noqa: S603, S607 - tool command is trusted
-                [tool_cmd, *args],
-                check=False,
-            )
-            sys.exit(result.returncode)
+        if args is None:
+            args = sys.argv[1:]
 
-        # Tool not installed - try to install it first
+        script = Path(script_path).resolve()
+        tool_cmd = script.stem
         pkg_name = tool_cmd.replace("-", "_")
-        scripts_root = script_file.parent.parent
+        scripts_root = script.parent.parent
         project_dir = scripts_root / "src" / pkg_name
 
+        cwd = Path.cwd().resolve()
+        in_dev_mode = cwd == scripts_root or scripts_root in cwd.parents
+
+        if in_dev_mode:
+            venv_bin = project_dir / ".venv" / "bin" / tool_cmd
+
+            if venv_bin.exists():
+                result = subprocess.run([str(venv_bin), *args], check=False)  # noqa: S603
+                sys.exit(result.returncode)
+
+            if project_dir.exists() and (project_dir / "pyproject.toml").exists():
+                result = subprocess.run(  # noqa: S603, S607
+                    ["uv", "run", "--project", str(project_dir), "-m", pkg_name, *args],
+                    check=False,
+                )
+                sys.exit(result.returncode)
+
+            print(f"No venv or project found at {project_dir}", file=sys.stderr)
+            sys.exit(1)
+
+        result = subprocess.run(  # noqa: S603, S607
+            ["uv", "tool", "run", tool_cmd, *args],
+            check=False,
+        )
+        if result.returncode == 0:
+            sys.exit(0)
+
+        # Tool not found - try auto-install
         if project_dir.exists() and (project_dir / "pyproject.toml").exists():
             cls.install_tool(project_dir)
             result = subprocess.run(  # noqa: S603, S607
-                [tool_cmd, *args],
+                ["uv", "tool", "run", tool_cmd, *args],
                 check=False,
             )
             sys.exit(result.returncode)
