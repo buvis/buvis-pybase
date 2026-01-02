@@ -1742,7 +1742,7 @@
           "22",
           "23"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1804,7 +1804,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:57:45.646Z"
+        "updatedAt": "2026-01-02T18:58:53.960Z"
       },
       {
         "id": "25",
@@ -5514,7 +5514,7 @@
           "71",
           "74"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -5575,7 +5575,8 @@
             "testStrategy": "Test: nested field shows 'database.pool.min_size' in error. Test: multiple invalid fields results in multiple error lines listed together in exception message.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:59:06.894Z"
       },
       {
         "id": "76",
@@ -6679,9 +6680,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:57:45.648Z",
+      "lastModified": "2026-01-02T18:59:06.896Z",
       "taskCount": 90,
-      "completedCount": 40,
+      "completedCount": 41,
       "tags": [
         "master"
       ]

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, TypeVar
 
 import yaml
+from pydantic import ValidationError
 from pydantic_settings import BaseSettings
 
 from .exceptions import ConfigurationError
@@ -53,6 +54,23 @@ def _load_yaml_config(file_path: Path | None = None) -> dict[str, Any]:
         return {}
 
 
+def _format_validation_errors(error: ValidationError) -> str:
+    """Format Pydantic validation errors into user-friendly message.
+
+    Args:
+        error: Pydantic ValidationError to format.
+
+    Returns:
+        Formatted error message with field paths and descriptions.
+    """
+    lines = []
+    for err in error.errors():
+        field_path = ".".join(str(loc) for loc in err["loc"])
+        msg = err["msg"]
+        lines.append(f"  {field_path}: {msg}")
+    return "Configuration validation failed:\n" + "\n".join(lines)
+
+
 class ConfigResolver:
     """Resolve Pydantic settings classes using configuration discovery."""
 
@@ -94,6 +112,9 @@ class ConfigResolver:
         Returns:
             T: An instance of ``settings_class`` populated with resolved values.
 
+        Raises:
+            ConfigurationError: If validation fails for any configuration value.
+
         Note:
             Precedence order (highest to lowest):
             1. CLI overrides (explicit values passed in cli_overrides)
@@ -112,30 +133,35 @@ class ConfigResolver:
             yaml_config = _load_yaml_config(config_path)
             logger.debug("Loaded YAML config: %s", yaml_config)
 
-            # Create base settings with YAML + ENV (ENV overrides YAML via Pydantic)
-            # Note: Pydantic kwargs override env, so we create without YAML first
-            base_settings = settings_class()
+            try:
+                # Create base settings with YAML + ENV (ENV overrides YAML via Pydantic)
+                # Note: Pydantic kwargs override env, so we create without YAML first
+                base_settings = settings_class()
 
-            # Apply YAML for fields not set by env (check against defaults)
-            merged: dict[str, Any] = {}
-            for key, value in yaml_config.items():
-                if hasattr(base_settings, key):
-                    field_value = getattr(base_settings, key)
-                    default = settings_class.model_fields.get(key)
-                    if default and field_value == default.default:
-                        # Field has default value, apply YAML
-                        merged[key] = value
+                # Apply YAML for fields not set by env (check against defaults)
+                merged: dict[str, Any] = {}
+                for key, value in yaml_config.items():
+                    if hasattr(base_settings, key):
+                        field_value = getattr(base_settings, key)
+                        default = settings_class.model_fields.get(key)
+                        if default and field_value == default.default:
+                            # Field has default value, apply YAML
+                            merged[key] = value
 
-            # Apply CLI overrides (priority 1, highest)
-            if cli_overrides:
-                for key, value in cli_overrides.items():
-                    if value is not None:
-                        merged[key] = value
+                # Apply CLI overrides (priority 1, highest)
+                if cli_overrides:
+                    for key, value in cli_overrides.items():
+                        if value is not None:
+                            merged[key] = value
 
-            # Return settings with merged overrides
-            if merged:
-                return base_settings.model_copy(update=merged)
-            return base_settings
+                # Return settings with merged overrides (model_validate for validation)
+                if merged:
+                    return settings_class.model_validate(
+                        base_settings.model_dump() | merged
+                    )
+                return base_settings
+            except ValidationError as e:
+                raise ConfigurationError(_format_validation_errors(e)) from e
         finally:
             if original_config_dir is None:
                 os.environ.pop("BUVIS_CONFIG_DIR", None)

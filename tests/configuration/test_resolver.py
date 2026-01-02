@@ -254,3 +254,43 @@ class TestLoadYamlConfig:
         result = _load_yaml_config(config)
 
         assert result == {"explicit": True}
+
+
+class TestValidationErrorHandling:
+    """Tests for validation error handling in ConfigResolver."""
+
+    def test_invalid_log_level_raises_config_error(self, tmp_path: Path) -> None:
+        """Invalid log_level raises ConfigurationError with field path."""
+        config = tmp_path / "config.yaml"
+        config.write_text("log_level: INVALID\n")
+
+        resolver = ConfigResolver()
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            resolver.resolve(BuvisSettings, config_path=config)
+
+        assert "log_level" in str(exc_info.value)
+
+    def test_invalid_debug_type_raises_config_error(self, tmp_path: Path) -> None:
+        """Invalid debug type raises ConfigurationError."""
+        config = tmp_path / "config.yaml"
+        config.write_text("debug: not_a_bool\n")
+
+        resolver = ConfigResolver()
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            resolver.resolve(BuvisSettings, config_path=config)
+
+        assert "debug" in str(exc_info.value)
+
+    def test_error_message_is_user_friendly(self, tmp_path: Path) -> None:
+        """Error message contains 'Configuration validation failed'."""
+        config = tmp_path / "config.yaml"
+        config.write_text("log_level: INVALID\n")
+
+        resolver = ConfigResolver()
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            resolver.resolve(BuvisSettings, config_path=config)
+
+        assert "Configuration validation failed" in str(exc_info.value)
