@@ -2569,7 +2569,7 @@
         "dependencies": [
           "34"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2630,7 +2630,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:24:08.545Z"
+        "updatedAt": "2026-01-02T19:25:10.492Z"
       },
       {
         "id": "36",
@@ -2642,7 +2642,7 @@
         "dependencies": [
           "31"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2702,7 +2702,8 @@
             "testStrategy": "Run full test suite: `uv run pytest tests/configuration/ -v`. Verify pre-commit passes: `uv run pre-commit run --all-files`.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:25:37.499Z"
       },
       {
         "id": "37",
@@ -2790,7 +2791,7 @@
           "34",
           "36"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -2851,7 +2852,8 @@
             "testStrategy": "All 4 tests pass: test_unprefixed_debug_ignored, test_tool_without_buvis_prefix_ignored, test_buvis_debug_loads, test_buvis_payroll_batch_size_loads.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:25:44.929Z"
       },
       {
         "id": "39",
@@ -6698,9 +6700,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:24:08.547Z",
+      "lastModified": "2026-01-02T19:25:44.931Z",
       "taskCount": 90,
-      "completedCount": 59,
+      "completedCount": 61,
       "tags": [
         "master"
       ]
