@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 
@@ -8,9 +9,11 @@ DEFAULT_CONFIG_DIRECTORY = Path(
     os.getenv("BUVIS_CONFIG_DIR", Path.home() / ".config" / "buvis"),
 )
 
+_ENV_PATTERN = re.compile(r"\$\{([^}:]+)(?::-([^}]*))?\}")
+
 
 class ConfigurationLoader:
-    """Locate configuration files for BUVIS tools."""
+    """Load YAML configs with env var substitution. Provides static methods for loading configuration files with support for environment variable interpolation using ${VAR} or ${VAR:-default} syntax."""
 
     @staticmethod
     def find_config_files(tool_name: str | None = None) -> list[Path]:
