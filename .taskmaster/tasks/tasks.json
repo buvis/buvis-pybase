@@ -2218,7 +2218,7 @@
         "testStrategy": "Test: BuvisSettings loads BUVIS_DEBUG=true. Test: buvis_debug=true (lowercase) also works. Test: DEBUG=true (no prefix) is ignored.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2226,9 +2226,10 @@
             "description": "Add pydantic-settings package as a project dependency in pyproject.toml. This provides the BaseSettings and SettingsConfigDict classes needed for env var loading.",
             "dependencies": [],
             "details": "Add `pydantic-settings>=2.0.0,<3` to the dependencies list in pyproject.toml. Run `uv sync --all-groups` to install. Verify import works with `uv run python -c 'from pydantic_settings import BaseSettings'`.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv sync --all-groups` and verify `uv run python -c 'from pydantic_settings import BaseSettings, SettingsConfigDict'` succeeds without error.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:45:01.198Z"
           },
           {
             "id": 2,
@@ -2238,9 +2239,10 @@
               1
             ],
             "details": "Create file with: `from __future__ import annotations`, import BaseSettings/SettingsConfigDict from pydantic_settings, define BuvisSettings class with model_config = SettingsConfigDict(env_prefix='BUVIS_', case_sensitive=False, frozen=True, extra='forbid'). Include Google-style docstring explaining the naming convention.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify file exists and class can be imported: `uv run python -c 'from buvis.pybase.configuration.buvis_settings import BuvisSettings'`.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:47:18.800Z"
           },
           {
             "id": 3,
@@ -2250,9 +2252,10 @@
               2
             ],
             "details": "Import Literal from typing. Add fields: `debug: bool = False` and `log_level: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] = 'INFO'`. These map to BUVIS_DEBUG and BUVIS_LOG_LEVEL env vars. Add field descriptions in docstring.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test: BuvisSettings().debug == False. Test: BuvisSettings().log_level == 'INFO'. Test with env: BUVIS_DEBUG=true loads as True.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:47:18.843Z"
           },
           {
             "id": 4,
@@ -2262,9 +2265,10 @@
               2
             ],
             "details": "Edit src/buvis/pybase/configuration/__init__.py: add `from .buvis_settings import BuvisSettings` and append 'BuvisSettings' to __all__ list. Follow existing export pattern used for Configuration class.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify import works: `uv run python -c 'from buvis.pybase.configuration import BuvisSettings'`.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:47:18.885Z"
           },
           {
             "id": 5,
@@ -2274,11 +2278,13 @@
               3
             ],
             "details": "Create tests/configuration/ directory and test_buvis_settings.py. Tests: 1) TestBuvisSettingsDefaults - debug=False, log_level='INFO'. 2) TestBuvisSettingsEnvLoading - BUVIS_DEBUG=true loads correctly, buvis_debug=true (lowercase) works, DEBUG=true (no prefix) ignored. 3) TestBuvisSettingsImmutability - assignment raises ValidationError. 4) TestBuvisSettingsExtraForbid - unknown field raises error. Use @patch.dict(os.environ) for env var tests.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_buvis_settings.py -v`. All tests pass covering: defaults, env loading, case-insensitivity, immutability, extra forbid.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:47:18.934Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T17:47:18.934Z"
       },
       {
         "id": "32",
@@ -6571,9 +6577,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T17:43:43.612Z",
+      "lastModified": "2026-01-02T17:47:18.936Z",
       "taskCount": 90,
-      "completedCount": 3,
+      "completedCount": 4,
       "tags": [
         "master"
       ]
