@@ -5289,7 +5289,7 @@
         "dependencies": [
           "71"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5351,7 +5351,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:47:23.486Z"
+        "updatedAt": "2026-01-02T18:48:16.345Z"
       },
       {
         "id": "73",
@@ -5363,7 +5363,7 @@
         "dependencies": [
           "71"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -5423,7 +5423,8 @@
             "testStrategy": "Test passes when PermissionError raised and BUVIS_CONFIG_DIR equals '/original' after.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:48:26.155Z"
       },
       {
         "id": "74",
@@ -6672,9 +6673,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:47:23.488Z",
+      "lastModified": "2026-01-02T18:48:26.157Z",
       "taskCount": 90,
-      "completedCount": 33,
+      "completedCount": 34,
       "tags": [
         "master"
       ]

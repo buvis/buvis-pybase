@@ -59,13 +59,33 @@ class TestConfigResolverResolve:
         assert settings.log_level == "DEBUG"
 
     def test_resolve_sets_config_dir_env(self, monkeypatch) -> None:
+        """config_dir is set during resolve but restored afterward."""
         monkeypatch.delenv("BUVIS_CONFIG_DIR", raising=False)
 
         resolver = ConfigResolver()
         config_dir = "/tmp/buvis"
         resolver.resolve(BuvisSettings, config_dir=config_dir)
 
-        assert os.environ["BUVIS_CONFIG_DIR"] == config_dir
+        # Env var should be removed after resolve (wasn't set before)
+        assert "BUVIS_CONFIG_DIR" not in os.environ
+
+    def test_resolve_restores_original_config_dir(self, monkeypatch) -> None:
+        """config_dir restores original env var value after resolve."""
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", "/original/path")
+
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings, config_dir="/tmp/override")
+
+        assert os.environ["BUVIS_CONFIG_DIR"] == "/original/path"
+
+    def test_resolve_without_config_dir_leaves_env_unchanged(self, monkeypatch) -> None:
+        """resolve() without config_dir doesn't modify env var."""
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", "/existing")
+
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings)
+
+        assert os.environ["BUVIS_CONFIG_DIR"] == "/existing"
 
 
 class TestConfigResolverPrecedence:
