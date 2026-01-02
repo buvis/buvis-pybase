@@ -1593,7 +1593,7 @@
         "dependencies": [
           "21"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1655,7 +1655,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:17:44.293Z"
+        "updatedAt": "2026-01-02T18:20:59.614Z"
       },
       {
         "id": "23",
@@ -2333,7 +2333,7 @@
         "dependencies": [
           "31"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -2393,7 +2393,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_buvis_settings.py -v -k TestCreateToolSettingsClass`. All 5 tests pass.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:21:11.776Z"
       },
       {
         "id": "33",
@@ -6656,9 +6657,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:17:44.295Z",
+      "lastModified": "2026-01-02T18:21:11.779Z",
       "taskCount": 90,
-      "completedCount": 17,
+      "completedCount": 18,
       "tags": [
         "master"
       ]
