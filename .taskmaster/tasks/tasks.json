@@ -5514,7 +5514,7 @@
           "71",
           "74"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5576,7 +5576,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:59:06.894Z"
+        "updatedAt": "2026-01-02T19:02:25.881Z"
       },
       {
         "id": "76",
@@ -5739,7 +5739,7 @@
           "74",
           "75"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -5799,7 +5799,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_config_resolver_integration.py::TestSecurityConstraints -v`. Verify no secrets in outputs.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:02:55.834Z"
       },
       {
         "id": "79",
@@ -6680,9 +6681,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:59:06.896Z",
+      "lastModified": "2026-01-02T19:02:55.836Z",
       "taskCount": 90,
-      "completedCount": 41,
+      "completedCount": 42,
       "tags": [
         "master"
       ]
