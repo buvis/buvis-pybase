@@ -10,3 +10,12 @@ class ConfigurationKeyNotFoundError(Exception):
 
 class ConfigurationError(Exception):
     """Configuration loading or validation failed."""
+
+
+class MissingEnvVarError(Exception):
+    """Required env var not set."""
+
+    def __init__(self, var_names: list[str]) -> None:
+        self.var_names = var_names
+        msg = f"Missing required env vars: {', '.join(var_names)}"
+        super().__init__(msg)
