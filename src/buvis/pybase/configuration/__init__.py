@@ -8,7 +8,7 @@ from .buvis_settings import (
     validate_env_var_name,
     validate_tool_name,
 )
-from .click_integration import buvis_options
+from .click_integration import buvis_options, get_settings
 from .resolver import ConfigResolver
 from .source import ConfigSource
 from .settings import GlobalSettings, ToolSettings
@@ -32,6 +32,7 @@ __all__ = [
     "ConfigResolver",
     "ConfigSource",
     "buvis_options",
+    "get_settings",
     "BuvisSettings",
     "assert_valid_env_var_name",
     "create_tool_settings_class",

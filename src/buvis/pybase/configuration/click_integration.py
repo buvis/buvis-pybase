@@ -10,9 +10,29 @@ import click
 
 from .buvis_settings import BuvisSettings
 from .resolver import ConfigResolver
+from .settings import GlobalSettings
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+
+def get_settings(ctx: click.Context) -> GlobalSettings:
+    """Get settings from Click context.
+
+    Args:
+        ctx: Click context with settings stored by buvis_options decorator.
+
+    Raises:
+        RuntimeError: If called before buvis_options decorator ran.
+
+    Returns:
+        The GlobalSettings instance from context.
+    """
+    if ctx.obj is None or "settings" not in ctx.obj:
+        msg = "get_settings() called but buvis_options decorator not applied"
+        raise RuntimeError(msg)
+    return ctx.obj["settings"]
+
 
 F = TypeVar("F", bound=Callable[..., Any])
 
