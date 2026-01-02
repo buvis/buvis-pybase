@@ -13,6 +13,7 @@ from pydantic_settings import BaseSettings
 
 from .exceptions import ConfigurationError
 from .loader import ConfigurationLoader
+from .source import ConfigSource
 
 
 logger = logging.getLogger(__name__)
@@ -90,6 +91,7 @@ class ConfigResolver:
                 raise ValueError(msg)
         self.tool_name = tool_name
         self.loader = ConfigurationLoader()
+        self._sources: dict[str, ConfigSource] = {}
         logger.debug("ConfigResolver initialized for tool %s", tool_name)
 
     def resolve(
@@ -154,12 +156,35 @@ class ConfigResolver:
                         if value is not None:
                             merged[key] = value
 
-                # Return settings with merged overrides (model_validate for validation)
+                # Build final settings
                 if merged:
-                    return settings_class.model_validate(
+                    final_settings = settings_class.model_validate(
                         base_settings.model_dump() | merged
                     )
-                return base_settings
+                else:
+                    final_settings = base_settings
+
+                # Track sources for each field
+                env_prefix = settings_class.model_config.get("env_prefix", "")
+                env_keys = {
+                    k.removeprefix(env_prefix).lower()
+                    for k in os.environ
+                    if k.startswith(env_prefix)
+                }
+
+                self._sources.clear()
+                for field in settings_class.model_fields:
+                    if cli_overrides and cli_overrides.get(field) is not None:
+                        self._sources[field] = ConfigSource.CLI
+                    elif field in env_keys:
+                        self._sources[field] = ConfigSource.ENV
+                    elif field in yaml_config:
+                        self._sources[field] = ConfigSource.YAML
+                    else:
+                        self._sources[field] = ConfigSource.DEFAULT
+
+                self._log_sources()
+                return final_settings
             except ValidationError as e:
                 raise ConfigurationError(_format_validation_errors(e)) from e
         finally:
@@ -167,3 +192,13 @@ class ConfigResolver:
                 os.environ.pop("BUVIS_CONFIG_DIR", None)
             else:
                 os.environ["BUVIS_CONFIG_DIR"] = original_config_dir
+
+    def _log_sources(self) -> None:
+        """Log source of each config field at DEBUG level (no values)."""
+        for field, source in self._sources.items():
+            logger.debug("Config '%s' from %s", field, source.value)
+
+    @property
+    def sources(self) -> dict[str, ConfigSource]:
+        """Get copy of source tracking dict."""
+        return self._sources.copy()

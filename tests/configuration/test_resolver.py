@@ -317,3 +317,150 @@ class TestSecurityConstraints:
         # Error raised at resolve(), not when accessing log_level
         with pytest.raises(ConfigurationError):
             resolver.resolve(BuvisSettings, config_path=config)
+
+
+class TestConfigSource:
+    """Tests for ConfigSource enum."""
+
+    def test_enum_values(self) -> None:
+        """ConfigSource has correct string values."""
+        from buvis.pybase.configuration import ConfigSource
+
+        assert ConfigSource.DEFAULT.value == "default"
+        assert ConfigSource.YAML.value == "yaml"
+        assert ConfigSource.ENV.value == "env"
+        assert ConfigSource.CLI.value == "cli"
+
+    def test_enum_membership(self) -> None:
+        """ConfigSource has exactly 4 members."""
+        from buvis.pybase.configuration import ConfigSource
+
+        assert len(ConfigSource) == 4
+
+
+class TestConfigResolverSourceTracking:
+    """Tests for source tracking in ConfigResolver."""
+
+    def test_sources_populated_after_resolve(self) -> None:
+        """sources dict populated for each field after resolve()."""
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings)
+
+        assert "debug" in resolver.sources
+        assert "log_level" in resolver.sources
+
+    def test_cli_source_tracked(self) -> None:
+        """CLI overrides tracked as ConfigSource.CLI."""
+        from buvis.pybase.configuration import ConfigSource
+
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings, cli_overrides={"debug": True})
+
+        assert resolver.sources["debug"] == ConfigSource.CLI
+
+    def test_env_source_tracked(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """ENV values tracked as ConfigSource.ENV."""
+        from buvis.pybase.configuration import ConfigSource
+
+        monkeypatch.setenv("BUVIS_DEBUG", "true")
+
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings)
+
+        assert resolver.sources["debug"] == ConfigSource.ENV
+
+    def test_yaml_source_tracked(self, tmp_path: Path) -> None:
+        """YAML values tracked as ConfigSource.YAML."""
+        from buvis.pybase.configuration import ConfigSource
+
+        config = tmp_path / "config.yaml"
+        config.write_text("debug: true\n")
+
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings, config_path=config)
+
+        assert resolver.sources["debug"] == ConfigSource.YAML
+
+    def test_default_source_tracked(self) -> None:
+        """Default values tracked as ConfigSource.DEFAULT."""
+        from buvis.pybase.configuration import ConfigSource
+
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings)
+
+        assert resolver.sources["debug"] == ConfigSource.DEFAULT
+        assert resolver.sources["log_level"] == ConfigSource.DEFAULT
+
+    def test_mixed_sources(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Different fields can have different sources."""
+        from buvis.pybase.configuration import ConfigSource
+
+        config = tmp_path / "config.yaml"
+        config.write_text("log_level: WARNING\n")
+        monkeypatch.setenv("BUVIS_DEBUG", "true")
+
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings, config_path=config)
+
+        # debug from ENV, log_level from YAML
+        assert resolver.sources["debug"] == ConfigSource.ENV
+        assert resolver.sources["log_level"] == ConfigSource.YAML
+
+
+class TestConfigResolverLogging:
+    """Tests for DEBUG logging in ConfigResolver."""
+
+    def test_log_sources_called(self, caplog: pytest.LogCaptureFixture) -> None:
+        """DEBUG log entries created for each field."""
+        import logging
+
+        resolver = ConfigResolver()
+
+        with caplog.at_level(logging.DEBUG):
+            resolver.resolve(BuvisSettings)
+
+        # Check field names logged
+        assert "debug" in caplog.text
+        assert "log_level" in caplog.text
+
+    def test_source_tracking_logs_no_values(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Source tracking log messages contain field names but no values."""
+        import logging
+
+        resolver = ConfigResolver()
+
+        with caplog.at_level(logging.DEBUG):
+            resolver.resolve(BuvisSettings, cli_overrides={"debug": True})
+
+        # Source tracking logs field name and source, not value
+        source_logs = [r for r in caplog.records if "from cli" in r.message]
+        assert len(source_logs) == 1
+        assert "debug" in source_logs[0].message
+        assert "True" not in source_logs[0].message
+
+
+class TestConfigResolverSourcesProperty:
+    """Tests for sources property."""
+
+    def test_sources_returns_copy(self) -> None:
+        """sources property returns defensive copy."""
+        from buvis.pybase.configuration import ConfigSource
+
+        resolver = ConfigResolver()
+        resolver.resolve(BuvisSettings)
+
+        sources_copy = resolver.sources
+        sources_copy["debug"] = ConfigSource.CLI  # Modify copy
+
+        # Original unchanged
+        assert resolver.sources["debug"] == ConfigSource.DEFAULT
+
+    def test_sources_empty_before_resolve(self) -> None:
+        """sources is empty before resolve() called."""
+        resolver = ConfigResolver()
+
+        assert resolver.sources == {}

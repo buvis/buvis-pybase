@@ -10,6 +10,7 @@ from .buvis_settings import (
 )
 from .click_integration import buvis_options
 from .resolver import ConfigResolver
+from .source import ConfigSource
 from .settings import GlobalSettings, ToolSettings
 from .validators import (
     MAX_JSON_ENV_SIZE,
@@ -28,6 +29,7 @@ __all__ = [
     "MissingEnvVarError",
     "ConfigurationLoader",
     "ConfigResolver",
+    "ConfigSource",
     "buvis_options",
     "BuvisSettings",
     "assert_valid_env_var_name",
