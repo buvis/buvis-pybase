@@ -16,12 +16,16 @@ from buvis.pybase.filesystem.dir_tree.remove_empty_directories import (
 from buvis.pybase.filesystem.dir_tree.rename_equivalent_extensions import (
     rename_equivalent_extensions,
 )
+from buvis.pybase.filesystem.dir_tree.safe_rglob import is_safe_path, safe_rglob
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
 class DirTree:
+    _is_safe_path = staticmethod(is_safe_path)
+    _safe_rglob = staticmethod(safe_rglob)
+
     @staticmethod
     def count_files(directory: Path) -> int:
         """
@@ -32,7 +36,7 @@ class DirTree:
         :return: Number of files in the directory and its subdirectories
         :rtype: int
         """
-        return sum(1 for _ in directory.rglob("*") if _.is_file())
+        return sum(1 for p in safe_rglob(directory) if p.is_file())
 
     @staticmethod
     def get_max_depth(directory: Path) -> int:
@@ -44,7 +48,10 @@ class DirTree:
         :return: Maximum depth of the directory tree
         :rtype: int
         """
-        return max(len(p.relative_to(directory).parts) for p in directory.rglob("*"))
+        paths = list(safe_rglob(directory))
+        if not paths:
+            return 0
+        return max(len(p.relative_to(directory).parts) for p in paths)
 
     @staticmethod
     def delete_by_extension(directory: Path, extensions_to_delete: list[str]) -> None:

@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from buvis.pybase.filesystem.dir_tree.safe_rglob import safe_rglob
+
 
 def delete_by_extension(directory: Path, extensions_to_delete: list[str]) -> None:
     """
@@ -15,7 +17,7 @@ def delete_by_extension(directory: Path, extensions_to_delete: list[str]) -> Non
     :return: None. The function modifies the <directory> in place.
     """
     directory = Path(directory)
-    for file_path in directory.rglob("*"):
+    for file_path in safe_rglob(directory):
         if file_path.parent.stem == ".stfolder":  ## keep content of sensitive folders
             continue
         if file_path.is_file() and file_path.suffix.lower() in extensions_to_delete:

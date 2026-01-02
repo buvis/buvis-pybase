@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from buvis.pybase.filesystem.dir_tree.safe_rglob import safe_rglob
+
 
 def rename_equivalent_extensions(
     directory: Path,
@@ -24,7 +26,7 @@ def rename_equivalent_extensions(
         for ext in group[1:]:
             extension_map["." + ext.lower()] = target
 
-    for file_path in directory.rglob("*"):
+    for file_path in safe_rglob(directory):
         if file_path.is_file():
             current_ext = file_path.suffix.lower()
             if current_ext in extension_map:
