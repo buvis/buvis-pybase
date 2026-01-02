@@ -156,6 +156,21 @@ class TestHCMSettings:
         assert settings.headers["Content-Type"] == "application/json"
         assert len(settings.headers) == 3
 
+    def test_empty_dict_from_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """PRD test: '{}' -> empty dict."""
+        monkeypatch.setenv("BUVIS_HCM_HEADERS", "{}")
+
+        settings = HCMSettings()
+
+        assert settings.headers == {}
+
+    def test_wrong_value_type_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """dict[str, str] rejects int value."""
+        monkeypatch.setenv("BUVIS_HCM_HEADERS", '{"key":123}')
+
+        with pytest.raises(ValidationError):
+            HCMSettings()
+
     def test_immutable(self) -> None:
         """HCMSettings is frozen."""
         settings = HCMSettings()
