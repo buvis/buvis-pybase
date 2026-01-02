@@ -2695,7 +2695,7 @@
         "dependencies": [
           "34"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2758,7 +2758,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:25:00.513Z"
+        "updatedAt": "2026-01-02T18:25:44.462Z"
       },
       {
         "id": "38",
@@ -3067,7 +3067,7 @@
         "dependencies": [
           "41"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -3127,7 +3127,8 @@
             "testStrategy": "Run pytest on test_nested_env_settings.py; all three nested __ tests pass.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:25:58.265Z"
       },
       {
         "id": "43",
@@ -6659,9 +6660,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:25:00.516Z",
+      "lastModified": "2026-01-02T18:25:58.267Z",
       "taskCount": 90,
-      "completedCount": 20,
+      "completedCount": 21,
       "tags": [
         "master"
       ]
