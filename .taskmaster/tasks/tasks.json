@@ -1453,7 +1453,7 @@
         "dependencies": [
           "16"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -1516,7 +1516,8 @@
             "testStrategy": "Run pytest tests/configuration/ - all tests should pass. Verify coverage of _determine_config_path is 100%.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:54:35.088Z"
       },
       {
         "id": "21",
@@ -2048,7 +2049,7 @@
           "25",
           "26"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2109,7 +2110,8 @@
             "testStrategy": "All import statements succeed. pytest passes. pre-commit (ruff check/format) passes.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:53:03.588Z"
       },
       {
         "id": "29",
@@ -2866,7 +2868,7 @@
           "33",
           "35"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2926,7 +2928,8 @@
             "testStrategy": "Verify all imports work: `from buvis.pybase.configuration import BuvisSettings, validate_env_var_name, assert_valid_env_var_name, Configuration, cfg, ConfigurationKeyNotFoundError`",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:51:03.883Z"
       },
       {
         "id": "40",
@@ -2940,7 +2943,7 @@
           "38",
           "39"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3000,7 +3003,8 @@
             "testStrategy": "uv run pytest tests/configuration/test_buvis_settings.py -v passes all parametrized cases.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:51:23.950Z"
       },
       {
         "id": "41",
@@ -4352,7 +4356,7 @@
           "57",
           "58"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -4413,7 +4417,8 @@
             "testStrategy": "Pre-commit and pytest must pass with zero errors; manual import test must succeed",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:53:22.977Z"
       },
       {
         "id": "60",
@@ -4430,7 +4435,7 @@
           "58",
           "59"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -4490,7 +4495,8 @@
             "testStrategy": "All 8 PRD items verified. Full pytest run on tests/configuration/ passes with 0 failures.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:54:26.794Z"
       },
       {
         "id": "61",
@@ -4950,7 +4956,7 @@
           "64",
           "65"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5011,7 +5017,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_settings_singleton.py -v` - all 4 tests pass. Verify legacy imports still work.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:52:01.946Z"
       },
       {
         "id": "68",
@@ -5842,7 +5849,7 @@
           "74",
           "78"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5902,7 +5909,8 @@
             "testStrategy": "Run `python -c \"from buvis.pybase.configuration import *\"` to verify all exports. Run pytest on new test file. Check __all__ matches actual exports.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:52:22.695Z"
       },
       {
         "id": "80",
@@ -6281,7 +6289,7 @@
         "dependencies": [
           "84"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6342,7 +6350,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:47:06.799Z"
+        "updatedAt": "2026-01-02T19:48:52.001Z"
       },
       {
         "id": "86",
@@ -6354,7 +6362,7 @@
         "dependencies": [
           "85"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6414,7 +6422,8 @@
             "testStrategy": "All 3 verification commands pass without errors. Add test in tests/configuration/test_exports.py if not covered.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:49:17.207Z"
       },
       {
         "id": "87",
@@ -6426,7 +6435,7 @@
         "dependencies": [
           "82"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6486,7 +6495,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_settings.py -k missing -v`",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:50:16.446Z"
       },
       {
         "id": "88",
@@ -6498,7 +6508,7 @@
         "dependencies": [
           "83"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6558,7 +6568,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_resolver.py::TestConfigResolverErrors -v`",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:50:44.295Z"
       },
       {
         "id": "89",
@@ -6571,7 +6582,7 @@
           "84",
           "85"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6631,7 +6642,8 @@
             "testStrategy": "Test passes when all four option names appear in --help output",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:52:43.571Z"
       },
       {
         "id": "90",
@@ -6711,9 +6723,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:47:06.801Z",
+      "lastModified": "2026-01-02T19:54:35.090Z",
       "taskCount": 90,
-      "completedCount": 72,
+      "completedCount": 84,
       "tags": [
         "master"
       ]

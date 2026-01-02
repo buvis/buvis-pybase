@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import os
 import platform
+import warnings
 from pathlib import Path
 
 import yaml
 
 from buvis.pybase.configuration.exceptions import ConfigurationKeyNotFoundError
+from buvis.pybase.configuration.loader import ConfigurationLoader
 
 
 class Configuration:
@@ -48,23 +50,26 @@ class Configuration:
         self: Configuration,
         file_path: Path | None,
     ) -> Path | None:
-        """
-        Determines the absolute path to the configuration file.
+        """Determine the configuration file path.
 
-        This method attempts to resolve the configuration file path based on the provided `file_path`.
-        If `file_path` is provided and exists, it returns the absolute path. If the file does not exist,
-        it raises a FileNotFoundError.
+        Resolution order:
+            1. Explicit file_path (raises FileNotFoundError if missing)
+            2. Auto-discovery via ConfigurationLoader.find_config_files()
+            3. BUVIS_CONFIG_FILE env var (deprecated, emits warning)
+            4. ~/.config/buvis/config.yaml default
 
-        If no `file_path` is provided, the method tries to find the path from the 'BUVIS_CONFIG_FILE'
-        environment variable. If the environment variable is not set, it defaults to '~/.config/buvis/config.yaml'.
-        If the resolved path from the environment or default exists, it returns the absolute path.
-        If it does not exist, it returns None.
+        Args:
+            file_path: Optional explicit path to config file.
 
-        :param file_path: Optional path provided by the user.
-        :type file_path: Path | None
-        :return: The absolute path to the configuration file or None if the default path does not exist.
-        :rtype: Path | None
-        :raises FileNotFoundError: If the provided `file_path` does not exist.
+        Returns:
+            Absolute path to config file, or None if no config found.
+
+        Raises:
+            FileNotFoundError: If explicit file_path doesn't exist.
+
+        .. deprecated::
+            BUVIS_CONFIG_FILE env var is deprecated. Place config in standard
+            locations discovered by ConfigurationLoader.
         """
         if file_path is not None:
             resolved_file_path = file_path.resolve()
@@ -73,10 +78,23 @@ class Configuration:
             message = f"The configuration file at {file_path} was not found."
             raise FileNotFoundError(message)
 
-        # Try getting the path from environment or default to home directory
-        alternative_file_path = Path(
-            os.getenv("BUVIS_CONFIG_FILE", Path.home() / ".config/buvis/config.yaml"),
-        )
+        # Try auto-discovery first
+        discovered = ConfigurationLoader.find_config_files()
+        if discovered:
+            return discovered[0]  # Highest priority file
+
+        # Fallback to BUVIS_CONFIG_FILE (deprecated) or default
+        env_config = os.getenv("BUVIS_CONFIG_FILE")
+        if env_config is not None:
+            warnings.warn(
+                "BUVIS_CONFIG_FILE is deprecated. Place config in standard locations.",
+                DeprecationWarning,
+                stacklevel=3,
+            )
+            alternative_file_path = Path(env_config)
+        else:
+            alternative_file_path = Path.home() / ".config/buvis/config.yaml"
+
         if alternative_file_path.exists():
             return alternative_file_path.absolute()
 
