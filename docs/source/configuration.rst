@@ -166,26 +166,44 @@ For non-Click applications or custom resolution:
     # Check where each value came from
     print(resolver.sources)  # {"debug": ConfigSource.CLI, "log_level": ConfigSource.DEFAULT}
 
-Legacy Configuration Class
---------------------------
+Configuration Class
+-------------------
 
-The singleton ``cfg`` object provides backward-compatible dict-style access:
+The ``Configuration`` class provides dict-style access for simple scripts:
 
 .. code-block:: python
 
-    from buvis.pybase.configuration import cfg
+    from buvis.pybase.configuration import Configuration
+
+    config = Configuration()  # Auto-discovers config file
 
     # Get values
-    hostname = cfg.get_configuration_item("hostname")
-    timeout = cfg.get_configuration_item_or_default("timeout", 30)
+    hostname = config.get_configuration_item("hostname")
+    timeout = config.get_configuration_item_or_default("timeout", 30)
 
     # Set values at runtime
-    cfg.set_configuration_item("custom_key", "value")
+    config.set_configuration_item("custom_key", "value")
 
 .. note::
 
-    The legacy ``Configuration`` class doesn't support precedence handling.
-    Use ``ConfigResolver`` with ``get_settings()`` for new code.
+    The ``Configuration`` class doesn't support precedence handling.
+    Use ``ConfigResolver`` with ``get_settings()`` for CLI tools.
+
+Migration from cfg Singleton
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If migrating from the legacy ``cfg`` singleton:
+
+.. code-block:: python
+
+    # Old
+    from buvis.pybase.configuration import cfg
+    value = cfg.get_configuration_item("key")
+
+    # New
+    from buvis.pybase.configuration import Configuration
+    config = Configuration()
+    value = config.get_configuration_item("key")
 
 Security Considerations
 -----------------------

@@ -18,13 +18,14 @@ pip install buvis-pybase
 ## Usage
 
 ```python
-from buvis.pybase.configuration import cfg
+from buvis.pybase.configuration import Configuration
 from buvis.pybase.adapters import ShellAdapter, ConsoleAdapter
 from buvis.pybase.filesystem import DirTree
 from buvis.pybase.formatting import StringOperator
 
 # Config (reads ~/.config/buvis/config.yaml)
-value = cfg.get_configuration_item("some.key", default="fallback")
+config = Configuration()
+value = config.get_configuration_item("some.key", default="fallback")
 
 # Shell commands
 shell = ShellAdapter()
