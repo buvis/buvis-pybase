@@ -65,3 +65,28 @@ class TestImmutabilityErrorMessages:
             settings.log_level = "ERROR"
 
         assert "log_level" in str(exc_info.value)
+
+
+class TestImmutabilityAfterResolve:
+    """Tests for immutability of settings returned from ConfigResolver."""
+
+    def test_resolved_settings_immutable(self) -> None:
+        """Settings from resolve() cannot be mutated."""
+        from buvis.pybase.configuration.resolver import ConfigResolver
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(GlobalSettings)
+
+        with pytest.raises(ValidationError):
+            settings.debug = True
+
+    def test_resolved_settings_all_fields_immutable(self) -> None:
+        """All fields of resolved settings are immutable."""
+        from buvis.pybase.configuration.resolver import ConfigResolver
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(GlobalSettings)
+
+        for field in GlobalSettings.model_fields:
+            with pytest.raises(ValidationError):
+                setattr(settings, field, "invalid")

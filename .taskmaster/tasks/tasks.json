@@ -5615,7 +5615,7 @@
         "dependencies": [
           "75"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5678,7 +5678,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:41:14.660Z"
+        "updatedAt": "2026-01-02T19:44:26.011Z"
       },
       {
         "id": "77",
@@ -5690,7 +5690,7 @@
         "dependencies": [
           "71"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -5751,7 +5751,8 @@
             "testStrategy": "Integration test with ConfigResolver - mutations after resolve() raise ValidationError",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:44:39.377Z"
       },
       {
         "id": "78",
@@ -6709,9 +6710,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:41:14.662Z",
+      "lastModified": "2026-01-02T19:44:39.379Z",
       "taskCount": 90,
-      "completedCount": 70,
+      "completedCount": 71,
       "tags": [
         "master"
       ]
