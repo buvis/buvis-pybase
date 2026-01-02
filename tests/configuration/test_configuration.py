@@ -212,3 +212,61 @@ class TestBackwardCompatibility:
             cfg = Configuration(explicit)
 
         assert cfg.get_configuration_item("source") == "explicit"
+
+
+class TestEnvSubstitution:
+    """Tests for enable_env_substitution parameter."""
+
+    def test_disabled_by_default(self, tmp_path: Path) -> None:
+        """Env substitution is disabled by default (backward compat)."""
+        config = tmp_path / "config.yaml"
+        config.write_text("value: ${MY_VAR}\n")
+
+        cfg = Configuration(config)
+
+        # Should remain literal, not substituted
+        assert cfg.get_configuration_item("value") == "${MY_VAR}"
+
+    def test_enabled_substitutes_env_vars(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Env vars substituted when enabled."""
+        monkeypatch.setenv("MY_VAR", "substituted_value")
+        config = tmp_path / "config.yaml"
+        config.write_text("value: ${MY_VAR}\n")
+
+        cfg = Configuration(config, enable_env_substitution=True)
+
+        assert cfg.get_configuration_item("value") == "substituted_value"
+
+    def test_default_syntax_when_var_unset(self, tmp_path: Path) -> None:
+        """${VAR:-default} uses default when var unset."""
+        config = tmp_path / "config.yaml"
+        config.write_text("value: ${UNSET_VAR:-fallback}\n")
+
+        cfg = Configuration(config, enable_env_substitution=True)
+
+        assert cfg.get_configuration_item("value") == "fallback"
+
+    def test_hostname_preserved_after_load(self, tmp_path: Path) -> None:
+        """Hostname is set after loading config."""
+        import platform
+
+        config = tmp_path / "config.yaml"
+        config.write_text("key: value\n")
+
+        cfg = Configuration(config)
+
+        assert cfg.get_configuration_item("hostname") == platform.node()
+
+    def test_hostname_not_overwritten_by_config(self, tmp_path: Path) -> None:
+        """Config file hostname value doesn't override platform.node()."""
+        import platform
+
+        config = tmp_path / "config.yaml"
+        config.write_text("hostname: fake_host\nkey: value\n")
+
+        cfg = Configuration(config)
+
+        # Platform hostname should win (set after load)
+        assert cfg.get_configuration_item("hostname") == platform.node()

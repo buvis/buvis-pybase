@@ -20,22 +20,33 @@ class Configuration:
     environment variable. If the environment variable is not set, it defaults to `~/.config/buvis/config.yaml`.
     """
 
-    def __init__(self: Configuration, file_path: Path | None = None) -> None:
-        """
-        Initializes the Configuration with a specified YAML configuration file.
+    def __init__(
+        self: Configuration,
+        file_path: Path | None = None,
+        enable_env_substitution: bool = False,
+    ) -> None:
+        """Initialize Configuration with a YAML configuration file.
 
-        :param file_path: Optional path to the configuration file. Defaults to '~/.config/buvis/config.yaml'.
-        :type file_path: Path | None
-        :raises FileNotFoundError: If the configuration file does not exist.
+        Args:
+            file_path: Optional path to config file. If not provided, uses
+                auto-discovery or falls back to ~/.config/buvis/config.yaml.
+            enable_env_substitution: If True, enables ${VAR} and ${VAR:-default}
+                substitution in YAML files. Defaults to False for backward compat.
+
+        Raises:
+            FileNotFoundError: If explicit file_path doesn't exist.
         """
-        self._config_dict = {}
-        self._config_dict["hostname"] = platform.node()
+        self._enable_env_substitution = enable_env_substitution
+        self._config_dict: dict[str, object] = {}
 
         existing_file_path = self._determine_config_path(file_path)
 
         if existing_file_path is not None:
             self.path_config_file = existing_file_path
             self._load_configuration()
+
+        # Set hostname after load to preserve it
+        self._config_dict["hostname"] = platform.node()
 
     def copy(self: Configuration, key: str) -> Configuration:
         copied_configuration = Configuration(self.path_config_file)
@@ -101,11 +112,16 @@ class Configuration:
         return None
 
     def _load_configuration(self: Configuration) -> None:
+        """Load configuration from the YAML file.
+
+        Uses ConfigurationLoader when env substitution is enabled,
+        otherwise uses plain yaml.safe_load for backward compatibility.
         """
-        Loads the configuration from the YAML file.
-        """
-        with self.path_config_file.open("r") as file:
-            self._config_dict = yaml.safe_load(file) or {}
+        if self._enable_env_substitution:
+            self._config_dict = ConfigurationLoader.load_yaml(self.path_config_file)
+        else:
+            with self.path_config_file.open("r") as file:
+                self._config_dict = yaml.safe_load(file) or {}
 
     def set_configuration_item(self: Configuration, key: str, value: object) -> None:
         """
