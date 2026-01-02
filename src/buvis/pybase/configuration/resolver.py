@@ -47,9 +47,15 @@ class ConfigResolver:
 
         Args:
             tool_name: Optional identifier for a CLI tool whose configs should be
-                considered during discovery.
-        """
+                considered during discovery. Must be lowercase without hyphens.
 
+        Raises:
+            ValueError: If tool_name contains uppercase letters or hyphens.
+        """
+        if tool_name is not None:
+            if not tool_name.islower() or "-" in tool_name:
+                msg = "tool_name must be lowercase without hyphens"
+                raise ValueError(msg)
         self.tool_name = tool_name
         self.loader = ConfigurationLoader()
         logger.debug("ConfigResolver initialized for tool %s", tool_name)
