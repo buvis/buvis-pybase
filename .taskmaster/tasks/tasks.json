@@ -3067,7 +3067,7 @@
         "dependencies": [
           "41"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3128,7 +3128,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:25:58.265Z"
+        "updatedAt": "2026-01-02T18:26:44.049Z"
       },
       {
         "id": "43",
@@ -3140,7 +3140,7 @@
         "dependencies": [
           "41"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -3200,7 +3200,8 @@
             "testStrategy": "All tests in test_nested_settings.py pass. Exit code 0.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:27:07.345Z"
       },
       {
         "id": "44",
@@ -6660,9 +6661,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:25:58.267Z",
+      "lastModified": "2026-01-02T18:27:07.347Z",
       "taskCount": 90,
-      "completedCount": 21,
+      "completedCount": 22,
       "tags": [
         "master"
       ]
