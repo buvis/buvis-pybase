@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any, Iterator, get_args, get_origin
 
 from pydantic import BaseModel
 
 MAX_NESTING_DEPTH = 5
+MAX_JSON_ENV_SIZE = 64 * 1024
 
 
 def _iter_model_types(annotation: Any) -> Iterator[type[BaseModel]]:
@@ -72,4 +74,26 @@ def validate_nesting_depth(model_class: type[BaseModel]) -> None:
         raise ValueError(
             f"{model_class.__name__} exceeds max nesting depth "
             f"{MAX_NESTING_DEPTH} (found depth={depth})."
+        )
+
+
+def validate_json_env_size(env_var_name: str) -> None:
+    """Validate that an environment variable's JSON payload fits within limits.
+
+    Args:
+        env_var_name: The name of the environment variable containing JSON data.
+
+    Raises:
+        ValueError: If the variable contains more than ``MAX_JSON_ENV_SIZE`` bytes.
+    """
+
+    env_value = os.getenv(env_var_name)
+    if env_value is None:
+        return
+
+    byte_length = len(env_value.encode("utf-8"))
+    if byte_length > MAX_JSON_ENV_SIZE:
+        raise ValueError(
+            f"{env_var_name} exceeds max JSON size {MAX_JSON_ENV_SIZE} bytes "
+            f"(found {byte_length} bytes)."
         )

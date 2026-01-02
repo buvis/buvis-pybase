@@ -4054,7 +4054,7 @@
         "testStrategy": "Create 65KB string, verify validate_json_env_size raises ValueError. 64KB string passes.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -4062,9 +4062,10 @@
             "description": "Create the validators.py file in src/buvis/pybase/configuration/ with the size limit constant and necessary imports.",
             "dependencies": [],
             "details": "Create `src/buvis/pybase/configuration/validators.py` with:\n```python\nfrom __future__ import annotations\n\nimport os\n\nMAX_JSON_ENV_SIZE = 64 * 1024  # 64KB\n```\nFollow existing codebase patterns: use `from __future__ import annotations` at top.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify constant value equals 65536 bytes (64 * 1024).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:00:24.213Z"
           },
           {
             "id": 2,
@@ -4072,9 +4073,10 @@
             "description": "Add a custom exception class for JSON environment variable size validation failures.",
             "dependencies": [],
             "details": "Add to `src/buvis/pybase/configuration/exceptions.py`:\n```python\nclass JsonEnvSizeError(ValueError):\n    \"\"\"JSON environment variable exceeds size limit.\"\"\"\n\n    def __init__(self, env_var_name: str, size: int, max_size: int) -> None:\n        msg = f\"{env_var_name} ({size} bytes) exceeds max size of {max_size} bytes\"\n        super().__init__(msg)\n        self.env_var_name = env_var_name\n        self.size = size\n        self.max_size = max_size\n```\nProvides clear error message with details for debugging.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test exception instantiation and verify message format contains var name and sizes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:00:24.261Z"
           },
           {
             "id": 3,
@@ -4085,9 +4087,10 @@
               2
             ],
             "details": "Add to `validators.py`:\n```python\nfrom buvis.pybase.configuration.exceptions import JsonEnvSizeError\n\ndef validate_json_env_size(env_var_name: str) -> None:\n    \"\"\"Reject env vars with JSON values exceeding size limit.\n\n    Args:\n        env_var_name: Name of env var to check.\n\n    Raises:\n        JsonEnvSizeError: If value exceeds MAX_JSON_ENV_SIZE.\n    \"\"\"\n    value = os.environ.get(env_var_name, \"\")\n    size = len(value.encode(\"utf-8\"))\n    if size > MAX_JSON_ENV_SIZE:\n        raise JsonEnvSizeError(env_var_name, size, MAX_JSON_ENV_SIZE)\n```\nUses UTF-8 encoding for accurate byte count.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test with 64KB string (passes) and 65KB string (raises JsonEnvSizeError). Test empty/missing env var.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:00:24.303Z"
           },
           {
             "id": 4,
@@ -4097,9 +4100,10 @@
               3
             ],
             "details": "Create `tests/configuration/test_validators.py`:\n```python\nimport os\nfrom unittest.mock import patch\n\nimport pytest\n\nfrom buvis.pybase.configuration.validators import (\n    MAX_JSON_ENV_SIZE,\n    validate_json_env_size,\n)\nfrom buvis.pybase.configuration.exceptions import JsonEnvSizeError\n\n\nclass TestMaxJsonEnvSizeConstant:\n    def test_value_is_64kb(self) -> None:\n        assert MAX_JSON_ENV_SIZE == 64 * 1024\n\n\nclass TestValidateJsonEnvSize:\n    def test_passes_for_empty_env_var(self) -> None:\n        with patch.dict(os.environ, {}, clear=True):\n            validate_json_env_size(\"MISSING_VAR\")\n\n    def test_passes_at_exact_limit(self) -> None:\n        value = \"a\" * MAX_JSON_ENV_SIZE\n        with patch.dict(os.environ, {\"TEST_VAR\": value}):\n            validate_json_env_size(\"TEST_VAR\")\n\n    def test_raises_over_limit(self) -> None:\n        value = \"a\" * (MAX_JSON_ENV_SIZE + 1)\n        with patch.dict(os.environ, {\"TEST_VAR\": value}):\n            with pytest.raises(JsonEnvSizeError) as exc:\n                validate_json_env_size(\"TEST_VAR\")\n            assert exc.value.env_var_name == \"TEST_VAR\"\n\n    def test_utf8_multibyte_chars_counted_correctly(self) -> None:\n        # 3-byte UTF-8 chars: 21846 chars = 65538 bytes > 64KB\n        value = \"\\u4e2d\" * 21846\n        with patch.dict(os.environ, {\"TEST_VAR\": value}):\n            with pytest.raises(JsonEnvSizeError):\n                validate_json_env_size(\"TEST_VAR\")\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run pytest on test_validators.py, verify all tests pass including edge cases.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:00:24.527Z"
           },
           {
             "id": 5,
@@ -4109,11 +4113,13 @@
               3
             ],
             "details": "Update `src/buvis/pybase/configuration/__init__.py`:\n```python\nfrom .configuration import Configuration, ConfigurationKeyNotFoundError, cfg\nfrom .exceptions import JsonEnvSizeError\nfrom .validators import MAX_JSON_ENV_SIZE, validate_json_env_size\n\n__all__ = [\n    \"Configuration\",\n    \"ConfigurationKeyNotFoundError\",\n    \"JsonEnvSizeError\",\n    \"MAX_JSON_ENV_SIZE\",\n    \"cfg\",\n    \"validate_json_env_size\",\n]\n```\nEnables clean imports: `from buvis.pybase.configuration import validate_json_env_size`",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify imports work: `from buvis.pybase.configuration import validate_json_env_size, MAX_JSON_ENV_SIZE, JsonEnvSizeError`",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:00:24.924Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:00:24.924Z"
       },
       {
         "id": "57",
@@ -6595,9 +6601,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T17:57:49.985Z",
+      "lastModified": "2026-01-02T18:00:24.926Z",
       "taskCount": 90,
-      "completedCount": 7,
+      "completedCount": 8,
       "tags": [
         "master"
       ]
