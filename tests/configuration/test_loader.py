@@ -422,3 +422,95 @@ class TestGetCandidateFiles:
         result = ConfigurationLoader._get_candidate_files([Path("/cfg")], "")
 
         assert result == [Path("/cfg/buvis.yaml")]
+
+
+class TestMergeConfigs:
+    """Tests for merge_configs deep merge functionality."""
+
+    def test_merge_single_dict(self) -> None:
+        """Single dict returns copy."""
+        result = ConfigurationLoader.merge_configs({"a": 1})
+
+        assert result == {"a": 1}
+
+    def test_merge_two_simple_dicts(self) -> None:
+        """Two dicts merge keys."""
+        result = ConfigurationLoader.merge_configs({"a": 1}, {"b": 2})
+
+        assert result == {"a": 1, "b": 2}
+
+    def test_merge_empty_dict(self) -> None:
+        """Empty dict merges with no effect."""
+        result = ConfigurationLoader.merge_configs({}, {"a": 1})
+
+        assert result == {"a": 1}
+
+    def test_merge_no_args(self) -> None:
+        """No args returns empty dict."""
+        result = ConfigurationLoader.merge_configs()
+
+        assert result == {}
+
+    def test_nested_merge(self) -> None:
+        """Nested dicts merge recursively."""
+        base = {"db": {"host": "localhost", "port": 5432}}
+        override = {"db": {"port": 3306}}
+
+        result = ConfigurationLoader.merge_configs(base, override)
+
+        assert result == {"db": {"host": "localhost", "port": 3306}}
+
+    def test_deeply_nested_merge(self) -> None:
+        """Deeply nested dicts merge correctly."""
+        base = {"a": {"b": {"c": 1, "d": 2}}}
+        override = {"a": {"b": {"c": 99}}}
+
+        result = ConfigurationLoader.merge_configs(base, override)
+
+        assert result == {"a": {"b": {"c": 99, "d": 2}}}
+
+    def test_three_way_nested_merge(self) -> None:
+        """Three configs merge in order."""
+        a = {"x": {"y": 1}}
+        b = {"x": {"z": 2}}
+        c = {"x": {"y": 3}}
+
+        result = ConfigurationLoader.merge_configs(a, b, c)
+
+        assert result == {"x": {"y": 3, "z": 2}}
+
+    def test_non_dict_replaces_dict(self) -> None:
+        """Non-dict value replaces dict."""
+        base = {"key": {"nested": "value"}}
+        override = {"key": "string"}
+
+        result = ConfigurationLoader.merge_configs(base, override)
+
+        assert result == {"key": "string"}
+
+    def test_dict_replaces_non_dict(self) -> None:
+        """Dict replaces non-dict value."""
+        base = {"key": "string"}
+        override = {"key": {"nested": "value"}}
+
+        result = ConfigurationLoader.merge_configs(base, override)
+
+        assert result == {"key": {"nested": "value"}}
+
+    def test_list_replaces_list(self) -> None:
+        """Lists are replaced, not merged."""
+        base = {"items": [1, 2]}
+        override = {"items": [3, 4, 5]}
+
+        result = ConfigurationLoader.merge_configs(base, override)
+
+        assert result == {"items": [3, 4, 5]}
+
+    def test_none_replaces_value(self) -> None:
+        """None replaces existing value."""
+        base = {"key": "value"}
+        override = {"key": None}
+
+        result = ConfigurationLoader.merge_configs(base, override)
+
+        assert result == {"key": None}

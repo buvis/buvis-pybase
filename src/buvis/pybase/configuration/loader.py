@@ -53,6 +53,20 @@ def _substitute(content: str) -> tuple[str, list[str]]:
     return result, missing
 
 
+def _deep_merge(target: dict[str, Any], source: dict[str, Any]) -> None:
+    """Recursively merge source into target.
+
+    Args:
+        target: Dict to merge into (mutated in place).
+        source: Dict to merge from.
+    """
+    for k, v in source.items():
+        if k in target and isinstance(target[k], dict) and isinstance(v, dict):
+            _deep_merge(target[k], v)
+        else:
+            target[k] = v
+
+
 class ConfigurationLoader:
     """Load YAML configs with env var substitution. Provides static methods for loading configuration files with support for environment variable interpolation using ${VAR} or ${VAR:-default} syntax."""
 
@@ -233,4 +247,20 @@ class ConfigurationLoader:
                 logger.debug("Permission denied: %s", candidate)
                 continue
 
+        return result
+
+    @staticmethod
+    def merge_configs(*configs: dict[str, Any]) -> dict[str, Any]:
+        """Deep merge dicts. Later values override earlier.
+
+        Args:
+            *configs: Dicts to merge, in order of increasing priority.
+
+        Returns:
+            New dict with all configs merged. Nested dicts merge recursively;
+            non-dict values replace.
+        """
+        result: dict[str, Any] = {}
+        for cfg in configs:
+            _deep_merge(result, cfg)
         return result
