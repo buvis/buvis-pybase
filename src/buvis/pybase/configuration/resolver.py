@@ -119,7 +119,8 @@ class ConfigResolver:
                 that take precedence over discovered configuration values.
 
         Returns:
-            T: An instance of ``settings_class`` populated with resolved values.
+            T: An immutable instance of ``settings_class`` populated with resolved
+                values. The instance is frozen and cannot be modified after creation.
 
         Raises:
             ConfigurationError: If validation fails for any configuration value.
