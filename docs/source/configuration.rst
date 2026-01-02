@@ -282,14 +282,6 @@ Configuration
    :undoc-members:
    :show-inheritance:
 
-BuvisSettings
-~~~~~~~~~~~~~
-
-.. autoclass:: buvis.pybase.configuration.BuvisSettings
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 GlobalSettings
 ~~~~~~~~~~~~~~
 
@@ -399,5 +391,3 @@ Constants
 .. autodata:: buvis.pybase.configuration.MAX_NESTING_DEPTH
 
 .. autodata:: buvis.pybase.configuration.MAX_JSON_ENV_SIZE
-
-.. autodata:: buvis.pybase.configuration.cfg
