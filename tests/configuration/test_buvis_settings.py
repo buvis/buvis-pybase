@@ -227,6 +227,33 @@ class TestValidateEnvVarName:
         assert validate_env_var_name(name) is False
 
 
+class TestPrefixRequired:
+    """Security tests: env vars without BUVIS_ prefix are ignored."""
+
+    def test_unprefixed_debug_ignored(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """DEBUG=true without BUVIS_ prefix must not affect settings."""
+        monkeypatch.delenv("BUVIS_DEBUG", raising=False)
+        monkeypatch.setenv("DEBUG", "true")
+
+        settings = BuvisSettings()
+
+        assert settings.debug is False  # Uses default, ignores DEBUG
+
+    def test_tool_without_buvis_prefix_ignored(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """PAYROLL_BATCH_SIZE without BUVIS_PAYROLL_ prefix must be ignored."""
+        from buvis.pybase.configuration import create_tool_settings_class
+
+        monkeypatch.delenv("BUVIS_PAYROLL_BATCH_SIZE", raising=False)
+        monkeypatch.setenv("PAYROLL_BATCH_SIZE", "500")
+
+        Settings = create_tool_settings_class("PAYROLL", batch_size=(int, 1000))
+        settings = Settings()
+
+        assert settings.batch_size == 1000  # Uses default
+
+
 class TestAssertValidEnvVarName:
     def test_valid_name_no_exception(self) -> None:
         from buvis.pybase.configuration import assert_valid_env_var_name
