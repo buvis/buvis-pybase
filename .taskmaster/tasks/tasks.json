@@ -2423,7 +2423,7 @@
         "dependencies": [
           "31"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2484,7 +2484,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:21:47.043Z"
+        "updatedAt": "2026-01-02T19:23:27.156Z"
       },
       {
         "id": "34",
@@ -2569,7 +2569,7 @@
         "dependencies": [
           "34"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -2629,7 +2629,8 @@
             "testStrategy": "Run pytest, verify ValidationError raised for invalid values like 'TRACE', 'VERBOSE', 'trace', empty string.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:24:08.545Z"
       },
       {
         "id": "36",
@@ -6697,9 +6698,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:21:47.045Z",
+      "lastModified": "2026-01-02T19:24:08.547Z",
       "taskCount": 90,
-      "completedCount": 58,
+      "completedCount": 59,
       "tags": [
         "master"
       ]

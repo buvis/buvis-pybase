@@ -23,6 +23,37 @@ class TestBuvisSettingsEnvLoading:
         assert settings.debug is True
 
 
+class TestLogLevelValidation:
+    @pytest.mark.parametrize(
+        "level",
+        ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+    )
+    def test_valid_log_levels(
+        self, level: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("BUVIS_LOG_LEVEL", level)
+
+        settings = BuvisSettings()
+
+        assert settings.log_level == level
+
+    def test_invalid_log_level_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from pydantic import ValidationError
+
+        monkeypatch.setenv("BUVIS_LOG_LEVEL", "TRACE")
+
+        with pytest.raises(ValidationError):
+            BuvisSettings()
+
+    def test_lowercase_env_name_accepted(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """case_sensitive=False means env var NAME is case-insensitive."""
+        monkeypatch.setenv("buvis_log_level", "DEBUG")
+
+        settings = BuvisSettings()
+
+        assert settings.log_level == "DEBUG"
+
+
 class TestCaseInsensitiveEnvLoading:
     def test_uppercase_env_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("BUVIS_DEBUG", "true")
