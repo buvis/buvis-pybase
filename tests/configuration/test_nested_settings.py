@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from buvis.pybase.configuration.examples import (
+from buvis.pybase.configuration.examples.nested_settings import (
     DatabaseSettings,
     PayrollSettings,
     PoolSettings,
