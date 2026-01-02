@@ -1827,7 +1827,7 @@
         "dependencies": [
           "21"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1888,7 +1888,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:15:01.159Z"
+        "updatedAt": "2026-01-02T19:16:39.055Z"
       },
       {
         "id": "26",
@@ -1900,7 +1900,7 @@
         "dependencies": [
           "21"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -1960,7 +1960,8 @@
             "testStrategy": "Run `uv run pytest && uv run pre-commit run --all-files` - all checks pass",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:16:46.977Z"
       },
       {
         "id": "27",
@@ -6693,9 +6694,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:15:01.161Z",
+      "lastModified": "2026-01-02T19:16:46.979Z",
       "taskCount": 90,
-      "completedCount": 54,
+      "completedCount": 55,
       "tags": [
         "master"
       ]

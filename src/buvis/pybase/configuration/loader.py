@@ -9,6 +9,8 @@ from typing import Any
 
 import yaml
 
+from .exceptions import MissingEnvVarError
+
 
 logger = logging.getLogger(__name__)
 
@@ -215,7 +217,7 @@ class ConfigurationLoader:
         content = ConfigurationLoader._restore_literals(content)
 
         if missing:
-            raise ValueError(f"Missing required env vars: {', '.join(sorted(missing))}")
+            raise MissingEnvVarError(sorted(missing))
 
         return yaml.safe_load(content) or {}
 

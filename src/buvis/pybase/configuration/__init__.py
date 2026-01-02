@@ -1,5 +1,5 @@
 from .configuration import Configuration, ConfigurationKeyNotFoundError, cfg
-from .exceptions import ConfigurationError
+from .exceptions import ConfigurationError, MissingEnvVarError
 from .loader import ConfigurationLoader
 from .buvis_settings import (
     BuvisSettings,
@@ -21,6 +21,7 @@ __all__ = [
     "Configuration",
     "ConfigurationKeyNotFoundError",
     "ConfigurationError",
+    "MissingEnvVarError",
     "ConfigurationLoader",
     "ConfigResolver",
     "buvis_options",

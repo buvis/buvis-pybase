@@ -6,6 +6,7 @@ import pytest
 
 from pathlib import Path
 
+from buvis.pybase.configuration.exceptions import MissingEnvVarError
 from buvis.pybase.configuration.loader import (
     ConfigurationLoader,
     _ENV_PATTERN,
@@ -289,13 +290,15 @@ class TestLoadYaml:
     def test_missing_required_var_raises(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Missing required env var raises ValueError."""
+        """Missing required env var raises MissingEnvVarError."""
         monkeypatch.delenv("REQUIRED_VAR", raising=False)
         yaml_file = tmp_path / "config.yaml"
         yaml_file.write_text("key: ${REQUIRED_VAR}")
 
-        with pytest.raises(ValueError, match="REQUIRED_VAR"):
+        with pytest.raises(MissingEnvVarError) as exc_info:
             ConfigurationLoader.load_yaml(yaml_file)
+
+        assert "REQUIRED_VAR" in exc_info.value.var_names
 
     def test_escaped_dollar_preserved(self, tmp_path: Path) -> None:
         """$${VAR} becomes literal ${VAR} in output."""
@@ -514,3 +517,36 @@ class TestMergeConfigs:
         result = ConfigurationLoader.merge_configs(base, override)
 
         assert result == {"key": None}
+
+
+class TestMissingEnvVarError:
+    """Tests for MissingEnvVarError exception."""
+
+    def test_stores_var_names(self) -> None:
+        """Exception stores var_names attribute."""
+        err = MissingEnvVarError(["FOO", "BAR"])
+
+        assert err.var_names == ["FOO", "BAR"]
+
+    def test_message_format_single(self) -> None:
+        """Message formatted correctly for single var."""
+        err = MissingEnvVarError(["DB_PASSWORD"])
+
+        assert str(err) == "Missing required env vars: DB_PASSWORD"
+
+    def test_message_format_multiple(self) -> None:
+        """Message formatted correctly for multiple vars."""
+        err = MissingEnvVarError(["FOO", "BAR", "BAZ"])
+
+        assert str(err) == "Missing required env vars: FOO, BAR, BAZ"
+
+    def test_catchable_by_type(self) -> None:
+        """Exception can be caught by type."""
+        with pytest.raises(MissingEnvVarError) as exc_info:
+            raise MissingEnvVarError(["SECRET"])
+
+        assert exc_info.value.var_names == ["SECRET"]
+
+    def test_is_exception_subclass(self) -> None:
+        """MissingEnvVarError is Exception subclass."""
+        assert issubclass(MissingEnvVarError, Exception)
