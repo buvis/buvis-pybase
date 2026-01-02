@@ -16,6 +16,37 @@ class ConfigurationLoader:
     """Load YAML configs with env var substitution. Provides static methods for loading configuration files with support for environment variable interpolation using ${VAR} or ${VAR:-default} syntax."""
 
     @staticmethod
+    def _get_search_paths() -> list[Path]:
+        """Build ordered list of config directories to search.
+
+        Returns:
+            list[Path]: Search paths from highest to lowest priority:
+                1. BUVIS_CONFIG_DIR (if set and non-empty)
+                2. XDG_CONFIG_HOME/buvis (or ~/.config/buvis if XDG unset)
+                3. ~/.buvis (legacy)
+                4. Current working directory
+        """
+        paths: list[Path] = []
+
+        # 1. Explicit override - highest priority
+        if env_dir := os.getenv("BUVIS_CONFIG_DIR"):
+            if env_dir:  # Empty string treated as unset
+                paths.append(Path(env_dir).expanduser())
+
+        # 2. XDG standard location
+        xdg = os.getenv("XDG_CONFIG_HOME", "")
+        xdg_path = Path(xdg).expanduser() if xdg else Path.home() / ".config"
+        paths.append(xdg_path / "buvis")
+
+        # 3. Legacy location
+        paths.append(Path.home() / ".buvis")
+
+        # 4. Project-local (lowest priority)
+        paths.append(Path.cwd())
+
+        return paths
+
+    @staticmethod
     def find_config_files(tool_name: str | None = None) -> list[Path]:
         """Find configuration files that apply to a tool.
 
