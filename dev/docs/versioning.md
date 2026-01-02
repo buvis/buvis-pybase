@@ -40,24 +40,15 @@ bmv bump --new-version "0.5.8"
 
 ## Tagging
 
-Pre-releases (`dev`, `rc`) don't create git tags. Only final releases are tagged.
-
-| Command | Tags? |
-|---------|-------|
-| `pre_minor/major/patch` | No |
-| `pre_l` (dev→rc) | No |
-| `pre_l` (rc→final) | Yes |
-| `pre_n` | No |
-| `patch/minor/major` | Yes |
+All bumps create `v{version}` tags (configured in `pyproject.toml`).
 
 ## CI Behavior
 
-| Trigger | Destination |
-|---------|-------------|
-| Push to master with version change | test.pypi.org |
-| Push `v*` tag | pypi.org + GitHub Release |
+Workflow triggers on `v*` tag push:
 
-Tags with `rc` → marked as prerelease on GitHub.
+1. Checks if tagged commit is on master
+2. If on master → builds, publishes to test.pypi.org + pypi.org, creates GitHub release
+3. Tags containing `alpha`, `beta`, or `rc` → marked as prerelease on GitHub
 
 ## Useful Commands
 
