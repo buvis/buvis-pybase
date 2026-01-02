@@ -12,12 +12,14 @@ from buvis.pybase.configuration.loader import ConfigurationLoader
 
 
 class Configuration:
-    """
-    Manages global runtime configuration for BUVIS scripts.
-    Provides functionality to load from YAML file, access, and modify configuration settings.
+    """Manages global runtime configuration for BUVIS scripts.
 
-    If no configuration file path is provided, then it tries to find the path from the `BUVIS_CONFIG_FILE`
-    environment variable. If the environment variable is not set, it defaults to `~/.config/buvis/config.yaml`.
+    Provides functionality to load from YAML file, access, and modify
+    configuration settings.
+
+    If no configuration file path is provided, uses auto-discovery via
+    ``ConfigurationLoader.find_config_files()``. Falls back to
+    ``BUVIS_CONFIG_FILE`` env var (deprecated) or ``~/.config/buvis/config.yaml``.
     """
 
     def __init__(
@@ -49,6 +51,14 @@ class Configuration:
         self._config_dict["hostname"] = platform.node()
 
     def copy(self: Configuration, key: str) -> Configuration:
+        """Create a copy of this configuration, optionally scoped to a key.
+
+        Args:
+            key: If provided, the copy contains only the nested dict at this key.
+
+        Returns:
+            A new Configuration instance.
+        """
         copied_configuration = Configuration(self.path_config_file)
 
         if key:
@@ -124,13 +134,11 @@ class Configuration:
                 self._config_dict = yaml.safe_load(file) or {}
 
     def set_configuration_item(self: Configuration, key: str, value: object) -> None:
-        """
-        Sets or updates a configuration item.
+        """Set or update a configuration item.
 
-        :param key: The configuration item key.
-        :type key: str
-        :param value: The value to associate with the key.
-        :type value: object
+        Args:
+            key: The configuration item key.
+            value: The value to associate with the key.
         """
         self._config_dict[key] = value
 
@@ -139,15 +147,17 @@ class Configuration:
         key: str,
         default: object | None = None,
     ) -> object:
-        """
-        Retrieves a configuration item by key.
+        """Retrieve a configuration item by key.
 
-        :param key: The configuration item key to retrieve.
-        :type key: str
-        :param default: Optional default value to use if no value found.
-        :type default: object | None
-        :return: Contains the configuration value or an error message if not found.
-        :rtype: object
+        Args:
+            key: The configuration item key to retrieve.
+            default: Optional default value if key not found.
+
+        Returns:
+            The configuration value.
+
+        Raises:
+            ConfigurationKeyNotFoundError: If key not found and no default.
         """
         if key in self._config_dict:
             return self._config_dict[key]
@@ -163,15 +173,14 @@ class Configuration:
         key: str,
         default: object,
     ) -> object:
-        """
-        Retrieves a configuration item by key.
+        """Retrieve a configuration item by key, with fallback.
 
-        :param key: The configuration item key to retrieve.
-        :type key: str
-        :param default: Default value to use if no value found.
-        :type default: object
-        :return: Contains the configuration value or default value.
-        :rtype: object
+        Args:
+            key: The configuration item key to retrieve.
+            default: Default value if key not found.
+
+        Returns:
+            The configuration value or the default.
         """
         if key in self._config_dict:
             return self._config_dict[key]

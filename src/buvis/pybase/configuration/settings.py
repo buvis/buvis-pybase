@@ -26,8 +26,8 @@ class ToolSettings(BaseModel):
 class GlobalSettings(BaseSettings):
     """Global runtime settings for BUVIS tools.
 
-    Loads from environment variables with BUVIS_ prefix.
-    Nested delimiter is __ (e.g., BUVIS_PAYROLL__ENABLED).
+    Loads from environment variables with ``BUVIS_`` prefix.
+    Nested delimiter is ``__`` (e.g., ``BUVIS_PAYROLL__ENABLED``).
     """
 
     model_config = SettingsConfigDict(

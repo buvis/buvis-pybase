@@ -257,7 +257,7 @@ class ConfigurationLoader:
         """Deep merge dicts. Later values override earlier.
 
         Args:
-            *configs: Dicts to merge, in order of increasing priority.
+            configs: Dicts to merge, in order of increasing priority.
 
         Returns:
             New dict with all configs merged. Nested dicts merge recursively;

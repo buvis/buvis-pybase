@@ -122,10 +122,12 @@ class SecureSettingsMixin:
     """Mixin adding security validations for settings.
 
     Validates:
+
     - JSON env values don't exceed 64KB
     - Complex types come from validated JSON, not eval()
 
-    Use with pydantic-settings BaseSettings:
+    Example::
+
         class MySettings(SecureSettingsMixin, BaseSettings):
             ...
     """
