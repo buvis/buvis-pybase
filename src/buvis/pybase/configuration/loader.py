@@ -199,8 +199,9 @@ class ConfigurationLoader:
             Parsed YAML content as dict. Empty files return {}.
 
         Raises:
-            ValueError: If required environment variables are missing.
+            MissingEnvVarError: If required environment variables are missing.
             FileNotFoundError: If file doesn't exist.
+            yaml.YAMLError: If YAML syntax is invalid. Check problem_mark for line/col.
         """
         if ConfigurationLoader._is_world_writable(file_path):
             logger.warning("Config file %s is world-writable", file_path)
