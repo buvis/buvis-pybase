@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+_VALID_ENV_PATTERN = re.compile(r"^BUVIS_[A-Z][A-Z0-9_]*$")
 
 
 class BuvisSettings(BaseSettings):
@@ -19,6 +23,40 @@ class BuvisSettings(BaseSettings):
 
     debug: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+
+
+def validate_env_var_name(name: str) -> bool:
+    """Check if env var name follows BUVIS convention.
+
+    Rules:
+    - Must start with BUVIS_
+    - SCREAMING_SNAKE_CASE only
+    - No hyphens (env vars don't support them anyway)
+    - At least one char after prefix
+
+    Args:
+        name: Environment variable name to validate.
+
+    Returns:
+        True if valid, False otherwise.
+    """
+    return bool(_VALID_ENV_PATTERN.match(name))
+
+
+def assert_valid_env_var_name(name: str) -> None:
+    """Validate env var name and raise if invalid.
+
+    Args:
+        name: Environment variable name to validate.
+
+    Raises:
+        ValueError: If name doesn't follow BUVIS naming convention.
+    """
+    if not validate_env_var_name(name):
+        raise ValueError(
+            f"Invalid env var name '{name}'. "
+            "Must match BUVIS_{{TOOL}}_{{FIELD}} in SCREAMING_SNAKE_CASE"
+        )
 
 
 def validate_tool_name(tool_name: str) -> None:

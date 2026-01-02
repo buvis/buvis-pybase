@@ -1973,7 +1973,7 @@
         "dependencies": [
           "24"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2034,7 +2034,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:19:16.769Z"
+        "updatedAt": "2026-01-02T19:20:17.231Z"
       },
       {
         "id": "28",
@@ -2124,7 +2124,7 @@
           "26",
           "27"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2186,7 +2186,8 @@
             "testStrategy": "All 10 tests pass. pre-commit passes. Test file follows project conventions from test_shell_adapter.py",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:21:38.522Z"
       },
       {
         "id": "30",
@@ -2422,7 +2423,7 @@
         "dependencies": [
           "31"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -2482,7 +2483,8 @@
             "testStrategy": "Run pytest. Verify parametrized tests cover all edge cases from task spec.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:21:47.043Z"
       },
       {
         "id": "34",
@@ -6695,9 +6697,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:19:16.771Z",
+      "lastModified": "2026-01-02T19:21:47.045Z",
       "taskCount": 90,
-      "completedCount": 56,
+      "completedCount": 58,
       "tags": [
         "master"
       ]

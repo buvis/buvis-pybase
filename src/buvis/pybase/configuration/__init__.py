@@ -3,7 +3,9 @@ from .exceptions import ConfigurationError, MissingEnvVarError
 from .loader import ConfigurationLoader
 from .buvis_settings import (
     BuvisSettings,
+    assert_valid_env_var_name,
     create_tool_settings_class,
+    validate_env_var_name,
     validate_tool_name,
 )
 from .click_integration import buvis_options
@@ -26,7 +28,9 @@ __all__ = [
     "ConfigResolver",
     "buvis_options",
     "BuvisSettings",
+    "assert_valid_env_var_name",
     "create_tool_settings_class",
+    "validate_env_var_name",
     "validate_tool_name",
     "MAX_NESTING_DEPTH",
     "MAX_JSON_ENV_SIZE",
