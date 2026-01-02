@@ -3140,7 +3140,7 @@
         "dependencies": [
           "41"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3201,7 +3201,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:27:07.345Z"
+        "updatedAt": "2026-01-02T18:29:37.801Z"
       },
       {
         "id": "44",
@@ -3213,7 +3213,7 @@
         "dependencies": [
           "41"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3274,7 +3274,8 @@
             "testStrategy": "All tests pass: `uv run pytest tests/configuration/test_nested_env_settings.py::TestIncorrectNestedDelimiter -v` exits 0. Pre-commit passes.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:33:14.615Z"
       },
       {
         "id": "45",
@@ -3286,7 +3287,7 @@
         "dependencies": [
           "41"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -3346,7 +3347,8 @@
             "testStrategy": "Run test without env vars set, verify idle_timeout equals default 300",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:33:30.079Z"
       },
       {
         "id": "46",
@@ -6661,9 +6663,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:27:07.347Z",
+      "lastModified": "2026-01-02T18:33:30.082Z",
       "taskCount": 90,
-      "completedCount": 22,
+      "completedCount": 24,
       "tags": [
         "master"
       ]

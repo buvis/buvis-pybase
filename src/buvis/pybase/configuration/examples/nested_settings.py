@@ -12,10 +12,12 @@ class PoolSettings(BaseModel):
     Attributes:
         min_size: Minimum number of connections to keep in the pool.
         max_size: Maximum number of connections the pool can reach.
+        idle_timeout: Seconds before idle connections are closed.
     """
 
     min_size: int = 5
     max_size: int = 20
+    idle_timeout: int = 300
 
 
 class DatabaseSettings(BaseModel):
