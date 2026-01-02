@@ -1,6 +1,10 @@
 from .configuration import Configuration, ConfigurationKeyNotFoundError, cfg
 from .loader import ConfigurationLoader
-from .buvis_settings import BuvisSettings
+from .buvis_settings import (
+    BuvisSettings,
+    create_tool_settings_class,
+    validate_tool_name,
+)
 from .resolver import ConfigResolver
 from .settings import GlobalSettings, ToolSettings
 from .validators import (
@@ -17,6 +21,8 @@ __all__ = [
     "ConfigurationLoader",
     "ConfigResolver",
     "BuvisSettings",
+    "create_tool_settings_class",
+    "validate_tool_name",
     "MAX_NESTING_DEPTH",
     "MAX_JSON_ENV_SIZE",
     "get_model_depth",
