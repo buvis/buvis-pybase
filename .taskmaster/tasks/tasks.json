@@ -3287,7 +3287,7 @@
         "dependencies": [
           "41"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3348,7 +3348,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:33:30.079Z"
+        "updatedAt": "2026-01-02T18:34:14.405Z"
       },
       {
         "id": "46",
@@ -3436,7 +3436,7 @@
         "dependencies": [
           "46"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3496,7 +3496,8 @@
             "testStrategy": "Run pytest, verify ValueError raised with 'nesting depth 6' in message.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:35:11.687Z"
       },
       {
         "id": "48",
@@ -3808,7 +3809,7 @@
         "dependencies": [
           "51"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -3870,7 +3871,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_complex_env_parsing.py -v` - all 3 tests in TestJSONListParsing must pass with exit code 0.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:35:25.352Z"
       },
       {
         "id": "53",
@@ -6663,9 +6665,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:33:30.082Z",
+      "lastModified": "2026-01-02T18:35:25.355Z",
       "taskCount": 90,
-      "completedCount": 24,
+      "completedCount": 26,
       "tags": [
         "master"
       ]
