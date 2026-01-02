@@ -227,6 +227,26 @@ class TestValidateEnvVarName:
         assert validate_env_var_name(name) is False
 
 
+class TestFieldNameMatching:
+    """Security: env vars must match model fields exactly."""
+
+    def test_unknown_env_var_ignored(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """BUVIS_FAKE_FIELD has no effect - no 'fake_field' in model."""
+        monkeypatch.setenv("BUVIS_FAKE_FIELD", "injected")
+
+        settings = BuvisSettings()
+
+        assert not hasattr(settings, "fake_field")
+
+    def test_model_schema_defines_allowed_fields(self) -> None:
+        """Model schema is source of truth for allowed fields."""
+        allowed_fields = set(BuvisSettings.model_fields.keys())
+
+        assert "debug" in allowed_fields
+        assert "log_level" in allowed_fields
+        assert "fake_field" not in allowed_fields
+
+
 class TestPrefixRequired:
     """Security tests: env vars without BUVIS_ prefix are ignored."""
 
