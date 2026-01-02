@@ -296,6 +296,70 @@ class TestValidationErrorHandling:
         assert "Configuration validation failed" in str(exc_info.value)
 
 
+class TestSecretMaskingInErrors:
+    """Tests for secret masking in validation error messages."""
+
+    def test_sensitive_field_error_masked(self) -> None:
+        """Error on sensitive field shows 'invalid value (hidden)'."""
+        from pydantic import ValidationError
+        from pydantic_settings import BaseSettings, SettingsConfigDict
+
+        from buvis.pybase.configuration.resolver import _format_validation_errors
+
+        class TestSettings(BaseSettings):
+            model_config = SettingsConfigDict(env_prefix="TEST_")
+            api_key: int  # Will fail with string
+
+        try:
+            TestSettings(api_key="not_an_int")
+        except ValidationError as e:
+            result = _format_validation_errors(e)
+
+        assert "api_key: invalid value (hidden)" in result
+        assert "not_an_int" not in result
+
+    def test_nested_sensitive_field_masked(self) -> None:
+        """Error on nested sensitive field is masked."""
+        from pydantic import BaseModel, ValidationError
+        from pydantic_settings import BaseSettings, SettingsConfigDict
+
+        from buvis.pybase.configuration.resolver import _format_validation_errors
+
+        class DbConfig(BaseModel):
+            password: int  # Will fail with string
+
+        class TestSettings(BaseSettings):
+            model_config = SettingsConfigDict(env_prefix="TEST_")
+            database: DbConfig
+
+        try:
+            TestSettings(database={"password": "secret_value"})
+        except ValidationError as e:
+            result = _format_validation_errors(e)
+
+        assert "invalid value (hidden)" in result
+        assert "secret_value" not in result
+
+    def test_non_sensitive_field_shows_message(self) -> None:
+        """Error on non-sensitive field shows actual error message."""
+        from pydantic import ValidationError
+        from pydantic_settings import BaseSettings, SettingsConfigDict
+
+        from buvis.pybase.configuration.resolver import _format_validation_errors
+
+        class TestSettings(BaseSettings):
+            model_config = SettingsConfigDict(env_prefix="TEST_")
+            count: int
+
+        try:
+            TestSettings(count="not_a_number")
+        except ValidationError as e:
+            result = _format_validation_errors(e)
+
+        assert "count:" in result
+        assert "invalid value (hidden)" not in result
+
+
 class TestSecurityConstraints:
     """Tests for security constraints in ConfigResolver."""
 

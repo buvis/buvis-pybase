@@ -13,6 +13,19 @@ _SENSITIVE_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
+
+def is_sensitive_field(field_path: str) -> bool:
+    """Check if field path contains sensitive data indicators.
+
+    Args:
+        field_path: Dotted field path (e.g., "database.password").
+
+    Returns:
+        True if any part matches sensitive patterns.
+    """
+    return bool(_SENSITIVE_PATTERNS.search(field_path))
+
+
 MAX_NESTING_DEPTH = 5
 MAX_JSON_ENV_SIZE = 64 * 1024
 

@@ -14,6 +14,7 @@ from pydantic_settings import BaseSettings
 from .exceptions import ConfigurationError
 from .loader import ConfigurationLoader
 from .source import ConfigSource
+from .validators import is_sensitive_field
 
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,9 @@ def _load_yaml_config(file_path: Path | None = None) -> dict[str, Any]:
 def _format_validation_errors(error: ValidationError) -> str:
     """Format Pydantic validation errors into user-friendly message.
 
+    Masks error details for sensitive fields (password, token, etc.)
+    to prevent secret leakage in error messages.
+
     Args:
         error: Pydantic ValidationError to format.
 
@@ -67,7 +71,10 @@ def _format_validation_errors(error: ValidationError) -> str:
     lines = []
     for err in error.errors():
         field_path = ".".join(str(loc) for loc in err["loc"])
-        msg = err["msg"]
+        if is_sensitive_field(field_path):
+            msg = "invalid value (hidden)"
+        else:
+            msg = err["msg"]
         lines.append(f"  {field_path}: {msg}")
     return "Configuration validation failed:\n" + "\n".join(lines)
 

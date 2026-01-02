@@ -18,6 +18,7 @@ from .validators import (
     SafeLoggingMixin,
     SecureSettingsMixin,
     get_model_depth,
+    is_sensitive_field,
     validate_json_env_size,
     validate_nesting_depth,
 )
@@ -41,6 +42,7 @@ __all__ = [
     "SafeLoggingMixin",
     "SecureSettingsMixin",
     "get_model_depth",
+    "is_sensitive_field",
     "validate_json_env_size",
     "validate_nesting_depth",
     "cfg",
