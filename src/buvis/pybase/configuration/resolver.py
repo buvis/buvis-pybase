@@ -41,6 +41,7 @@ from .loader import ConfigurationLoader
 from .source import ConfigSource
 from .validators import is_sensitive_field
 
+__all__ = ["ConfigResolver"]
 
 logger = logging.getLogger(__name__)
 
