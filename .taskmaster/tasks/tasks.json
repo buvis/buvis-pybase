@@ -87,7 +87,7 @@
         "dependencies": [
           "1"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -95,9 +95,10 @@
             "description": "Add pydantic as a project dependency since it's not currently in the dependencies list and is required for the BaseModel and ConfigDict imports.",
             "dependencies": [],
             "details": "Add `pydantic>=2.0.0,<3` to the dependencies array in pyproject.toml. The project uses semantic versioning bounds (major version pins) as seen with other deps like `pyyaml>=6.0.3,<7`. After adding, run `uv sync --all-groups` to update uv.lock.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv sync --all-groups` and verify no errors. Run `uv run python -c 'from pydantic import BaseModel, ConfigDict'` to confirm import works.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:06:59.754Z"
           },
           {
             "id": 2,
@@ -107,9 +108,10 @@
               1
             ],
             "details": "Create `src/buvis/pybase/configuration/settings.py` with:\n- `from __future__ import annotations` (project convention)\n- Import BaseModel and ConfigDict from pydantic\n- ToolSettings class with model_config = ConfigDict(frozen=True, extra=\"forbid\")\n- Single field: `enabled: bool = True`\n- Google-style docstring explaining the base class purpose",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run python -c 'from buvis.pybase.configuration.settings import ToolSettings; print(ToolSettings())'` to verify import and instantiation.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:07:51.265Z"
           },
           {
             "id": 3,
@@ -119,9 +121,10 @@
               2
             ],
             "details": "Update `src/buvis/pybase/configuration/__init__.py` to:\n- Add import: `from .settings import ToolSettings`\n- Append \"ToolSettings\" to `__all__` list\nFollow existing pattern of explicit imports and __all__ declaration.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run python -c 'from buvis.pybase.configuration import ToolSettings; assert ToolSettings().enabled is True'`",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:07:51.309Z"
           },
           {
             "id": 4,
@@ -131,9 +134,10 @@
               3
             ],
             "details": "Create `tests/configuration/test_settings.py` with:\n- Import pytest and ValidationError from pydantic\n- Import ToolSettings from buvis.pybase.configuration.settings\n- Create TestToolSettings class with test_defaults method verifying enabled=True\n- Use class-based test organization matching existing test patterns",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_settings.py::TestToolSettings::test_defaults -v` to verify test passes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:07:51.346Z"
           },
           {
             "id": 5,
@@ -143,11 +147,13 @@
               4
             ],
             "details": "Add to TestToolSettings class in test_settings.py:\n- test_immutable: create ToolSettings(), assert pytest.raises(ValidationError) when setting settings.enabled = False\n- test_extra_forbid: assert pytest.raises(ValidationError) when creating ToolSettings(unknown_field=True)\nThese tests verify the ConfigDict settings work as expected.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_settings.py -v` - all 3 tests (defaults, immutable, extra_forbid) should pass.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:07:51.389Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:07:51.389Z"
       },
       {
         "id": "3",
@@ -159,7 +165,7 @@
         "dependencies": [
           "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -167,9 +173,10 @@
             "description": "Add pydantic-settings as a project dependency since it's required for BaseSettings class",
             "dependencies": [],
             "details": "Add `pydantic-settings>=2.0,<3` to the dependencies list in pyproject.toml. Run `uv sync` to install. This provides BaseSettings and SettingsConfigDict imports.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify `uv sync` completes without errors and `from pydantic_settings import BaseSettings` works in Python REPL",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:08:17.125Z"
           },
           {
             "id": 2,
@@ -179,9 +186,10 @@
               1
             ],
             "details": "Create settings.py with:\n- `from __future__ import annotations`\n- `from typing import Literal`\n- `from pydantic_settings import BaseSettings, SettingsConfigDict`\n- GlobalSettings class with model_config (env_prefix='BUVIS_', env_nested_delimiter='__', case_sensitive=False, frozen=True, extra='forbid')\n- Fields: debug: bool = False, log_level: Literal['DEBUG','INFO','WARNING','ERROR','CRITICAL'] = 'INFO', output_format: Literal['text','json','yaml'] = 'text'\n- Google-style docstring explaining env var loading",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Import GlobalSettings and verify it instantiates with defaults",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:09:07.321Z"
           },
           {
             "id": 3,
@@ -191,9 +199,10 @@
               2
             ],
             "details": "Add `from .settings import GlobalSettings` import and append 'GlobalSettings' to __all__ list. Follow existing pattern used for Configuration class.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify `from buvis.pybase.configuration import GlobalSettings` works",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:09:07.356Z"
           },
           {
             "id": 4,
@@ -203,9 +212,10 @@
               3
             ],
             "details": "Create tests/configuration/test_global_settings.py with class-based tests:\n- TestGlobalSettingsDefaults: verify debug=False, log_level='INFO', output_format='text'\n- TestGlobalSettingsValidation: verify invalid log_level raises ValidationError, invalid output_format raises ValidationError\n- TestGlobalSettingsEnvLoading: use monkeypatch to set BUVIS_DEBUG=true, BUVIS_LOG_LEVEL=DEBUG, verify they load correctly\n- TestGlobalSettingsImmutability: verify mutation raises ValidationError (frozen=True)",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_global_settings.py -v` and verify all tests pass",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:09:07.398Z"
           },
           {
             "id": 5,
@@ -215,11 +225,13 @@
               4
             ],
             "details": "Add test to test_global_settings.py:\n- TestGlobalSettingsExtraForbid: use monkeypatch to set BUVIS_UNKNOWN_FIELD=value, verify instantiation raises ValidationError due to extra='forbid' config. This ensures typos in env vars are caught.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run pytest and verify ValidationError raised for unknown BUVIS_ prefixed env vars",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:09:07.437Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:09:07.437Z"
       },
       {
         "id": "4",
@@ -231,7 +243,7 @@
         "dependencies": [
           "3"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -239,9 +251,10 @@
             "description": "Create the test file tests/configuration/test_settings_validation.py with proper imports and fixtures for testing GlobalSettings validation behavior.",
             "dependencies": [],
             "details": "Create tests/configuration/test_settings_validation.py with imports for pytest, ValidationError from pydantic, and the GlobalSettings model. Include a docstring explaining these tests verify Pydantic validates at instantiation time. Follow existing test patterns using class-based organization.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "File exists with correct imports and passes ruff check",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:10:19.995Z"
           },
           {
             "id": 2,
@@ -251,9 +264,10 @@
               1
             ],
             "details": "Create TestLogLevelValidation class with tests: test_invalid_log_level_raises_at_instantiation (value like 'INVALID'), test_invalid_log_level_case_sensitive (if 'info' lowercase should fail), test_validation_error_mentions_log_level (assert 'log_level' in error message). Use pytest.raises(ValidationError) context manager.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run pytest on the new test class and verify all tests pass when GlobalSettings enforces Literal constraint",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:10:20.038Z"
           },
           {
             "id": 3,
@@ -263,9 +277,10 @@
               1
             ],
             "details": "Create TestOutputFormatValidation class with tests: test_invalid_output_format_raises (value like 'xml'), test_output_format_error_message (verify field name in error). Keep tests parallel to log_level tests for consistency. Use pytest.raises(ValidationError) as exc_info pattern to capture and inspect errors.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run pytest on the new test class and verify tests pass with proper Literal['text', 'json', 'yaml'] constraint",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:10:20.081Z"
           },
           {
             "id": 4,
@@ -275,9 +290,10 @@
               1
             ],
             "details": "Create TestValidSettingsInstantiation class with: test_default_values_valid (no args instantiation), test_all_valid_log_levels (parametrized test for DEBUG/INFO/WARNING/ERROR/CRITICAL), test_all_valid_output_formats (parametrized for text/json/yaml), test_valid_debug_boolean. Use @pytest.mark.parametrize for enumerated values.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "All tests should pass without raising ValidationError, confirming Pydantic accepts all Literal variants",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:10:20.124Z"
           },
           {
             "id": 5,
@@ -289,11 +305,13 @@
               3
             ],
             "details": "Create TestToolSettingsValidation class with: test_tool_settings_enabled_requires_bool (pass string 'yes' instead of bool), test_validation_error_contains_field_path (verify exc_info.value.errors() contains 'loc' with field name). Also add TestValidationErrorDetails class to verify error messages are actionable with field names and expected types.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run pytest and verify ToolSettings rejects invalid types and ValidationError.errors() provides structured error info with field locations",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:10:20.167Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:10:20.167Z"
       },
       {
         "id": "5",
@@ -819,7 +837,7 @@
         "dependencies": [
           "11"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -827,9 +845,10 @@
             "description": "Add ConfigurationLoader class to configuration module with the static method signature and return type.",
             "dependencies": [],
             "details": "Create `src/buvis/pybase/configuration/loader.py` with:\n```python\nfrom __future__ import annotations\nimport os\nfrom pathlib import Path\n\nclass ConfigurationLoader:\n    @staticmethod\n    def _get_search_paths() -> list[Path]:\n        paths: list[Path] = []\n        # Implementation in subsequent subtasks\n        return paths\n```\nExport in `__init__.py`. Follow existing pattern from Configuration class.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify class exists, method is static, returns empty list[Path] initially.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:11:39.091Z"
           },
           {
             "id": 2,
@@ -839,9 +858,10 @@
               1
             ],
             "details": "In `_get_search_paths()`, add:\n```python\n# 1. Explicit override - highest priority\nif env_dir := os.getenv(\"BUVIS_CONFIG_DIR\"):\n    if env_dir:  # Empty string treated as unset\n        paths.append(Path(env_dir).expanduser())\n```\nUse walrus operator for concise check. `expanduser()` handles ~ in paths.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test with: BUVIS_CONFIG_DIR set to valid path, set to empty string, unset. Use @patch.dict(os.environ, ...) pattern from test_shell_adapter.py.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:11:39.146Z"
           },
           {
             "id": 3,
@@ -851,9 +871,10 @@
               1
             ],
             "details": "In `_get_search_paths()`, after BUVIS_CONFIG_DIR handling:\n```python\n# 2. XDG standard location\nxdg = os.getenv(\"XDG_CONFIG_HOME\", \"\")\nxdg_path = Path(xdg).expanduser() if xdg else Path.home() / \".config\"\npaths.append(xdg_path / \"buvis\")\n```\nEmpty XDG_CONFIG_HOME falls back to ~/.config per XDG spec.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test: XDG_CONFIG_HOME set (use custom path), empty string (use ~/.config), unset (use ~/.config). Verify /buvis suffix added.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:11:39.207Z"
           },
           {
             "id": 4,
@@ -863,9 +884,10 @@
               1
             ],
             "details": "Complete `_get_search_paths()` with:\n```python\n# 3. Legacy location\npaths.append(Path.home() / \".buvis\")\n\n# 4. Project-local (lowest priority)\npaths.append(Path.cwd())\n\nreturn paths\n```\nThese are unconditional - always added to search path. Order matters for priority.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify ~/.buvis always present. Verify cwd() is last in list. Test from different working directories.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:11:39.379Z"
           },
           {
             "id": 5,
@@ -877,11 +899,13 @@
               4
             ],
             "details": "Create `tests/configuration/test_configuration_loader.py`:\n```python\nclass TestGetSearchPaths:\n    def test_all_env_vars_set(self): # 4 paths returned\n    def test_buvis_config_dir_empty_string(self): # treated as unset\n    def test_xdg_config_home_empty_fallback(self): # uses ~/.config\n    def test_path_order_priority(self): # BUVIS_CONFIG_DIR first, cwd last\n    def test_expanduser_tilde_paths(self): # ~/custom expands\n```\nUse `@patch.dict(os.environ, ...)` and `monkeypatch` for cwd.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run pytest on new test file. Verify all env combinations covered. Check edge cases: empty strings, tilde expansion, cwd changes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:11:39.805Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:11:39.805Z"
       },
       {
         "id": "13",
@@ -893,7 +917,7 @@
         "dependencies": [
           "12"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -901,9 +925,10 @@
             "description": "Add the static method signature with proper type hints to the ConfigurationLoader class in loader.py.",
             "dependencies": [],
             "details": "In `src/buvis/pybase/configuration/loader.py`, add the method stub after `_get_search_paths`:\n```python\n@staticmethod\ndef _get_candidate_files(paths: list[Path], tool_name: str | None) -> list[Path]:\n    \"\"\"Generate candidate config file paths from search locations.\n    \n    Args:\n        paths: Base directories to search for config files.\n        tool_name: Optional tool name for tool-specific configs.\n        \n    Returns:\n        Ordered list of candidate paths (buvis.yaml + buvis-{tool}.yaml per location).\n    \"\"\"\n    candidates: list[Path] = []\n    return candidates\n```\nFollow existing static method pattern from `_get_search_paths`. No instance state needed.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify method exists: `hasattr(ConfigurationLoader, '_get_candidate_files')` and accepts (list[Path], str | None) -> list[Path].",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:12:50.545Z"
           },
           {
             "id": 2,
@@ -913,9 +938,10 @@
               1
             ],
             "details": "Update `_get_candidate_files` to iterate through paths and add base config:\n```python\n@staticmethod\ndef _get_candidate_files(paths: list[Path], tool_name: str | None) -> list[Path]:\n    candidates: list[Path] = []\n    for base in paths:\n        candidates.append(base / \"buvis.yaml\")\n    return candidates\n```\nThis ensures every search location has its buvis.yaml added. The base file is always included regardless of tool_name.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test with paths=[Path('/a'), Path('/b')], tool_name=None. Verify returns [Path('/a/buvis.yaml'), Path('/b/buvis.yaml')].",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:12:50.592Z"
           },
           {
             "id": 3,
@@ -925,9 +951,10 @@
               2
             ],
             "details": "Complete the method with tool_name conditional logic:\n```python\n@staticmethod\ndef _get_candidate_files(paths: list[Path], tool_name: str | None) -> list[Path]:\n    candidates: list[Path] = []\n    for base in paths:\n        candidates.append(base / \"buvis.yaml\")\n        if tool_name:\n            candidates.append(base / f\"buvis-{tool_name}.yaml\")\n    return candidates\n```\nKey: interleave base and tool-specific per location to maintain priority (location > file type). Empty string tool_name treated as falsy.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test with paths=[Path('/a')], tool_name='payroll'. Verify returns [Path('/a/buvis.yaml'), Path('/a/buvis-payroll.yaml')].",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:12:50.758Z"
           },
           {
             "id": 4,
@@ -937,9 +964,10 @@
               3
             ],
             "details": "Create/update `tests/configuration/test_loader.py`:\n```python\nimport pytest\nfrom pathlib import Path\nfrom buvis.pybase.configuration.loader import ConfigurationLoader\n\nclass TestGetCandidateFiles:\n    def test_empty_paths_returns_empty(self) -> None:\n        result = ConfigurationLoader._get_candidate_files([], None)\n        assert result == []\n\n    def test_single_path_no_tool(self) -> None:\n        result = ConfigurationLoader._get_candidate_files([Path(\"/cfg\")], None)\n        assert result == [Path(\"/cfg/buvis.yaml\")]\n\n    def test_multiple_paths_no_tool(self) -> None:\n        paths = [Path(\"/a\"), Path(\"/b\")]\n        result = ConfigurationLoader._get_candidate_files(paths, None)\n        assert result == [Path(\"/a/buvis.yaml\"), Path(\"/b/buvis.yaml\")]\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_loader.py::TestGetCandidateFiles -v` - all tests should pass.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:12:51.161Z"
           },
           {
             "id": 5,
@@ -949,11 +977,13 @@
               4
             ],
             "details": "Add to `TestGetCandidateFiles` class:\n```python\n    def test_single_path_with_tool(self) -> None:\n        result = ConfigurationLoader._get_candidate_files([Path(\"/cfg\")], \"payroll\")\n        assert result == [Path(\"/cfg/buvis.yaml\"), Path(\"/cfg/buvis-payroll.yaml\")]\n\n    def test_multiple_paths_with_tool_maintains_interleaved_order(self) -> None:\n        paths = [Path(\"/a\"), Path(\"/b\")]\n        result = ConfigurationLoader._get_candidate_files(paths, \"myapp\")\n        expected = [\n            Path(\"/a/buvis.yaml\"),\n            Path(\"/a/buvis-myapp.yaml\"),\n            Path(\"/b/buvis.yaml\"),\n            Path(\"/b/buvis-myapp.yaml\"),\n        ]\n        assert result == expected\n\n    def test_empty_string_tool_name_treated_as_no_tool(self) -> None:\n        result = ConfigurationLoader._get_candidate_files([Path(\"/cfg\")], \"\")\n        assert result == [Path(\"/cfg/buvis.yaml\")]\n```\nThis verifies the critical interleaved ordering: for each location, base then tool-specific.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run full test suite for loader. Verify ordering test ensures /a files before /b files (location priority preserved).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:12:51.568Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:12:51.568Z"
       },
       {
         "id": "14",
@@ -965,7 +995,7 @@
         "dependencies": [
           "11"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -973,9 +1003,10 @@
             "description": "Implement the core symlink security validation method that checks if a resolved path stays within allowed base directories.",
             "dependencies": [],
             "details": "Add to `src/buvis/pybase/filesystem/dir_tree/dir_tree.py`:\n```python\n@staticmethod\ndef _is_safe_path(candidate: Path, allowed_bases: list[Path]) -> bool:\n    \"\"\"Reject symlinks pointing outside expected directories.\n    \n    Args:\n        candidate: Path to validate (may be symlink)\n        allowed_bases: Directories the resolved path must be under\n    \n    Returns:\n        True if resolved path is under one of allowed_bases\n    \"\"\"\n    try:\n        resolved = candidate.resolve()\n        for base in allowed_bases:\n            try:\n                resolved.relative_to(base.resolve())\n                return True\n            except ValueError:\n                continue\n        return False\n    except (OSError, RuntimeError):\n        return False\n```\nMethod is private (underscore prefix) since it's internal validation logic.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Covered by subtask 2 dedicated tests.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:17:08.026Z"
           },
           {
             "id": 2,
@@ -985,9 +1016,10 @@
               1
             ],
             "details": "Create `tests/filesystem/test_dir_tree_symlink_security.py`:\n```python\nimport pytest\nfrom pathlib import Path\nfrom buvis.pybase.filesystem import DirTree\n\nclass TestIsSafePath:\n    def test_regular_file_is_safe(self, tmp_path: Path) -> None:\n        file = tmp_path / \"file.txt\"\n        file.touch()\n        assert DirTree._is_safe_path(file, [tmp_path]) is True\n    \n    def test_symlink_within_allowed_dir_is_safe(self, tmp_path: Path) -> None:\n        target = tmp_path / \"target.txt\"\n        target.touch()\n        link = tmp_path / \"link.txt\"\n        link.symlink_to(target)\n        assert DirTree._is_safe_path(link, [tmp_path]) is True\n    \n    def test_symlink_outside_allowed_dir_is_unsafe(self, tmp_path: Path) -> None:\n        allowed = tmp_path / \"allowed\"\n        allowed.mkdir()\n        outside = tmp_path / \"outside\" / \"target.txt\"\n        outside.parent.mkdir()\n        outside.touch()\n        link = allowed / \"escape.txt\"\n        link.symlink_to(outside)\n        assert DirTree._is_safe_path(link, [allowed]) is False\n    \n    def test_broken_symlink_is_unsafe(self, tmp_path: Path) -> None:\n        link = tmp_path / \"broken.txt\"\n        link.symlink_to(tmp_path / \"nonexistent\")\n        assert DirTree._is_safe_path(link, [tmp_path]) is False\n    \n    def test_multiple_allowed_bases(self, tmp_path: Path) -> None:\n        dir1 = tmp_path / \"dir1\"\n        dir2 = tmp_path / \"dir2\"\n        dir1.mkdir(); dir2.mkdir()\n        file = dir2 / \"file.txt\"\n        file.touch()\n        assert DirTree._is_safe_path(file, [dir1, dir2]) is True\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/filesystem/test_dir_tree_symlink_security.py -v` to verify all edge cases pass.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:17:08.072Z"
           },
           {
             "id": 3,
@@ -997,9 +1029,10 @@
               1
             ],
             "details": "Add to DirTree class after `_is_safe_path`:\n```python\n@staticmethod\ndef _safe_rglob(directory: Path, pattern: str = \"*\") -> Iterator[Path]:\n    \"\"\"Recursively glob, skipping paths resolving outside directory.\n    \n    Args:\n        directory: Base directory for traversal\n        pattern: Glob pattern (default \"*\")\n    \n    Yields:\n        Paths that resolve within directory\n    \"\"\"\n    allowed = [directory.resolve()]\n    for path in directory.rglob(pattern):\n        if DirTree._is_safe_path(path, allowed):\n            yield path\n```\nAdd `from typing import Iterator` to imports. This centralizes the filtering logic so individual methods don't duplicate it.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Add tests in same test file verifying _safe_rglob skips unsafe symlinks while yielding safe paths.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:17:08.135Z"
           },
           {
             "id": 4,
@@ -1009,9 +1042,10 @@
               3
             ],
             "details": "Update these files to use `DirTree._safe_rglob(directory)` instead of `directory.rglob(\"*\")`:\n\n1. `dir_tree.py` - count_files, get_max_depth methods\n2. `delete_by_extension.py` - line 18\n3. `lowercase_file_extensions.py` - line 13  \n4. `merge_mac_metadata.py` - line 23 (pattern: `._*`)\n5. `remove_empty_directories.py` - line 13\n6. `rename_equivalent_extensions.py` - line 27\n\nFor functions in separate modules, import DirTree:\n```python\nfrom buvis.pybase.filesystem.dir_tree.dir_tree import DirTree\n\nfor file_path in DirTree._safe_rglob(directory):\n```\nFor merge_mac_metadata, use `DirTree._safe_rglob(directory, \"._*\")` to preserve pattern.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run existing tests + new integration tests to verify no regressions.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:17:08.385Z"
           },
           {
             "id": 5,
@@ -1021,11 +1055,13 @@
               4
             ],
             "details": "Add to `tests/filesystem/test_dir_tree_symlink_security.py`:\n```python\nclass TestDirTreeSymlinkIntegration:\n    def test_count_files_ignores_symlink_escape(self, tmp_path: Path) -> None:\n        allowed = tmp_path / \"allowed\"\n        allowed.mkdir()\n        (allowed / \"real.txt\").touch()\n        outside = tmp_path / \"outside\"\n        outside.mkdir()\n        (outside / \"secret.txt\").touch()\n        (allowed / \"escape\").symlink_to(outside)\n        \n        assert DirTree.count_files(allowed) == 1  # only real.txt\n    \n    def test_delete_by_extension_skips_symlink_escape(self, tmp_path: Path) -> None:\n        allowed = tmp_path / \"allowed\"\n        allowed.mkdir()\n        outside = tmp_path / \"outside\"\n        outside.mkdir()\n        target = outside / \"keep.txt\"\n        target.touch()\n        (allowed / \"escape\").symlink_to(outside)\n        \n        DirTree.delete_by_extension(allowed, [\".txt\"])\n        assert target.exists()  # outside file not deleted\n```\nSimilar tests for other public methods that traverse directories.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run full test suite: `uv run pytest tests/filesystem/ -v`. Verify symlink escapes are blocked for all public methods.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:17:08.799Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:17:08.799Z"
       },
       {
         "id": "15",
@@ -1557,7 +1593,7 @@
         "dependencies": [
           "21"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -1618,7 +1654,8 @@
             "testStrategy": "All edge case tests pass. Docstrings render correctly in `python -c \"from buvis.pybase.configuration.loader import ConfigurationLoader; help(ConfigurationLoader._escape_literals)\"`",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:17:44.293Z"
       },
       {
         "id": "23",
@@ -4425,7 +4462,7 @@
         "testStrategy": "Verify dependency resolves: `uv sync --all-groups` succeeds. Test import: `python -c \"from pydantic_settings import BaseSettings\"`",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -4433,9 +4470,10 @@
             "description": "Add pydantic>=2.0,<3 to the project dependencies list in pyproject.toml",
             "dependencies": [],
             "details": "Edit pyproject.toml line 25, add new dependency entry: \"pydantic>=2.0,<3\". Place after existing dependencies, before the closing bracket. This provides BaseModel and core validation.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "File contains the new dependency line with correct version bounds",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:01:01.157Z"
           },
           {
             "id": 2,
@@ -4445,9 +4483,10 @@
               1
             ],
             "details": "Edit pyproject.toml, add after pydantic: \"pydantic-settings>=2.0,<3\". This separate package provides BaseSettings class with ENV variable handling in pydantic v2.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "File contains pydantic-settings dependency with correct version bounds",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:01:01.201Z"
           },
           {
             "id": 3,
@@ -4457,9 +4496,10 @@
               2
             ],
             "details": "Run `uv sync --all-groups` in project root. This resolves dependencies, updates uv.lock, and installs packages to virtual env. Verify command exits 0 with no resolution errors.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Command exits successfully, uv.lock updated with pydantic and pydantic-settings entries",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:01:01.457Z"
           },
           {
             "id": 4,
@@ -4469,9 +4509,10 @@
               3
             ],
             "details": "Run: `uv run python -c \"from pydantic import BaseModel, ConfigDict; print('pydantic OK')\"`. This confirms core pydantic is installed and importable.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Import command prints 'pydantic OK' with exit code 0",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:01:01.888Z"
           },
           {
             "id": 5,
@@ -4481,11 +4522,13 @@
               3
             ],
             "details": "Run: `uv run python -c \"from pydantic_settings import BaseSettings, SettingsConfigDict; print('pydantic-settings OK')\"`. This confirms ENV variable settings support is available.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Import command prints 'pydantic-settings OK' with exit code 0",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:01:02.317Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:01:02.317Z"
       },
       {
         "id": "62",
@@ -5153,7 +5196,7 @@
         "testStrategy": "Unit test: mock ConfigurationLoader.find_config_files to return multiple paths. Verify all paths loaded and merged in order. Test with tool_name=None and tool_name='payroll'.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5161,9 +5204,10 @@
             "description": "Create the resolver.py file with ConfigResolver class that imports and instantiates ConfigurationLoader.",
             "dependencies": [],
             "details": "Create `src/buvis/pybase/configuration/resolver.py` with basic structure:\n\n```python\nfrom __future__ import annotations\nimport os\nimport logging\nfrom typing import Any\nfrom .loader import ConfigurationLoader\nfrom .settings import GlobalSettings\n\nclass ConfigResolver:\n    \"\"\"Resolves configuration from multiple YAML files with ENV/CLI overrides.\"\"\"\n    \n    def __init__(self, tool_name: str | None = None) -> None:\n        self.tool_name = tool_name\n        self.loader = ConfigurationLoader()\n        self._logger = logging.getLogger(__name__)\n```\n\nThis establishes the dependency on ConfigurationLoader (from tasks 11-20) and GlobalSettings (from task 2). The class accepts optional tool_name for tool-specific config discovery.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit test: verify ConfigResolver instantiation creates ConfigurationLoader. Test with tool_name=None and tool_name='payroll'. Verify logger is configured.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:04:12.317Z"
           },
           {
             "id": 2,
@@ -5173,9 +5217,10 @@
               1
             ],
             "details": "Add resolve() method to ConfigResolver:\n\n```python\ndef resolve(\n    self,\n    config_dir: str | None = None,\n    cli_overrides: dict[str, Any] | None = None,\n) -> GlobalSettings:\n    # Set config dir override if provided\n    if config_dir:\n        os.environ[\"BUVIS_CONFIG_DIR\"] = config_dir\n    \n    # Find YAML files (base + tool-specific)\n    yaml_files = self.loader.find_config_files(tool_name=self.tool_name)\n    self._logger.debug(\"Found config files: %s\", yaml_files)\n    \n    # Load each file\n    merged_yaml: dict[str, Any] = {}\n    for path in yaml_files:\n        file_config = self.loader.load_yaml(path)\n        merged_yaml = self.loader.merge_configs(merged_yaml, file_config)\n```\n\nThis replaces single-file loading with multi-file discovery. The config_dir param allows overriding the search directory via BUVIS_CONFIG_DIR env var.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Mock ConfigurationLoader.find_config_files to return ['/path/buvis.yaml', '/path/buvis-tool.yaml']. Verify load_yaml called for each path in order. Test config_dir sets BUVIS_CONFIG_DIR env var.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:04:12.365Z"
           },
           {
             "id": 3,
@@ -5185,9 +5230,10 @@
               2
             ],
             "details": "Continue resolve() method after merging:\n\n```python\n    # Create settings from merged YAML\n    # Pydantic BaseSettings handles ENV variables automatically\n    settings = GlobalSettings(**merged_yaml)\n    self._logger.debug(\"Created settings: %s\", settings.model_dump())\n    \n    return settings\n```\n\nGlobalSettings inherits from pydantic_settings.BaseSettings (task 2), so it automatically:\n- Validates all fields at instantiation\n- Resolves BUVIS_* environment variables\n- Applies field defaults where YAML/ENV missing\n\nThe merged_yaml dict provides base values that ENV can override per Pydantic precedence.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Mock GlobalSettings constructor. Verify it receives merged dict from loader. Test that ValidationError from GlobalSettings propagates up. Test empty merged_yaml creates settings with defaults.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:04:12.409Z"
           },
           {
             "id": 4,
@@ -5197,9 +5243,10 @@
               3
             ],
             "details": "Add CLI override handling before returning settings:\n\n```python\n    # Apply CLI overrides (highest precedence)\n    if cli_overrides:\n        for key, value in cli_overrides.items():\n            if value is not None and hasattr(settings, key):\n                setattr(settings, key, value)\n                self._logger.debug(\"CLI override: %s=%s\", key, value)\n    \n    return settings\n```\n\nCLI overrides have highest precedence: YAML < ENV < CLI. Only non-None values for existing attributes are applied. This supports patterns like `--verbose` or `--config-dir` from command line.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test cli_overrides={'log_level': 'DEBUG'} updates settings.log_level. Test cli_overrides={'unknown': 'x'} is ignored (no hasattr). Test cli_overrides={'log_level': None} is skipped. Test empty cli_overrides dict does nothing.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:04:12.583Z"
           },
           {
             "id": 5,
@@ -5209,11 +5256,13 @@
               4
             ],
             "details": "Update `src/buvis/pybase/configuration/__init__.py`:\n\n```python\nfrom .configuration import Configuration, ConfigurationKeyNotFoundError, cfg\nfrom .resolver import ConfigResolver\n\n__all__ = [\n    \"Configuration\",\n    \"ConfigurationKeyNotFoundError\",\n    \"cfg\",\n    \"ConfigResolver\",\n]\n```\n\nThis maintains backward compatibility with existing Configuration singleton while exposing the new ConfigResolver for Pydantic-based config. Users can import either:\n- `from buvis.pybase.configuration import cfg` (legacy)\n- `from buvis.pybase.configuration import ConfigResolver` (new)",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test `from buvis.pybase.configuration import ConfigResolver` succeeds. Verify existing imports still work: `from buvis.pybase.configuration import cfg, Configuration`. Check __all__ contains all expected exports.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:04:13.010Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:04:13.010Z"
       },
       {
         "id": "72",
@@ -5884,7 +5933,7 @@
         "testStrategy": "Run `uv sync --all-groups` and verify Click imports work with `uv run python -c \"import click; print(click.__version__)\"`",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5892,9 +5941,10 @@
             "description": "Review pyproject.toml to find the correct location for adding click dependency in the dependencies array.",
             "dependencies": [],
             "details": "Open pyproject.toml and locate the dependencies array (lines 13-25). The dependency should be added alphabetically among existing dependencies. Click should be inserted after 'inflection' and before 'jira' to maintain alphabetical order.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify pyproject.toml is readable and dependencies array structure is understood.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:06:29.762Z"
           },
           {
             "id": 2,
@@ -5904,9 +5954,10 @@
               1
             ],
             "details": "Add the line `\"click>=8.1.0,<9\",` to the dependencies array in pyproject.toml. Insert after inflection line (line 14) to maintain alphabetical order. Use same format as other deps with major version upper bound.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `ruff check pyproject.toml` to verify TOML syntax is valid.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:06:29.806Z"
           },
           {
             "id": 3,
@@ -5916,9 +5967,10 @@
               2
             ],
             "details": "Run `uv sync --all-groups` to install all dependencies including the newly added click package. This will resolve the dependency, download it, and update uv.lock with the resolved version.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Command exits with status 0 and no error messages. uv.lock file is updated with click entry.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:06:29.851Z"
           },
           {
             "id": 4,
@@ -5928,9 +5980,10 @@
               3
             ],
             "details": "Run `uv run python -c \"import click; print(click.__version__)\"` to verify the package is correctly installed and importable. This confirms the dependency was resolved and installed properly.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Command prints click version (8.1.x) without import errors.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:06:29.897Z"
           },
           {
             "id": 5,
@@ -5940,11 +5993,13 @@
               4
             ],
             "details": "Parse the version output from previous step to ensure it starts with '8.1' or higher. Click 8.1+ is required per task spec for modern type hints and decorator support used in CLI integration.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Version number is >= 8.1.0. Test basic decorator: `uv run python -c \"import click; @click.command()\\ndef cli(): pass\"`",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T18:06:30.069Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:06:30.069Z"
       },
       {
         "id": "82",
@@ -6601,9 +6656,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:00:24.926Z",
+      "lastModified": "2026-01-02T18:17:44.295Z",
       "taskCount": 90,
-      "completedCount": 8,
+      "completedCount": 17,
       "tags": [
         "master"
       ]

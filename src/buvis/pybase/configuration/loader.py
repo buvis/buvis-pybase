@@ -10,6 +10,7 @@ DEFAULT_CONFIG_DIRECTORY = Path(
 )
 
 _ENV_PATTERN = re.compile(r"\$\{([^}:]+)(?::-([^}]*))?\}")
+_ESCAPE_PLACEHOLDER = "\x00ESCAPED_DOLLAR\x00"
 
 
 class ConfigurationLoader:
@@ -63,6 +64,30 @@ class ConfigurationLoader:
             if tool_name:
                 candidates.append(base / f"buvis-{tool_name}.yaml")
         return candidates
+
+    @staticmethod
+    def _escape_literals(text: str) -> str:
+        """Replace escaped $${VAR} sequences with placeholder.
+
+        Args:
+            text: Raw config text that may contain $${VAR} escape sequences.
+
+        Returns:
+            Text with $${...} replaced by placeholder for later restoration.
+        """
+        return text.replace("$${", f"{_ESCAPE_PLACEHOLDER}{{")
+
+    @staticmethod
+    def _restore_literals(text: str) -> str:
+        """Restore placeholder back to literal ${...} syntax.
+
+        Args:
+            text: Text containing placeholders from _escape_literals.
+
+        Returns:
+            Text with placeholders converted to literal ${...}.
+        """
+        return text.replace(f"{_ESCAPE_PLACEHOLDER}{{", "${")
 
     @staticmethod
     def find_config_files(tool_name: str | None = None) -> list[Path]:
