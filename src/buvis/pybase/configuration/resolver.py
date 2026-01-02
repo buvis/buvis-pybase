@@ -202,9 +202,15 @@ class ConfigResolver:
                 os.environ["BUVIS_CONFIG_DIR"] = original_config_dir
 
     def _log_sources(self) -> None:
-        """Log source of each config field at DEBUG level (no values)."""
+        """Log config field sources. Sensitive fields use INFO, others DEBUG.
+
+        Never logs actual values - only field names and source types.
+        """
         for field, source in self._sources.items():
-            logger.debug("Config '%s' from %s", field, source.value)
+            if is_sensitive_field(field):
+                logger.info("Security config '%s' loaded from %s", field, source.value)
+            else:
+                logger.debug("Config '%s' from %s", field, source.value)
 
     @property
     def sources(self) -> dict[str, ConfigSource]:
