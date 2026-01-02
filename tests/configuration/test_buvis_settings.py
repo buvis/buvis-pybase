@@ -1,94 +1,6 @@
 from __future__ import annotations
 
 import pytest
-from pydantic import ValidationError
-
-from buvis.pybase.configuration import BuvisSettings
-
-
-class TestBuvisSettingsDefaults:
-    def test_defaults(self) -> None:
-        settings = BuvisSettings()
-
-        assert settings.debug is False
-        assert settings.log_level == "INFO"
-
-
-class TestBuvisSettingsEnvLoading:
-    def test_env_loading(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("BUVIS_DEBUG", "true")
-
-        settings = BuvisSettings()
-
-        assert settings.debug is True
-
-
-class TestLogLevelValidation:
-    @pytest.mark.parametrize(
-        "level",
-        ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-    )
-    def test_valid_log_levels(
-        self, level: str, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.setenv("BUVIS_LOG_LEVEL", level)
-
-        settings = BuvisSettings()
-
-        assert settings.log_level == level
-
-    def test_invalid_log_level_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        from pydantic import ValidationError
-
-        monkeypatch.setenv("BUVIS_LOG_LEVEL", "TRACE")
-
-        with pytest.raises(ValidationError):
-            BuvisSettings()
-
-    def test_lowercase_env_name_accepted(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """case_sensitive=False means env var NAME is case-insensitive."""
-        monkeypatch.setenv("buvis_log_level", "DEBUG")
-
-        settings = BuvisSettings()
-
-        assert settings.log_level == "DEBUG"
-
-
-class TestCaseInsensitiveEnvLoading:
-    def test_uppercase_env_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("BUVIS_DEBUG", "true")
-
-        settings = BuvisSettings()
-
-        assert settings.debug is True
-
-    def test_lowercase_env_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("buvis_debug", "true")
-
-        settings = BuvisSettings()
-
-        assert settings.debug is True
-
-    def test_mixed_case_env_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("Buvis_Debug", "true")
-
-        settings = BuvisSettings()
-
-        assert settings.debug is True
-
-
-class TestBuvisSettingsImmutability:
-    def test_immutable(self) -> None:
-        settings = BuvisSettings()
-
-        with pytest.raises(ValidationError):
-            settings.debug = True  # type: ignore[attr-defined]
-
-
-class TestBuvisSettingsExtraForbid:
-    def test_unknown_field_forbidden(self) -> None:
-        with pytest.raises(ValidationError):
-            BuvisSettings(extra_field=True)  # type: ignore[arg-type]
 
 
 class TestValidateToolName:
@@ -227,37 +139,8 @@ class TestValidateEnvVarName:
         assert validate_env_var_name(name) is False
 
 
-class TestFieldNameMatching:
-    """Security: env vars must match model fields exactly."""
-
-    def test_unknown_env_var_ignored(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """BUVIS_FAKE_FIELD has no effect - no 'fake_field' in model."""
-        monkeypatch.setenv("BUVIS_FAKE_FIELD", "injected")
-
-        settings = BuvisSettings()
-
-        assert not hasattr(settings, "fake_field")
-
-    def test_model_schema_defines_allowed_fields(self) -> None:
-        """Model schema is source of truth for allowed fields."""
-        allowed_fields = set(BuvisSettings.model_fields.keys())
-
-        assert "debug" in allowed_fields
-        assert "log_level" in allowed_fields
-        assert "fake_field" not in allowed_fields
-
-
 class TestPrefixRequired:
-    """Security tests: env vars without BUVIS_ prefix are ignored."""
-
-    def test_unprefixed_debug_ignored(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """DEBUG=true without BUVIS_ prefix must not affect settings."""
-        monkeypatch.delenv("BUVIS_DEBUG", raising=False)
-        monkeypatch.setenv("DEBUG", "true")
-
-        settings = BuvisSettings()
-
-        assert settings.debug is False  # Uses default, ignores DEBUG
+    """Security test: factory-created settings ignore unprefixed env vars."""
 
     def test_tool_without_buvis_prefix_ignored(
         self, monkeypatch: pytest.MonkeyPatch

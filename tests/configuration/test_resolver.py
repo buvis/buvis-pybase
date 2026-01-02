@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from buvis.pybase.configuration import ConfigurationError
-from buvis.pybase.configuration.buvis_settings import BuvisSettings
+from buvis.pybase.configuration.settings import GlobalSettings
 from buvis.pybase.configuration.loader import ConfigurationLoader
 from buvis.pybase.configuration.resolver import ConfigResolver, _load_yaml_config
 
@@ -53,7 +53,7 @@ class TestConfigResolverResolve:
         overrides = {"debug": True, "log_level": "DEBUG"}
         resolver = ConfigResolver(tool_name="cli")
 
-        settings = resolver.resolve(BuvisSettings, cli_overrides=overrides)
+        settings = resolver.resolve(GlobalSettings, cli_overrides=overrides)
 
         assert settings.debug is True
         assert settings.log_level == "DEBUG"
@@ -64,7 +64,7 @@ class TestConfigResolverResolve:
 
         resolver = ConfigResolver()
         config_dir = "/tmp/buvis"
-        resolver.resolve(BuvisSettings, config_dir=config_dir)
+        resolver.resolve(GlobalSettings, config_dir=config_dir)
 
         # Env var should be removed after resolve (wasn't set before)
         assert "BUVIS_CONFIG_DIR" not in os.environ
@@ -74,7 +74,7 @@ class TestConfigResolverResolve:
         monkeypatch.setenv("BUVIS_CONFIG_DIR", "/original/path")
 
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings, config_dir="/tmp/override")
+        resolver.resolve(GlobalSettings, config_dir="/tmp/override")
 
         assert os.environ["BUVIS_CONFIG_DIR"] == "/original/path"
 
@@ -83,7 +83,7 @@ class TestConfigResolverResolve:
         monkeypatch.setenv("BUVIS_CONFIG_DIR", "/existing")
 
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings)
+        resolver.resolve(GlobalSettings)
 
         assert os.environ["BUVIS_CONFIG_DIR"] == "/existing"
 
@@ -102,7 +102,7 @@ class TestConfigResolverPrecedence:
 
         resolver = ConfigResolver()
         settings = resolver.resolve(
-            BuvisSettings,
+            GlobalSettings,
             config_path=config,
             cli_overrides={"debug": True, "log_level": "DEBUG"},
         )
@@ -120,7 +120,7 @@ class TestConfigResolverPrecedence:
         monkeypatch.setenv("BUVIS_LOG_LEVEL", "ERROR")
 
         resolver = ConfigResolver()
-        settings = resolver.resolve(BuvisSettings, config_path=config)
+        settings = resolver.resolve(GlobalSettings, config_path=config)
 
         assert settings.debug is True
         assert settings.log_level == "ERROR"
@@ -131,7 +131,7 @@ class TestConfigResolverPrecedence:
         config.write_text("debug: true\nlog_level: WARNING\n")
 
         resolver = ConfigResolver()
-        settings = resolver.resolve(BuvisSettings, config_path=config)
+        settings = resolver.resolve(GlobalSettings, config_path=config)
 
         assert settings.debug is True
         assert settings.log_level == "WARNING"
@@ -140,7 +140,7 @@ class TestConfigResolverPrecedence:
         """Defaults used when no other sources set values."""
         resolver = ConfigResolver()
 
-        settings = resolver.resolve(BuvisSettings)
+        settings = resolver.resolve(GlobalSettings)
 
         assert settings.debug is False
         assert settings.log_level == "INFO"
@@ -155,7 +155,7 @@ class TestConfigResolverPrecedence:
 
         resolver = ConfigResolver()
         settings = resolver.resolve(
-            BuvisSettings,
+            GlobalSettings,
             config_path=config,
             cli_overrides={"debug": None},
         )
@@ -267,7 +267,7 @@ class TestValidationErrorHandling:
         resolver = ConfigResolver()
 
         with pytest.raises(ConfigurationError) as exc_info:
-            resolver.resolve(BuvisSettings, config_path=config)
+            resolver.resolve(GlobalSettings, config_path=config)
 
         assert "log_level" in str(exc_info.value)
 
@@ -279,7 +279,7 @@ class TestValidationErrorHandling:
         resolver = ConfigResolver()
 
         with pytest.raises(ConfigurationError) as exc_info:
-            resolver.resolve(BuvisSettings, config_path=config)
+            resolver.resolve(GlobalSettings, config_path=config)
 
         assert "debug" in str(exc_info.value)
 
@@ -291,7 +291,7 @@ class TestValidationErrorHandling:
         resolver = ConfigResolver()
 
         with pytest.raises(ConfigurationError) as exc_info:
-            resolver.resolve(BuvisSettings, config_path=config)
+            resolver.resolve(GlobalSettings, config_path=config)
 
         assert "Configuration validation failed" in str(exc_info.value)
 
@@ -366,7 +366,7 @@ class TestSecurityConstraints:
     def test_settings_immutable_after_resolve(self) -> None:
         """Settings are frozen and cannot be modified."""
         resolver = ConfigResolver()
-        settings = resolver.resolve(BuvisSettings)
+        settings = resolver.resolve(GlobalSettings)
 
         with pytest.raises(Exception):  # Pydantic raises ValidationError for frozen
             settings.debug = True
@@ -380,7 +380,7 @@ class TestSecurityConstraints:
 
         # Error raised at resolve(), not when accessing log_level
         with pytest.raises(ConfigurationError):
-            resolver.resolve(BuvisSettings, config_path=config)
+            resolver.resolve(GlobalSettings, config_path=config)
 
 
 class TestConfigSource:
@@ -408,7 +408,7 @@ class TestConfigResolverSourceTracking:
     def test_sources_populated_after_resolve(self) -> None:
         """sources dict populated for each field after resolve()."""
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings)
+        resolver.resolve(GlobalSettings)
 
         assert "debug" in resolver.sources
         assert "log_level" in resolver.sources
@@ -418,7 +418,7 @@ class TestConfigResolverSourceTracking:
         from buvis.pybase.configuration import ConfigSource
 
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings, cli_overrides={"debug": True})
+        resolver.resolve(GlobalSettings, cli_overrides={"debug": True})
 
         assert resolver.sources["debug"] == ConfigSource.CLI
 
@@ -429,7 +429,7 @@ class TestConfigResolverSourceTracking:
         monkeypatch.setenv("BUVIS_DEBUG", "true")
 
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings)
+        resolver.resolve(GlobalSettings)
 
         assert resolver.sources["debug"] == ConfigSource.ENV
 
@@ -441,7 +441,7 @@ class TestConfigResolverSourceTracking:
         config.write_text("debug: true\n")
 
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings, config_path=config)
+        resolver.resolve(GlobalSettings, config_path=config)
 
         assert resolver.sources["debug"] == ConfigSource.YAML
 
@@ -450,7 +450,7 @@ class TestConfigResolverSourceTracking:
         from buvis.pybase.configuration import ConfigSource
 
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings)
+        resolver.resolve(GlobalSettings)
 
         assert resolver.sources["debug"] == ConfigSource.DEFAULT
         assert resolver.sources["log_level"] == ConfigSource.DEFAULT
@@ -466,7 +466,7 @@ class TestConfigResolverSourceTracking:
         monkeypatch.setenv("BUVIS_DEBUG", "true")
 
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings, config_path=config)
+        resolver.resolve(GlobalSettings, config_path=config)
 
         # debug from ENV, log_level from YAML
         assert resolver.sources["debug"] == ConfigSource.ENV
@@ -483,7 +483,7 @@ class TestConfigResolverLogging:
         resolver = ConfigResolver()
 
         with caplog.at_level(logging.DEBUG):
-            resolver.resolve(BuvisSettings)
+            resolver.resolve(GlobalSettings)
 
         # Check field names logged
         assert "debug" in caplog.text
@@ -498,7 +498,7 @@ class TestConfigResolverLogging:
         resolver = ConfigResolver()
 
         with caplog.at_level(logging.DEBUG):
-            resolver.resolve(BuvisSettings, cli_overrides={"debug": True})
+            resolver.resolve(GlobalSettings, cli_overrides={"debug": True})
 
         # Source tracking logs field name and source, not value
         source_logs = [r for r in caplog.records if "from cli" in r.message]
@@ -515,7 +515,7 @@ class TestConfigResolverSourcesProperty:
         from buvis.pybase.configuration import ConfigSource
 
         resolver = ConfigResolver()
-        resolver.resolve(BuvisSettings)
+        resolver.resolve(GlobalSettings)
 
         sources_copy = resolver.sources
         sources_copy["debug"] = ConfigSource.CLI  # Modify copy

@@ -3,26 +3,11 @@
 from __future__ import annotations
 
 import re
-from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 _VALID_ENV_PATTERN = re.compile(r"^BUVIS_[A-Z][A-Z0-9_]*$")
-
-
-class BuvisSettings(BaseSettings):
-    """Base settings shared by Buvis services using the ``BUVIS_`` prefix."""
-
-    model_config = SettingsConfigDict(
-        env_prefix="BUVIS_",
-        case_sensitive=False,
-        frozen=True,
-        extra="forbid",
-    )
-
-    debug: bool = False
-    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
 
 def validate_env_var_name(name: str) -> bool:

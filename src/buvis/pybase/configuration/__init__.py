@@ -23,7 +23,6 @@ from .configuration import Configuration, ConfigurationKeyNotFoundError
 from .exceptions import ConfigurationError, MissingEnvVarError
 from .loader import ConfigurationLoader
 from .buvis_settings import (
-    BuvisSettings,
     assert_valid_env_var_name,
     create_tool_settings_class,
     validate_env_var_name,
@@ -54,7 +53,6 @@ __all__ = [
     "ConfigSource",
     "buvis_options",
     "get_settings",
-    "BuvisSettings",
     "assert_valid_env_var_name",
     "create_tool_settings_class",
     "validate_env_var_name",
