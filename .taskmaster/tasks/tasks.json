@@ -1479,7 +1479,7 @@
         "testStrategy": "Verify file created and imports work: `from buvis.pybase.configuration.loader import ConfigurationLoader`",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1487,9 +1487,10 @@
             "description": "Create src/buvis/pybase/configuration/loader.py with required imports and _ENV_PATTERN regex constant",
             "dependencies": [],
             "details": "Create the loader.py file with:\n- `from __future__ import annotations` (first line, per codebase convention)\n- Standard lib imports: `import os`, `import re`, `from pathlib import Path`\n- Type imports: `from typing import Any`\n- Third party: `import yaml`\n- Define `_ENV_PATTERN = re.compile(r'\\$\\{([^}:]+)(?::-([^}]*))?\\}')` for env var substitution with default value support",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `python -c \"from buvis.pybase.configuration.loader import _ENV_PATTERN; print(_ENV_PATTERN.pattern)\"` to verify regex loads",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:43:42.967Z"
           },
           {
             "id": 2,
@@ -1499,9 +1500,10 @@
               1
             ],
             "details": "Add to loader.py:\n```python\nclass ConfigurationLoader:\n    \"\"\"Load YAML configs with env var substitution.\n    \n    Provides static methods for loading configuration files with support\n    for environment variable interpolation using ${VAR} or ${VAR:-default} syntax.\n    \"\"\"\n    pass\n```\nFollow the existing class style from configuration.py - Google docstrings, modern type hints",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify class exists: `from buvis.pybase.configuration.loader import ConfigurationLoader`",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:43:43.016Z"
           },
           {
             "id": 3,
@@ -1511,9 +1513,10 @@
               2
             ],
             "details": "Update src/buvis/pybase/configuration/__init__.py to include:\n- Add import: `from .loader import ConfigurationLoader`\n- Add to `__all__`: append `\"ConfigurationLoader\"` to the list\nFollow existing pattern: `from .configuration import Configuration, ConfigurationKeyNotFoundError, cfg`",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify export: `from buvis.pybase.configuration import ConfigurationLoader`",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:43:43.064Z"
           },
           {
             "id": 4,
@@ -1523,9 +1526,10 @@
               3
             ],
             "details": "Create tests/configuration/test_loader.py with:\n- Import pytest and the ConfigurationLoader\n- Create `class TestConfigurationLoaderImports:` with test_can_import_class method\n- Create `class TestEnvPattern:` with basic regex tests\nFollow test_shell_adapter.py patterns: class-based organization, fixtures where needed, descriptive docstrings",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_loader.py -v` to verify test file loads and basic tests pass",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:43:43.219Z"
           },
           {
             "id": 5,
@@ -1535,11 +1539,13 @@
               4
             ],
             "details": "Execute verification steps:\n1. Run `uv run pytest tests/configuration/ -v` to ensure all configuration tests pass\n2. Run `uv run pre-commit run --all-files` to verify code style compliance\n3. Test import chain: `from buvis.pybase.configuration import ConfigurationLoader, Configuration` both work\n4. Verify _ENV_PATTERN matches expected patterns: `${VAR}`, `${VAR:-default}`",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Full integration: run pre-commit and pytest to confirm module is properly integrated and styled",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:43:43.610Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T17:43:43.610Z"
       },
       {
         "id": "22",
@@ -6565,9 +6571,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T17:40:42.342Z",
+      "lastModified": "2026-01-02T17:43:43.612Z",
       "taskCount": 90,
-      "completedCount": 2,
+      "completedCount": 3,
       "tags": [
         "master"
       ]
