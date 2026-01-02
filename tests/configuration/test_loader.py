@@ -106,3 +106,45 @@ class TestGetSearchPaths:
         paths = ConfigurationLoader._get_search_paths()
 
         assert paths[-1] == Path.cwd()
+
+
+class TestGetCandidateFiles:
+    def test_empty_paths_returns_empty(self) -> None:
+        result = ConfigurationLoader._get_candidate_files([], None)
+
+        assert result == []
+
+    def test_single_path_no_tool(self) -> None:
+        result = ConfigurationLoader._get_candidate_files([Path("/cfg")], None)
+
+        assert result == [Path("/cfg/buvis.yaml")]
+
+    def test_multiple_paths_no_tool(self) -> None:
+        paths = [Path("/a"), Path("/b")]
+
+        result = ConfigurationLoader._get_candidate_files(paths, None)
+
+        assert result == [Path("/a/buvis.yaml"), Path("/b/buvis.yaml")]
+
+    def test_single_path_with_tool(self) -> None:
+        result = ConfigurationLoader._get_candidate_files([Path("/cfg")], "payroll")
+
+        assert result == [Path("/cfg/buvis.yaml"), Path("/cfg/buvis-payroll.yaml")]
+
+    def test_multiple_paths_with_tool_maintains_interleaved_order(self) -> None:
+        paths = [Path("/a"), Path("/b")]
+
+        result = ConfigurationLoader._get_candidate_files(paths, "myapp")
+
+        expected = [
+            Path("/a/buvis.yaml"),
+            Path("/a/buvis-myapp.yaml"),
+            Path("/b/buvis.yaml"),
+            Path("/b/buvis-myapp.yaml"),
+        ]
+        assert result == expected
+
+    def test_empty_string_tool_name_treated_as_no_tool(self) -> None:
+        result = ConfigurationLoader._get_candidate_files([Path("/cfg")], "")
+
+        assert result == [Path("/cfg/buvis.yaml")]
