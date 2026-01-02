@@ -158,3 +158,64 @@ class TestCreateToolSettingsClass:
 
         assert settings.debug is True
         assert settings.timeout == 30
+
+
+class TestValidateEnvVarName:
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "BUVIS_DEBUG",
+            "BUVIS_PAYROLL_BATCH_SIZE",
+            "BUVIS_HCM_API_URL",
+            "BUVIS_A",
+            "BUVIS_A1",
+            "BUVIS_TEST_123",
+        ],
+    )
+    def test_valid_names(self, name: str) -> None:
+        from buvis.pybase.configuration import validate_env_var_name
+
+        assert validate_env_var_name(name) is True
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "DEBUG",  # no prefix
+            "buvis_debug",  # lowercase
+            "BUVIS-DEBUG",  # hyphen
+            "BUVIS_",  # empty field
+            "",  # empty string
+            "BUVIS_123",  # starts with number after prefix
+            "BUVIS_debug",  # lowercase after prefix
+            "OTHER_DEBUG",  # wrong prefix
+        ],
+    )
+    def test_invalid_names(self, name: str) -> None:
+        from buvis.pybase.configuration import validate_env_var_name
+
+        assert validate_env_var_name(name) is False
+
+
+class TestAssertValidEnvVarName:
+    def test_valid_name_no_exception(self) -> None:
+        from buvis.pybase.configuration import assert_valid_env_var_name
+
+        assert_valid_env_var_name("BUVIS_DEBUG")  # Should not raise
+
+    def test_invalid_name_raises_valueerror(self) -> None:
+        from buvis.pybase.configuration import assert_valid_env_var_name
+
+        with pytest.raises(ValueError, match="Invalid env var name"):
+            assert_valid_env_var_name("debug")
+
+    def test_error_message_contains_name(self) -> None:
+        from buvis.pybase.configuration import assert_valid_env_var_name
+
+        with pytest.raises(ValueError, match="bad_name"):
+            assert_valid_env_var_name("bad_name")
+
+    def test_error_message_contains_format_hint(self) -> None:
+        from buvis.pybase.configuration import assert_valid_env_var_name
+
+        with pytest.raises(ValueError, match="SCREAMING_SNAKE_CASE"):
+            assert_valid_env_var_name("invalid")
