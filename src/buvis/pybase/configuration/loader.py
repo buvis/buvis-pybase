@@ -13,6 +13,38 @@ _ENV_PATTERN = re.compile(r"\$\{([^}:]+)(?::-([^}]*))?\}")
 _ESCAPE_PLACEHOLDER = "\x00ESCAPED_DOLLAR\x00"
 
 
+def _substitute(content: str) -> tuple[str, list[str]]:
+    """Substitute env vars in content string.
+
+    Replaces ${VAR} patterns with environment values. Supports
+    ${VAR:-default} syntax for fallback values.
+
+    Args:
+        content: String with potential ${VAR} patterns.
+
+    Returns:
+        Tuple of (substituted_content, missing_vars) where missing_vars
+        contains names of required env vars that weren't set.
+
+    Note:
+        Single-pass only - values from env are NOT re-processed.
+    """
+    missing: list[str] = []
+
+    def replace(match: re.Match[str]) -> str:
+        var_name, default = match.group(1), match.group(2)
+        value = os.environ.get(var_name)
+        if value is not None:
+            return value
+        if default is not None:
+            return default
+        missing.append(var_name)
+        return match.group(0)  # Keep original for error message
+
+    result = _ENV_PATTERN.sub(replace, content)
+    return result, missing
+
+
 class ConfigurationLoader:
     """Load YAML configs with env var substitution. Provides static methods for loading configuration files with support for environment variable interpolation using ${VAR} or ${VAR:-default} syntax."""
 
