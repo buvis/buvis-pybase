@@ -1,6 +1,7 @@
 from .configuration import Configuration, ConfigurationKeyNotFoundError, cfg
 from .loader import ConfigurationLoader
 from .buvis_settings import BuvisSettings
+from .resolver import ConfigResolver
 from .validators import (
     MAX_JSON_ENV_SIZE,
     MAX_NESTING_DEPTH,
@@ -13,6 +14,7 @@ __all__ = [
     "Configuration",
     "ConfigurationKeyNotFoundError",
     "ConfigurationLoader",
+    "ConfigResolver",
     "BuvisSettings",
     "MAX_NESTING_DEPTH",
     "MAX_JSON_ENV_SIZE",
