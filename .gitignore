@@ -170,3 +170,5 @@ cython_debug/
 
 # ruff
 .ruff_cache/
+.taskmaster/config.json
+.taskmaster/state.json

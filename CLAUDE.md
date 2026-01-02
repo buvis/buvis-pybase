@@ -78,6 +78,25 @@ class TestShellAdapter:
    ```
 4. Add tests in `tests/adapters/test_foo_adapter.py`
 
+## Commit Messages
+
+Conventional commits format: `<type>(<scope>): <description>`
+
+| Type     | When                                        |
+|----------|---------------------------------------------|
+| fix      | Bug fix                                     |
+| feat     | New or changed feature                      |
+| perf     | Performance improvement                     |
+| refactor | Code restructuring, no behavior change      |
+| style    | Formatting only                             |
+| test     | Tests added/corrected                       |
+| docs     | Documentation only                          |
+| build    | Build tools, dependencies, versions         |
+| ops      | DevOps, infrastructure                      |
+| chore    | Anything else                               |
+
+Rules: imperative present tense, no capital, no period, `!` before `:` for breaking changes.
+
 ## Release
 
 Tags trigger PyPI publish via GitHub Actions:
