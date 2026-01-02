@@ -45,3 +45,31 @@ class TestNestedEnvResolution:
         assert settings.database.pool.min_size == 5
         assert settings.database.pool.max_size == 20
         assert settings.database.url == ""
+
+
+class TestMixedEnvResolution:
+    """Tests for combining direct and nested env vars."""
+
+    def test_mixed_database_and_pool(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Both database url and nested pool settings work together."""
+        monkeypatch.setenv("BUVIS_PAYROLL_DATABASE__URL", "postgres://host/db")
+        monkeypatch.setenv("BUVIS_PAYROLL_DATABASE__POOL__MIN_SIZE", "15")
+
+        settings = PayrollSettings()
+
+        assert settings.database.url == "postgres://host/db"
+        assert settings.database.pool.min_size == 15
+
+    def test_single_underscore_does_not_work(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Single underscore in nested path is not recognized.
+
+        Pydantic-settings requires __ delimiter for nested models.
+        BUVIS_PAYROLL_DATABASE_URL doesn't work; use DATABASE__URL.
+        """
+        monkeypatch.setenv("BUVIS_PAYROLL_DATABASE_URL", "should-not-work")
+
+        settings = PayrollSettings()
+
+        assert settings.database.url == ""  # Default, env var not matched
