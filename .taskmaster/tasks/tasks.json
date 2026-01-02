@@ -5436,7 +5436,7 @@
         "dependencies": [
           "71"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5499,7 +5499,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:50:47.521Z"
+        "updatedAt": "2026-01-02T18:53:29.288Z"
       },
       {
         "id": "75",
@@ -6029,7 +6029,7 @@
         "dependencies": [
           "81"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6089,7 +6089,8 @@
             "testStrategy": "Verify import works: `from buvis.pybase.configuration import GlobalSettings` and GlobalSettings appears in module's __all__",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:53:47.928Z"
       },
       {
         "id": "83",
@@ -6101,7 +6102,7 @@
         "dependencies": [
           "82"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6161,7 +6162,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_resolver.py -v` - all tests pass",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:54:02.150Z"
       },
       {
         "id": "84",
@@ -6173,7 +6175,7 @@
         "dependencies": [
           "83"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -6233,7 +6235,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_click_integration.py -v` - all tests pass",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:54:12.225Z"
       },
       {
         "id": "85",
@@ -6674,9 +6677,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:50:47.523Z",
+      "lastModified": "2026-01-02T18:54:12.227Z",
       "taskCount": 90,
-      "completedCount": 35,
+      "completedCount": 38,
       "tags": [
         "master"
       ]
