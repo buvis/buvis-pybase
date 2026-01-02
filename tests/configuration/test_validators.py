@@ -160,3 +160,79 @@ class TestSecureSettingsMixin:
         settings = TestSettings()  # Should not raise
 
         assert settings.value == "default"
+
+
+class TestSafeLoggingMixin:
+    def test_masks_sensitive_scalar_field(self) -> None:
+        """Scalar field with sensitive name is masked in repr."""
+        from pydantic_settings import BaseSettings
+
+        from buvis.pybase.configuration import SafeLoggingMixin
+
+        class TestSettings(SafeLoggingMixin, BaseSettings):
+            api_key: str = "secret123"
+            name: str = "public"
+
+        settings = TestSettings()
+        result = repr(settings)
+
+        assert "api_key='***'" in result
+        assert "name='public'" in result
+        assert "secret123" not in result
+
+    def test_masks_sensitive_dict_keys(self) -> None:
+        """Dict values with sensitive keys are masked."""
+        from pydantic_settings import BaseSettings
+
+        from buvis.pybase.configuration import SafeLoggingMixin
+
+        class TestSettings(SafeLoggingMixin, BaseSettings):
+            headers: dict[str, str] = {
+                "Authorization": "Bearer xyz",
+                "Content-Type": "json",
+            }
+
+        settings = TestSettings()
+        result = repr(settings)
+
+        assert "'Authorization': '***'" in result
+        assert "'Content-Type': 'json'" in result
+        assert "Bearer xyz" not in result
+
+    def test_various_sensitive_patterns(self) -> None:
+        """Various sensitive field names are masked."""
+        from pydantic_settings import BaseSettings
+
+        from buvis.pybase.configuration import SafeLoggingMixin
+
+        class TestSettings(SafeLoggingMixin, BaseSettings):
+            password: str = "pass123"
+            token: str = "tok456"
+            secret: str = "sec789"
+            bearer: str = "bear000"
+
+        settings = TestSettings()
+        result = repr(settings)
+
+        assert "password='***'" in result
+        assert "token='***'" in result
+        assert "secret='***'" in result
+        assert "bearer='***'" in result
+
+    def test_non_sensitive_fields_shown(self) -> None:
+        """Non-sensitive fields are shown normally."""
+        from pydantic_settings import BaseSettings
+
+        from buvis.pybase.configuration import SafeLoggingMixin
+
+        class TestSettings(SafeLoggingMixin, BaseSettings):
+            username: str = "bob"
+            email: str = "bob@example.com"
+            count: int = 42
+
+        settings = TestSettings()
+        result = repr(settings)
+
+        assert "username='bob'" in result
+        assert "email='bob@example.com'" in result
+        assert "count=42" in result

@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Any, Iterator, get_args, get_origin
 
 from pydantic import BaseModel, model_validator
+
+_SENSITIVE_PATTERNS = re.compile(
+    r"(authorization|api[_-]?key|secret|token|password|bearer|credential)",
+    re.IGNORECASE,
+)
 
 MAX_NESTING_DEPTH = 5
 MAX_JSON_ENV_SIZE = 64 * 1024
@@ -133,3 +139,30 @@ class SecureSettingsMixin:
                 validate_json_env_size(key)
 
         return data
+
+
+class SafeLoggingMixin:
+    """Mixin that sanitizes sensitive values in __repr__.
+
+    Per PRD: "Sanitize before logging: Don't log raw JSON (may contain secrets)"
+
+    Masks values for fields whose names match sensitive patterns like
+    'api_key', 'password', 'token', 'authorization', etc.
+    """
+
+    def __repr__(self) -> str:
+        """Repr with sensitive values masked."""
+        fields = []
+        for name in self.__class__.model_fields:
+            value = getattr(self, name, None)
+            if _SENSITIVE_PATTERNS.search(name):
+                fields.append(f"{name}='***'")
+            elif isinstance(value, dict):
+                safe_dict = {
+                    k: "***" if _SENSITIVE_PATTERNS.search(str(k)) else v
+                    for k, v in value.items()
+                }
+                fields.append(f"{name}={safe_dict}")
+            else:
+                fields.append(f"{name}={value!r}")
+        return f"{self.__class__.__name__}({', '.join(fields)})"
