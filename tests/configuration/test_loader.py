@@ -114,6 +114,88 @@ class TestSubstitute:
         assert missing == ["VAR1", "VAR2"]
 
 
+class TestLoadYaml:
+    """Tests for ConfigurationLoader.load_yaml method."""
+
+    def test_valid_yaml_loads(self, tmp_path: Path) -> None:
+        """Valid YAML file is parsed correctly."""
+        yaml_file = tmp_path / "config.yaml"
+        yaml_file.write_text("key: value\nnested:\n  inner: data")
+
+        result = ConfigurationLoader.load_yaml(yaml_file)
+
+        assert result == {"key": "value", "nested": {"inner": "data"}}
+
+    def test_empty_file_returns_empty_dict(self, tmp_path: Path) -> None:
+        """Empty file returns empty dict."""
+        yaml_file = tmp_path / "empty.yaml"
+        yaml_file.write_text("")
+
+        result = ConfigurationLoader.load_yaml(yaml_file)
+
+        assert result == {}
+
+    def test_comments_only_returns_empty_dict(self, tmp_path: Path) -> None:
+        """File with only comments returns empty dict."""
+        yaml_file = tmp_path / "comments.yaml"
+        yaml_file.write_text("# This is a comment\n# Another comment")
+
+        result = ConfigurationLoader.load_yaml(yaml_file)
+
+        assert result == {}
+
+    def test_env_var_substituted(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """${VAR} is substituted with env value."""
+        monkeypatch.setenv("DB_HOST", "localhost")
+        yaml_file = tmp_path / "config.yaml"
+        yaml_file.write_text("host: ${DB_HOST}")
+
+        result = ConfigurationLoader.load_yaml(yaml_file)
+
+        assert result == {"host": "localhost"}
+
+    def test_env_var_with_default(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """${VAR:-default} uses default when var unset."""
+        monkeypatch.delenv("DB_PORT", raising=False)
+        yaml_file = tmp_path / "config.yaml"
+        yaml_file.write_text("port: ${DB_PORT:-5432}")
+
+        result = ConfigurationLoader.load_yaml(yaml_file)
+
+        assert result == {"port": 5432}  # YAML parses as int
+
+    def test_missing_required_var_raises(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Missing required env var raises ValueError."""
+        monkeypatch.delenv("REQUIRED_VAR", raising=False)
+        yaml_file = tmp_path / "config.yaml"
+        yaml_file.write_text("key: ${REQUIRED_VAR}")
+
+        with pytest.raises(ValueError, match="REQUIRED_VAR"):
+            ConfigurationLoader.load_yaml(yaml_file)
+
+    def test_escaped_dollar_preserved(self, tmp_path: Path) -> None:
+        """$${VAR} becomes literal ${VAR} in output."""
+        yaml_file = tmp_path / "config.yaml"
+        yaml_file.write_text("literal: $${NOT_SUBSTITUTED}")
+
+        result = ConfigurationLoader.load_yaml(yaml_file)
+
+        assert result == {"literal": "${NOT_SUBSTITUTED}"}
+
+    def test_missing_file_raises(self, tmp_path: Path) -> None:
+        """Missing file raises FileNotFoundError."""
+        missing = tmp_path / "nonexistent.yaml"
+
+        with pytest.raises(FileNotFoundError):
+            ConfigurationLoader.load_yaml(missing)
+
+
 class TestGetSearchPaths:
     def test_all_env_vars_set(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("BUVIS_CONFIG_DIR", "/custom/config")

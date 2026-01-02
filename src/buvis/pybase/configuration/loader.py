@@ -3,6 +3,9 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 
 DEFAULT_CONFIG_DIRECTORY = Path(
@@ -120,6 +123,40 @@ class ConfigurationLoader:
             Text with placeholders converted to literal ${...}.
         """
         return text.replace(f"{_ESCAPE_PLACEHOLDER}{{", "${")
+
+    @staticmethod
+    def load_yaml(file_path: Path) -> dict[str, Any]:
+        """Load YAML file with environment variable substitution.
+
+        Supports ${VAR} for required vars (raises on missing) and
+        ${VAR:-default} for optional vars with defaults. Use $${VAR}
+        to escape and get literal ${VAR} in output.
+
+        Args:
+            file_path: Path to YAML file to load.
+
+        Returns:
+            Parsed YAML content as dict. Empty files return {}.
+
+        Raises:
+            ValueError: If required environment variables are missing.
+            FileNotFoundError: If file doesn't exist.
+        """
+        content = file_path.read_text(encoding="utf-8")
+
+        # Escape $${VAR} -> placeholder (preserves literal syntax)
+        content = ConfigurationLoader._escape_literals(content)
+
+        # Substitute ${VAR} and ${VAR:-default} with env values
+        content, missing = _substitute(content)
+
+        # Restore placeholders -> ${VAR} (literal output)
+        content = ConfigurationLoader._restore_literals(content)
+
+        if missing:
+            raise ValueError(f"Missing required env vars: {', '.join(sorted(missing))}")
+
+        return yaml.safe_load(content) or {}
 
     @staticmethod
     def find_config_files(tool_name: str | None = None) -> list[Path]:
