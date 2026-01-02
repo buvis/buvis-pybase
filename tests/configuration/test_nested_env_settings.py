@@ -73,3 +73,29 @@ class TestMixedEnvResolution:
         settings = PayrollSettings()
 
         assert settings.database.url == ""  # Default, env var not matched
+
+
+class TestMixedUnderscoreDelimiters:
+    """Tests for mixed _ word separator and __ nesting delimiter."""
+
+    def test_idle_timeout_default(self) -> None:
+        """Verify idle_timeout defaults to 300 seconds."""
+        settings = PayrollSettings()
+
+        assert settings.database.pool.idle_timeout == 300
+
+    def test_underscore_word_sep_with_nesting(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """PRD test: _ separates words, __ descends into model.
+
+        POOL__IDLE_TIMEOUT breakdown:
+        - DATABASE__ -> descend into database model
+        - POOL__ -> descend into pool model
+        - IDLE_TIMEOUT -> field name (pydantic normalizes to idle_timeout)
+        """
+        monkeypatch.setenv("BUVIS_PAYROLL_DATABASE__POOL__IDLE_TIMEOUT", "600")
+
+        settings = PayrollSettings()
+
+        assert settings.database.pool.idle_timeout == 600
