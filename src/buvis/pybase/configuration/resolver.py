@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 from typing import Any, TypeVar
 
+import yaml
 from pydantic_settings import BaseSettings
 
 from .loader import ConfigurationLoader
@@ -14,6 +16,27 @@ from .loader import ConfigurationLoader
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseSettings)
+
+
+def _load_yaml_config(file_path: Path | None = None) -> dict[str, Any]:
+    """Load YAML config, return empty dict if not found.
+
+    Args:
+        file_path: Path to YAML file. If None, uses BUVIS_CONFIG_FILE env var
+            or defaults to ~/.config/buvis/config.yaml.
+
+    Returns:
+        Parsed YAML as dict, or empty dict if file doesn't exist.
+    """
+    if file_path is None:
+        default = Path.home() / ".config" / "buvis" / "config.yaml"
+        file_path = Path(os.getenv("BUVIS_CONFIG_FILE", str(default)))
+
+    if not file_path.exists():
+        return {}
+
+    with file_path.open() as f:
+        return yaml.safe_load(f) or {}
 
 
 class ConfigResolver:
