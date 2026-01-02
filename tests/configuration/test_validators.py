@@ -236,3 +236,51 @@ class TestSafeLoggingMixin:
         assert "username='bob'" in result
         assert "email='bob@example.com'" in result
         assert "count=42" in result
+
+
+class TestIsSensitiveField:
+    """Tests for is_sensitive_field function."""
+
+    def test_password_is_sensitive(self) -> None:
+        from buvis.pybase.configuration import is_sensitive_field
+
+        assert is_sensitive_field("password") is True
+        assert is_sensitive_field("database_password") is True
+        assert is_sensitive_field("PASSWORD") is True
+
+    def test_api_key_is_sensitive(self) -> None:
+        from buvis.pybase.configuration import is_sensitive_field
+
+        assert is_sensitive_field("api_key") is True
+        assert is_sensitive_field("apikey") is True
+        assert is_sensitive_field("api-key") is True
+        assert is_sensitive_field("API_KEY") is True
+
+    def test_token_is_sensitive(self) -> None:
+        from buvis.pybase.configuration import is_sensitive_field
+
+        assert is_sensitive_field("token") is True
+        assert is_sensitive_field("auth_token") is True
+        assert is_sensitive_field("access_token") is True
+
+    def test_secret_is_sensitive(self) -> None:
+        from buvis.pybase.configuration import is_sensitive_field
+
+        assert is_sensitive_field("secret") is True
+        assert is_sensitive_field("client_secret") is True
+
+    def test_nested_path_is_sensitive(self) -> None:
+        from buvis.pybase.configuration import is_sensitive_field
+
+        assert is_sensitive_field("database.password") is True
+        assert is_sensitive_field("auth.api_key") is True
+        assert is_sensitive_field("services.redis.token") is True
+
+    def test_non_sensitive_fields(self) -> None:
+        from buvis.pybase.configuration import is_sensitive_field
+
+        assert is_sensitive_field("debug") is False
+        assert is_sensitive_field("username") is False
+        assert is_sensitive_field("host") is False
+        assert is_sensitive_field("database.host") is False
+        assert is_sensitive_field("log_level") is False
