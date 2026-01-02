@@ -6,6 +6,7 @@ from .buvis_settings import (
     create_tool_settings_class,
     validate_tool_name,
 )
+from .click_integration import buvis_options
 from .resolver import ConfigResolver
 from .settings import GlobalSettings, ToolSettings
 from .validators import (
@@ -22,6 +23,7 @@ __all__ = [
     "ConfigurationError",
     "ConfigurationLoader",
     "ConfigResolver",
+    "buvis_options",
     "BuvisSettings",
     "create_tool_settings_class",
     "validate_tool_name",
