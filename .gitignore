@@ -1,6 +1,35 @@
-# Coding assistant
-.claude/
+# ============================================
+# AI Tooling
+# ============================================
+# Local settings (user-specific permissions, preferences)
+.claude/settings.local.json
+# Claude cache and temporary files
+.claude/cache/
+.claude/tmp/
+.claude/hooks/notify.log
+.devcontainer/.claude/
+.devcontainer/.codex/
+
+# ============================================
+# MCP Servers (Model Context Protocol)
+# ============================================
+# Serena MCP - local memories and cache
 .serena/
+# MCP config with API keys (if you create one, use .mcp.json.example instead)
+.mcp.json
+
+# ============================================
+# Task Master AI
+# ============================================
+# Local state and session data
+.taskmaster/state.json
+# Generated reports
+.taskmaster/reports/
+# Local work in progress
+.taskmaster/docs/
+.taskmaster/tasks/
+# Note: Keep .taskmaster/config.json - it's just model names, no secrets
+# Note: Keep .taskmaster/CLAUDE.md - it's documentation
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -170,27 +199,5 @@ cython_debug/
 
 # ruff
 .ruff_cache/
-
-# Logs
-logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-dev-debug.log
-# Dependency directories
-node_modules/
-# Environment variables
-# Editor directories and files
-.idea
-.vscode
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-# OS specific
-.DS_Store
-
-# Task files
-# tasks.json
-# tasks/ 
+.taskmaster/config.json
+.taskmaster/state.json
