@@ -252,3 +252,96 @@ class TestGetSettings:
 
         with pytest.raises(RuntimeError, match="buvis_options decorator not applied"):
             get_settings(ctx)
+
+
+class TestClickIntegration:
+    """Integration tests for Click group/subcommand settings inheritance."""
+
+    def test_settings_inherited_in_subcommand(self, runner: CliRunner) -> None:
+        """Settings from parent @buvis_options are accessible in subcommands."""
+
+        @click.group()
+        @buvis_options
+        @click.pass_context
+        def cli(ctx: click.Context) -> None:
+            pass
+
+        @cli.command()
+        @click.pass_context
+        def process(ctx: click.Context) -> None:
+            s = get_settings(ctx)
+            click.echo(f"debug={s.debug}")
+
+        result = runner.invoke(cli, ["--debug", "process"])
+
+        assert "debug=True" in result.output
+        assert result.exit_code == 0
+
+    def test_get_settings_returns_same_object_in_group_and_subcommand(
+        self, runner: CliRunner
+    ) -> None:
+        """get_settings returns identical object in group and subcommand (PRD #6)."""
+        results: list[int] = []
+
+        @click.group()
+        @buvis_options
+        @click.pass_context
+        def cli(ctx: click.Context) -> None:
+            results.append(id(get_settings(ctx)))
+
+        @cli.command()
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            results.append(id(get_settings(ctx)))
+
+        runner.invoke(cli, ["cmd"])
+
+        assert len(results) == 2
+        assert results[0] == results[1]  # Same object
+
+    def test_settings_accessible_in_multiple_levels(self, runner: CliRunner) -> None:
+        """Settings accessible at group and command level."""
+        captured: list[str] = []
+
+        @click.group()
+        @buvis_options
+        @click.pass_context
+        def cli(ctx: click.Context) -> None:
+            s = get_settings(ctx)
+            captured.append(f"group={s.log_level}")
+
+        @cli.command()
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            s = get_settings(ctx)
+            captured.append(f"cmd={s.log_level}")
+
+        runner.invoke(cli, ["--log-level", "DEBUG", "cmd"])
+
+        assert "group=DEBUG" in captured
+        assert "cmd=DEBUG" in captured
+
+    def test_multiple_subcommands_share_settings(self, runner: CliRunner) -> None:
+        """Multiple subcommands in same invocation share settings object."""
+        captured_ids: list[int] = []
+
+        @click.group(chain=True)
+        @buvis_options
+        @click.pass_context
+        def cli(ctx: click.Context) -> None:
+            pass
+
+        @cli.command()
+        @click.pass_context
+        def cmd1(ctx: click.Context) -> None:
+            captured_ids.append(id(get_settings(ctx)))
+
+        @cli.command()
+        @click.pass_context
+        def cmd2(ctx: click.Context) -> None:
+            captured_ids.append(id(get_settings(ctx)))
+
+        runner.invoke(cli, ["cmd1", "cmd2"])
+
+        assert len(captured_ids) == 2
+        assert captured_ids[0] == captured_ids[1]

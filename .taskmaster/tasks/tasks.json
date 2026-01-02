@@ -5923,7 +5923,7 @@
         "dependencies": [
           "79"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5984,7 +5984,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:58:51.222Z"
+        "updatedAt": "2026-01-02T19:59:52.764Z"
       },
       {
         "id": "81",
@@ -6657,7 +6657,7 @@
         "dependencies": [
           "89"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -6720,14 +6720,15 @@
             "testStrategy": "Run `uv run pytest tests/configuration/ -v --tb=short` and verify 100% pass rate with no warnings about fixture scope.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T20:00:00.995Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:58:51.224Z",
+      "lastModified": "2026-01-02T20:00:00.998Z",
       "taskCount": 90,
-      "completedCount": 86,
+      "completedCount": 87,
       "tags": [
         "master"
       ]
