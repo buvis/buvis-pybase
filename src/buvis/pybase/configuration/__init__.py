@@ -1,3 +1,28 @@
+"""Configuration management with precedence: CLI > ENV > YAML > Defaults.
+
+Usage::
+
+    from buvis.pybase.configuration import get_settings, buvis_options
+
+    @click.command()
+    @buvis_options
+    @click.pass_context
+    def main(ctx):
+        settings = get_settings(ctx)
+        if settings.debug:
+            ...
+
+Precedence (highest to lowest):
+    1. CLI arguments (--debug, --log-level, etc.)
+    2. Environment variables (BUVIS_* prefix)
+    3. YAML config file (~/.config/buvis/config.yaml)
+    4. Model defaults
+
+Legacy:
+    The ``cfg`` singleton still works but doesn't support precedence.
+    Use ``get_settings()`` with Click integration for new code.
+"""
+
 from .configuration import Configuration, ConfigurationKeyNotFoundError, cfg
 from .exceptions import ConfigurationError, MissingEnvVarError
 from .loader import ConfigurationLoader

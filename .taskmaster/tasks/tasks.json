@@ -5180,7 +5180,7 @@
           "67",
           "68"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -5238,7 +5238,8 @@
             "testStrategy": "Run `python -c \"from buvis.pybase.configuration import ConfigResolver, GlobalSettings, ConfigSource, get_settings\"` and `uv run pytest tests/configuration/` to verify all exports work.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T20:01:50.720Z"
       },
       {
         "id": "71",
@@ -6657,7 +6658,7 @@
         "dependencies": [
           "89"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6721,14 +6722,14 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T20:00:00.995Z"
+        "updatedAt": "2026-01-02T20:01:40.665Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T20:00:00.998Z",
+      "lastModified": "2026-01-02T20:01:50.722Z",
       "taskCount": 90,
-      "completedCount": 87,
+      "completedCount": 88,
       "tags": [
         "master"
       ]

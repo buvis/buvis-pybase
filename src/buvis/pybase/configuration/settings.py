@@ -7,6 +7,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+__all__ = ["GlobalSettings", "ToolSettings"]
+
 
 class ToolSettings(BaseModel):
     """Base for tool-specific settings.
