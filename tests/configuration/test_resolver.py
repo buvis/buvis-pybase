@@ -4,8 +4,8 @@ import os
 from pathlib import Path
 
 import pytest
-import yaml
 
+from buvis.pybase.configuration import ConfigurationError
 from buvis.pybase.configuration.buvis_settings import BuvisSettings
 from buvis.pybase.configuration.loader import ConfigurationLoader
 from buvis.pybase.configuration.resolver import ConfigResolver, _load_yaml_config
@@ -194,12 +194,45 @@ class TestLoadYamlConfig:
         assert result == {}
 
     def test_invalid_yaml_raises(self, tmp_path: Path) -> None:
-        """Invalid YAML raises exception."""
+        """Invalid YAML raises ConfigurationError with file path."""
         invalid = tmp_path / "invalid.yaml"
         invalid.write_text("key: [broken")
 
-        with pytest.raises(yaml.YAMLError):
+        with pytest.raises(ConfigurationError) as exc_info:
             _load_yaml_config(invalid)
+
+        assert str(invalid) in str(exc_info.value)
+
+    def test_invalid_yaml_includes_line_number(self, tmp_path: Path) -> None:
+        """ConfigurationError includes line number from problem_mark."""
+        invalid = tmp_path / "bad.yaml"
+        # Error on line 2 (0-indexed line 1, so +1 = 2)
+        invalid.write_text("valid: true\nbroken: [unclosed")
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            _load_yaml_config(invalid)
+
+        assert ":2:" in str(exc_info.value) or ":3:" in str(exc_info.value)
+
+    def test_permission_denied_returns_empty(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """PermissionError returns empty dict."""
+        config = tmp_path / "locked.yaml"
+        config.write_text("key: value")
+
+        original_open = Path.open
+
+        def raise_permission(self, *args, **kwargs):
+            if self == config:
+                raise PermissionError("Access denied")
+            return original_open(self, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "open", raise_permission)
+
+        result = _load_yaml_config(config)
+
+        assert result == {}
 
     def test_env_var_override(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

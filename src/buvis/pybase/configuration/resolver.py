@@ -10,6 +10,7 @@ from typing import Any, TypeVar
 import yaml
 from pydantic_settings import BaseSettings
 
+from .exceptions import ConfigurationError
 from .loader import ConfigurationLoader
 
 
@@ -27,6 +28,9 @@ def _load_yaml_config(file_path: Path | None = None) -> dict[str, Any]:
 
     Returns:
         Parsed YAML as dict, or empty dict if file doesn't exist.
+
+    Raises:
+        ConfigurationError: If YAML syntax is invalid.
     """
     if file_path is None:
         default = Path.home() / ".config" / "buvis" / "config.yaml"
@@ -35,8 +39,18 @@ def _load_yaml_config(file_path: Path | None = None) -> dict[str, Any]:
     if not file_path.exists():
         return {}
 
-    with file_path.open() as f:
-        return yaml.safe_load(f) or {}
+    try:
+        with file_path.open() as f:
+            return yaml.safe_load(f) or {}
+    except yaml.YAMLError as e:
+        mark = getattr(e, "problem_mark", None)
+        line_num = mark.line + 1 if mark else "unknown"
+        raise ConfigurationError(
+            f"YAML syntax error in {file_path}:{line_num}: {e}"
+        ) from e
+    except PermissionError:
+        logger.warning("Permission denied reading %s, skipping", file_path)
+        return {}
 
 
 class ConfigResolver:
