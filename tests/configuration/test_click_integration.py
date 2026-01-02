@@ -9,7 +9,7 @@ import pytest
 from click.testing import CliRunner
 
 from buvis.pybase.configuration import buvis_options, get_settings
-from buvis.pybase.configuration.buvis_settings import BuvisSettings
+from buvis.pybase.configuration.settings import GlobalSettings
 
 
 @pytest.fixture
@@ -88,7 +88,7 @@ class TestBuvisOptionsContextInjection:
         runner.invoke(cmd, [])
 
         assert len(captured_settings) == 1
-        assert isinstance(captured_settings[0], BuvisSettings)
+        assert isinstance(captured_settings[0], GlobalSettings)
 
     def test_default_settings_values(self, runner: CliRunner) -> None:
         """Default settings have expected values."""
@@ -207,7 +207,7 @@ class TestGetSettings:
         runner.invoke(cmd, [])
 
         assert len(captured) == 1
-        assert isinstance(captured[0], BuvisSettings)
+        assert isinstance(captured[0], GlobalSettings)
 
     def test_returns_same_object_as_context(self, runner: CliRunner) -> None:
         """get_settings returns identical object to ctx.obj['settings']."""

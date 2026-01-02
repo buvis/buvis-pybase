@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import click
 
-from .buvis_settings import BuvisSettings
 from .resolver import ConfigResolver
 from .settings import GlobalSettings
 
@@ -95,7 +94,7 @@ def buvis_options(f: F) -> F:
 
         resolver = ConfigResolver()
         settings = resolver.resolve(
-            BuvisSettings,
+            GlobalSettings,
             config_dir=config_dir,
             config_path=Path(config) if config else None,
             cli_overrides=cli_overrides,
