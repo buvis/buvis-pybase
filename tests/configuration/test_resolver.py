@@ -294,3 +294,26 @@ class TestValidationErrorHandling:
             resolver.resolve(BuvisSettings, config_path=config)
 
         assert "Configuration validation failed" in str(exc_info.value)
+
+
+class TestSecurityConstraints:
+    """Tests for security constraints in ConfigResolver."""
+
+    def test_settings_immutable_after_resolve(self) -> None:
+        """Settings are frozen and cannot be modified."""
+        resolver = ConfigResolver()
+        settings = resolver.resolve(BuvisSettings)
+
+        with pytest.raises(Exception):  # Pydantic raises ValidationError for frozen
+            settings.debug = True
+
+    def test_fail_fast_validates_at_resolve(self, tmp_path: Path) -> None:
+        """Validation happens at resolve(), not at field access."""
+        config = tmp_path / "config.yaml"
+        config.write_text("log_level: INVALID\n")
+
+        resolver = ConfigResolver()
+
+        # Error raised at resolve(), not when accessing log_level
+        with pytest.raises(ConfigurationError):
+            resolver.resolve(BuvisSettings, config_path=config)
