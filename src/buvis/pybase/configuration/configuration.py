@@ -189,6 +189,3 @@ class Configuration:
 
     def __repr__(self: Configuration) -> str:
         return f"---\n{yaml.dump(self._config_dict, default_flow_style=False)}"
-
-
-cfg = Configuration()

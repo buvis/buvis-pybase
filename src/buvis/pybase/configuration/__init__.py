@@ -17,13 +17,9 @@ Precedence (highest to lowest):
     2. Environment variables (BUVIS_* prefix)
     3. YAML config file (~/.config/buvis/config.yaml)
     4. Model defaults
-
-Legacy:
-    The ``cfg`` singleton still works but doesn't support precedence.
-    Use ``get_settings()`` with Click integration for new code.
 """
 
-from .configuration import Configuration, ConfigurationKeyNotFoundError, cfg
+from .configuration import Configuration, ConfigurationKeyNotFoundError
 from .exceptions import ConfigurationError, MissingEnvVarError
 from .loader import ConfigurationLoader
 from .buvis_settings import (
@@ -71,7 +67,6 @@ __all__ = [
     "is_sensitive_field",
     "validate_json_env_size",
     "validate_nesting_depth",
-    "cfg",
     "ToolSettings",
     "GlobalSettings",
 ]

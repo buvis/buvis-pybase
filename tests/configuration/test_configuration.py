@@ -191,13 +191,6 @@ class TestDefaultPath:
 class TestBackwardCompatibility:
     """Tests for backward compatibility with existing behavior."""
 
-    def test_cfg_singleton_works(self) -> None:
-        """Global cfg singleton remains functional."""
-        from buvis.pybase.configuration import cfg
-
-        # Should not raise - singleton is created at import
-        assert cfg is not None
-
     def test_explicit_path_takes_precedence(self, tmp_path: Path) -> None:
         """Explicit path always takes precedence over discovery."""
         explicit = tmp_path / "explicit.yaml"
