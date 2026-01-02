@@ -76,6 +76,7 @@ name = "buvis-pybase"
 version = "0.7.3"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "inflection" },
     { name = "jira" },
     { name = "pexpect" },
@@ -107,6 +108,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.1.0,<9" },
     { name = "inflection", specifier = ">=0.5.1,<1" },
     { name = "jira", specifier = ">=3.10.5,<4" },
     { name = "pexpect", specifier = ">=4.9.0,<5" },
