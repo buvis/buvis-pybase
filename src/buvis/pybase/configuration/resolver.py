@@ -58,27 +58,58 @@ class ConfigResolver:
         self,
         settings_class: type[T],
         config_dir: str | None = None,
+        config_path: Path | None = None,
         cli_overrides: dict[str, Any] | None = None,
     ) -> T:
-        """Instantiate a settings class after discovering configuration files.
+        """Instantiate a settings class with precedence: CLI > ENV > YAML > Defaults.
 
         Args:
             settings_class: The Pydantic settings class to instantiate.
             config_dir: Optional configuration directory that overrides the
                 ``BUVIS_CONFIG_DIR`` environment variable for this resolution.
+            config_path: Optional path to YAML config file.
             cli_overrides: Explicit overrides typically parsed from CLI options
                 that take precedence over discovered configuration values.
 
         Returns:
             T: An instance of ``settings_class`` populated with resolved values.
-        """
 
+        Note:
+            Precedence order (highest to lowest):
+            1. CLI overrides (explicit values passed in cli_overrides)
+            2. Environment variables (Pydantic handles automatically)
+            3. YAML config file values
+            4. Model field defaults
+        """
         if config_dir is not None:
             os.environ["BUVIS_CONFIG_DIR"] = config_dir
             logger.debug("Set BUVIS_CONFIG_DIR to %s", config_dir)
 
-        config_files = self.loader.find_config_files(tool_name=self.tool_name)
-        logger.debug("Discovered config files: %s", config_files)
+        # Load YAML config (priority 3)
+        yaml_config = _load_yaml_config(config_path)
+        logger.debug("Loaded YAML config: %s", yaml_config)
 
-        overrides = cli_overrides or {}
-        return settings_class(**overrides)
+        # Create base settings with YAML + ENV (ENV overrides YAML via Pydantic)
+        # Note: Pydantic kwargs override env, so we create without YAML first
+        base_settings = settings_class()
+
+        # Apply YAML for fields not set by env (check against defaults)
+        merged: dict[str, Any] = {}
+        for key, value in yaml_config.items():
+            if hasattr(base_settings, key):
+                field_value = getattr(base_settings, key)
+                default = settings_class.model_fields.get(key)
+                if default and field_value == default.default:
+                    # Field has default value, apply YAML
+                    merged[key] = value
+
+        # Apply CLI overrides (priority 1, highest)
+        if cli_overrides:
+            for key, value in cli_overrides.items():
+                if value is not None:
+                    merged[key] = value
+
+        # Return settings with merged overrides
+        if merged:
+            return base_settings.model_copy(update=merged)
+        return base_settings
