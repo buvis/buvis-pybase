@@ -2949,7 +2949,7 @@
         "testStrategy": "Import and instantiate PayrollSettings. Verify database.pool.min_size == 5 by default.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -2957,9 +2957,10 @@
             "description": "Add pydantic-settings package to project dependencies since it's required for BaseSettings and SettingsConfigDict.",
             "dependencies": [],
             "details": "Add `pydantic-settings>=2.0,<3` to the dependencies list in pyproject.toml. This enables BaseSettings, SettingsConfigDict, and env_nested_delimiter features. Run `uv sync` after adding.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv sync --all-groups` and verify `from pydantic_settings import BaseSettings` imports successfully.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:48:08.172Z"
           },
           {
             "id": 2,
@@ -2969,9 +2970,10 @@
               1
             ],
             "details": "Create `src/buvis/pybase/configuration/examples/` directory. Add `__init__.py` with `from .nested_settings import PoolSettings, DatabaseSettings, PayrollSettings` and `__all__` export list.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify directory exists and __init__.py contains proper exports. Import test: `from buvis.pybase.configuration.examples import PoolSettings`.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:50:58.057Z"
           },
           {
             "id": 3,
@@ -2981,9 +2983,10 @@
               2
             ],
             "details": "In `nested_settings.py`, create PoolSettings(BaseModel) with: `min_size: int = 5`, `max_size: int = 20`. Include docstring explaining `__` delimiter access pattern: `BUVIS_PAYROLL_DATABASE_POOL__MIN_SIZE`.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Instantiate PoolSettings() and verify defaults: min_size==5, max_size==20. Test custom values via constructor.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:50:58.099Z"
           },
           {
             "id": 4,
@@ -2993,9 +2996,10 @@
               3
             ],
             "details": "Add DatabaseSettings(BaseModel) with `url: str = \"\"` and `pool: PoolSettings = Field(default_factory=PoolSettings)`. Add PayrollSettings(BaseSettings) with model_config containing env_prefix='BUVIS_PAYROLL_', env_nested_delimiter='__', case_sensitive=False, frozen=True, extra='forbid'.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Instantiate PayrollSettings() and verify database.pool.min_size==5, database.url==''. Test env_nested_delimiter works with BUVIS_PAYROLL_DATABASE_POOL__MIN_SIZE.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:50:58.139Z"
           },
           {
             "id": 5,
@@ -3005,11 +3009,13 @@
               4
             ],
             "details": "Create test class TestNestedSettings with: test_pool_defaults (verify min_size=5, max_size=20), test_database_defaults (url='', pool nested), test_payroll_env_nested_delimiter (use @patch.dict with BUVIS_PAYROLL_DATABASE_POOL__MIN_SIZE=10 and verify settings.database.pool.min_size==10), test_payroll_immutable (verify frozen=True raises on assignment).",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_nested_settings.py -v` and verify all 4 tests pass.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:50:58.180Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T17:50:58.180Z"
       },
       {
         "id": "42",
@@ -6577,9 +6583,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T17:47:18.936Z",
+      "lastModified": "2026-01-02T17:50:58.181Z",
       "taskCount": 90,
-      "completedCount": 4,
+      "completedCount": 5,
       "tags": [
         "master"
       ]
