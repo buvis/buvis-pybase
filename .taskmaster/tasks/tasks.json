@@ -3314,7 +3314,7 @@
         "testStrategy": "Create 6-level nested model, verify validate_nesting_depth raises ValueError. 5-level model passes.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3322,9 +3322,10 @@
             "description": "Add pydantic to project dependencies and create the validators.py file with imports and MAX_NESTING_DEPTH constant.",
             "dependencies": [],
             "details": "Add `pydantic>=2.0,<3` to pyproject.toml dependencies. Create `src/buvis/pybase/configuration/validators.py` with:\n```python\nfrom __future__ import annotations\n\nfrom pydantic import BaseModel\n\nMAX_NESTING_DEPTH = 5\n```\nRun `uv sync` to install the new dependency.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify pydantic imports successfully and MAX_NESTING_DEPTH constant equals 5.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:51:36.216Z"
           },
           {
             "id": 2,
@@ -3334,9 +3335,10 @@
               1
             ],
             "details": "Add to validators.py:\n```python\ndef get_model_depth(model_class: type[BaseModel], current_depth: int = 0) -> int:\n    \"\"\"Calculate max nesting depth of a Pydantic model.\"\"\"\n    if current_depth > MAX_NESTING_DEPTH:\n        return current_depth  # Short-circuit\n    \n    max_depth = current_depth\n    for field_info in model_class.model_fields.values():\n        annotation = field_info.annotation\n        if isinstance(annotation, type) and issubclass(annotation, BaseModel):\n            child_depth = get_model_depth(annotation, current_depth + 1)\n            max_depth = max(max_depth, child_depth)\n    \n    return max_depth\n```\nShort-circuits at MAX_NESTING_DEPTH+1 for efficiency.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test with flat model (depth 0), 3-level nested model, and 6-level nested model. Verify correct depth values returned.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:53:58.573Z"
           },
           {
             "id": 3,
@@ -3346,9 +3348,10 @@
               2
             ],
             "details": "Add to validators.py:\n```python\ndef validate_nesting_depth(model_class: type[BaseModel]) -> None:\n    \"\"\"Raise ValueError if model exceeds max nesting depth.\"\"\"\n    depth = get_model_depth(model_class)\n    if depth > MAX_NESTING_DEPTH:\n        msg = (\n            f\"Model {model_class.__name__} has nesting depth {depth}, \"\n            f\"max allowed is {MAX_NESTING_DEPTH}\"\n        )\n        raise ValueError(msg)\n```\nError message includes model name, actual depth, and max allowed for debugging.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify ValueError raised for 6-level model with correct message. Verify no exception for 5-level model.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:53:58.617Z"
           },
           {
             "id": 4,
@@ -3358,9 +3361,10 @@
               3
             ],
             "details": "Create `tests/configuration/__init__.py` (empty) and `tests/configuration/test_validators.py`:\n```python\nimport pytest\nfrom pydantic import BaseModel\nfrom buvis.pybase.configuration.validators import (\n    MAX_NESTING_DEPTH, get_model_depth, validate_nesting_depth\n)\n\nclass Level5(BaseModel): value: int\nclass Level4(BaseModel): child: Level5\nclass Level3(BaseModel): child: Level4\nclass Level2(BaseModel): child: Level3\nclass Level1(BaseModel): child: Level2\nclass Level0Valid(BaseModel): child: Level1  # depth=5, valid\nclass Level6Invalid(BaseModel): child: Level0Valid  # depth=6, invalid\n\nclass TestGetModelDepth:\n    def test_flat_model_depth_zero(self): ...\n    def test_nested_model_depth_five(self): ...\n    def test_nested_model_depth_six(self): ...\n\nclass TestValidateNestingDepth:\n    def test_valid_depth_passes(self): ...\n    def test_invalid_depth_raises_valueerror(self): ...\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_validators.py -v`. All tests must pass.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:53:58.662Z"
           },
           {
             "id": 5,
@@ -3370,11 +3374,13 @@
               3
             ],
             "details": "Update `src/buvis/pybase/configuration/__init__.py`:\n```python\nfrom .configuration import Configuration, ConfigurationKeyNotFoundError, cfg\nfrom .validators import MAX_NESTING_DEPTH, get_model_depth, validate_nesting_depth\n\n__all__ = [\n    \"Configuration\",\n    \"ConfigurationKeyNotFoundError\",\n    \"cfg\",\n    \"MAX_NESTING_DEPTH\",\n    \"get_model_depth\",\n    \"validate_nesting_depth\",\n]\n```\nThis enables `from buvis.pybase.configuration import validate_nesting_depth`.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify imports work: `from buvis.pybase.configuration import validate_nesting_depth, MAX_NESTING_DEPTH`",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:53:58.704Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T17:53:58.704Z"
       },
       {
         "id": "47",
@@ -6583,9 +6589,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T17:50:58.181Z",
+      "lastModified": "2026-01-02T17:53:58.706Z",
       "taskCount": 90,
-      "completedCount": 5,
+      "completedCount": 6,
       "tags": [
         "master"
       ]
