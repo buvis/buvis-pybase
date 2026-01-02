@@ -24,6 +24,28 @@ class TestConfigResolverInit:
         assert resolver.tool_name == "cli"
         assert isinstance(resolver.loader, ConfigurationLoader)
 
+    def test_valid_lowercase_tool_name(self) -> None:
+        """Lowercase tool_name without hyphens is accepted."""
+        resolver = ConfigResolver(tool_name="payroll")
+
+        assert resolver.tool_name == "payroll"
+
+    def test_uppercase_tool_name_raises(self) -> None:
+        """Uppercase in tool_name raises ValueError."""
+        with pytest.raises(ValueError, match="lowercase"):
+            ConfigResolver(tool_name="PayRoll")
+
+    def test_hyphen_tool_name_raises(self) -> None:
+        """Hyphen in tool_name raises ValueError."""
+        with pytest.raises(ValueError, match="hyphens"):
+            ConfigResolver(tool_name="pay-roll")
+
+    def test_underscore_tool_name_allowed(self) -> None:
+        """Underscore in tool_name is allowed."""
+        resolver = ConfigResolver(tool_name="my_tool")
+
+        assert resolver.tool_name == "my_tool"
+
 
 class TestConfigResolverResolve:
     def test_resolve_applies_cli_overrides(self) -> None:
