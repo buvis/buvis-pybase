@@ -106,3 +106,57 @@ class TestValidateJsonEnvSize:
 
         with pytest.raises(ValueError):
             validate_json_env_size(env_var)
+
+
+class TestSecureSettingsMixin:
+    def test_validates_oversized_env_raises(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Oversized prefixed env var raises ValueError."""
+        from pydantic_settings import BaseSettings, SettingsConfigDict
+
+        from buvis.pybase.configuration import SecureSettingsMixin
+
+        class TestSettings(SecureSettingsMixin, BaseSettings):
+            model_config = SettingsConfigDict(env_prefix="TEST_SECURE_")
+            value: str = ""
+
+        oversized = "x" * (MAX_JSON_ENV_SIZE + 1)
+        monkeypatch.setenv("TEST_SECURE_VALUE", oversized)
+
+        with pytest.raises(ValueError, match="exceeds max JSON size"):
+            TestSettings()
+
+    def test_allows_valid_sized_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Valid-sized prefixed env var is allowed."""
+        from pydantic_settings import BaseSettings, SettingsConfigDict
+
+        from buvis.pybase.configuration import SecureSettingsMixin
+
+        class TestSettings(SecureSettingsMixin, BaseSettings):
+            model_config = SettingsConfigDict(env_prefix="TEST_SECURE_")
+            value: str = ""
+
+        valid = "x" * 100
+        monkeypatch.setenv("TEST_SECURE_VALUE", valid)
+
+        settings = TestSettings()
+
+        assert settings.value == valid
+
+    def test_ignores_non_prefixed_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Oversized non-prefixed env var is allowed."""
+        from pydantic_settings import BaseSettings, SettingsConfigDict
+
+        from buvis.pybase.configuration import SecureSettingsMixin
+
+        class TestSettings(SecureSettingsMixin, BaseSettings):
+            model_config = SettingsConfigDict(env_prefix="TEST_SECURE_")
+            value: str = "default"
+
+        oversized = "x" * (MAX_JSON_ENV_SIZE + 1)
+        monkeypatch.setenv("OTHER_VAR", oversized)
+
+        settings = TestSettings()  # Should not raise
+
+        assert settings.value == "default"

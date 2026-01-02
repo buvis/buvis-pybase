@@ -14,6 +14,7 @@ from .settings import GlobalSettings, ToolSettings
 from .validators import (
     MAX_JSON_ENV_SIZE,
     MAX_NESTING_DEPTH,
+    SecureSettingsMixin,
     get_model_depth,
     validate_json_env_size,
     validate_nesting_depth,
@@ -34,6 +35,7 @@ __all__ = [
     "validate_tool_name",
     "MAX_NESTING_DEPTH",
     "MAX_JSON_ENV_SIZE",
+    "SecureSettingsMixin",
     "get_model_depth",
     "validate_json_env_size",
     "validate_nesting_depth",
