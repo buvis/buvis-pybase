@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
+import stat
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+
+logger = logging.getLogger(__name__)
 
 
 DEFAULT_CONFIG_DIRECTORY = Path(
@@ -83,6 +88,22 @@ class ConfigurationLoader:
         return paths
 
     @staticmethod
+    def _is_world_writable(path: Path) -> bool:
+        """Check if file has world-writable permissions.
+
+        Args:
+            path: Path to check permissions for.
+
+        Returns:
+            True if file is world-writable, False otherwise or on error.
+        """
+        try:
+            mode = path.stat().st_mode
+            return bool(mode & stat.S_IWOTH)
+        except OSError:
+            return False
+
+    @staticmethod
     def _get_candidate_files(paths: list[Path], tool_name: str | None) -> list[Path]:
         """Generate candidate config file paths from search locations.
 
@@ -142,6 +163,9 @@ class ConfigurationLoader:
             ValueError: If required environment variables are missing.
             FileNotFoundError: If file doesn't exist.
         """
+        if ConfigurationLoader._is_world_writable(file_path):
+            logger.warning("Config file %s is world-writable", file_path)
+
         content = file_path.read_text(encoding="utf-8")
 
         # Escape $${VAR} -> placeholder (preserves literal syntax)
