@@ -6,3 +6,7 @@ class ConfigurationKeyNotFoundError(Exception):
         message: str = "Key not found in configuration.",
     ) -> None:
         super().__init__(message)
+
+
+class ConfigurationError(Exception):
+    """Configuration loading or validation failed."""
