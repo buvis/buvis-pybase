@@ -1900,7 +1900,7 @@
         "dependencies": [
           "21"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1961,7 +1961,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:16:46.977Z"
+        "updatedAt": "2026-01-02T19:19:06.852Z"
       },
       {
         "id": "27",
@@ -1973,7 +1973,7 @@
         "dependencies": [
           "24"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -2033,7 +2033,8 @@
             "testStrategy": "Test verifies problem_mark.line matches expected error location",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:19:16.769Z"
       },
       {
         "id": "28",
@@ -6694,9 +6695,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:16:46.979Z",
+      "lastModified": "2026-01-02T19:19:16.771Z",
       "taskCount": 90,
-      "completedCount": 55,
+      "completedCount": 56,
       "tags": [
         "master"
       ]

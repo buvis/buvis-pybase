@@ -316,6 +316,29 @@ class TestLoadYaml:
         with pytest.raises(FileNotFoundError):
             ConfigurationLoader.load_yaml(missing)
 
+    def test_invalid_yaml_raises_yamlerror(self, tmp_path: Path) -> None:
+        """Malformed YAML raises yaml.YAMLError."""
+        import yaml
+
+        invalid = tmp_path / "invalid.yaml"
+        invalid.write_text("key: [unclosed\n  - list")
+
+        with pytest.raises(yaml.YAMLError):
+            ConfigurationLoader.load_yaml(invalid)
+
+    def test_yamlerror_contains_line_number(self, tmp_path: Path) -> None:
+        """yaml.YAMLError contains problem_mark with line info."""
+        import yaml
+
+        bad_yaml = tmp_path / "bad.yaml"
+        bad_yaml.write_text("good: value\nbad: [unclosed")
+
+        with pytest.raises(yaml.YAMLError) as exc_info:
+            ConfigurationLoader.load_yaml(bad_yaml)
+
+        assert exc_info.value.problem_mark is not None
+        assert exc_info.value.problem_mark.line >= 0
+
 
 class TestGetSearchPaths:
     def test_all_env_vars_set(self, monkeypatch: pytest.MonkeyPatch) -> None:
