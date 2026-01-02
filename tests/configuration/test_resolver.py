@@ -26,36 +26,17 @@ class TestConfigResolverInit:
 
 
 class TestConfigResolverResolve:
-    def test_resolve_applies_cli_overrides(self, monkeypatch) -> None:
-        calls: dict[str, str | None] = {}
-
-        def fake_find_config_files(tool_name: str | None = None) -> list[str]:
-            calls["tool_name"] = tool_name
-            return ["config.yaml"]
-
-        monkeypatch.setattr(
-            ConfigurationLoader,
-            "find_config_files",
-            staticmethod(fake_find_config_files),
-        )
-
+    def test_resolve_applies_cli_overrides(self) -> None:
+        """CLI overrides are applied to settings."""
         overrides = {"debug": True, "log_level": "DEBUG"}
         resolver = ConfigResolver(tool_name="cli")
+
         settings = resolver.resolve(BuvisSettings, cli_overrides=overrides)
 
-        assert calls["tool_name"] == "cli"
         assert settings.debug is True
         assert settings.log_level == "DEBUG"
 
     def test_resolve_sets_config_dir_env(self, monkeypatch) -> None:
-        def fake_find_config_files(tool_name: str | None = None) -> list[str]:
-            return []
-
-        monkeypatch.setattr(
-            ConfigurationLoader,
-            "find_config_files",
-            staticmethod(fake_find_config_files),
-        )
         monkeypatch.delenv("BUVIS_CONFIG_DIR", raising=False)
 
         resolver = ConfigResolver()
@@ -63,6 +44,82 @@ class TestConfigResolverResolve:
         resolver.resolve(BuvisSettings, config_dir=config_dir)
 
         assert os.environ["BUVIS_CONFIG_DIR"] == config_dir
+
+
+class TestConfigResolverPrecedence:
+    """Tests for CLI > ENV > YAML > Defaults precedence."""
+
+    def test_cli_wins_when_all_sources_set(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """CLI overrides take precedence over ENV and YAML."""
+        config = tmp_path / "config.yaml"
+        config.write_text("debug: false\nlog_level: WARNING\n")
+        monkeypatch.setenv("BUVIS_DEBUG", "false")
+        monkeypatch.setenv("BUVIS_LOG_LEVEL", "ERROR")
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(
+            BuvisSettings,
+            config_path=config,
+            cli_overrides={"debug": True, "log_level": "DEBUG"},
+        )
+
+        assert settings.debug is True
+        assert settings.log_level == "DEBUG"
+
+    def test_env_wins_when_no_cli(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """ENV overrides YAML when no CLI provided."""
+        config = tmp_path / "config.yaml"
+        config.write_text("debug: false\nlog_level: WARNING\n")
+        monkeypatch.setenv("BUVIS_DEBUG", "true")
+        monkeypatch.setenv("BUVIS_LOG_LEVEL", "ERROR")
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(BuvisSettings, config_path=config)
+
+        assert settings.debug is True
+        assert settings.log_level == "ERROR"
+
+    def test_yaml_wins_when_no_cli_or_env(self, tmp_path: Path) -> None:
+        """YAML overrides defaults when no CLI or ENV."""
+        config = tmp_path / "config.yaml"
+        config.write_text("debug: true\nlog_level: WARNING\n")
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(BuvisSettings, config_path=config)
+
+        assert settings.debug is True
+        assert settings.log_level == "WARNING"
+
+    def test_default_used_when_only_default(self) -> None:
+        """Defaults used when no other sources set values."""
+        resolver = ConfigResolver()
+
+        settings = resolver.resolve(BuvisSettings)
+
+        assert settings.debug is False
+        assert settings.log_level == "INFO"
+
+    def test_cli_none_falls_through(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """CLI=None falls through to ENV value."""
+        config = tmp_path / "config.yaml"
+        config.write_text("debug: false\n")
+        monkeypatch.setenv("BUVIS_DEBUG", "true")
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(
+            BuvisSettings,
+            config_path=config,
+            cli_overrides={"debug": None},
+        )
+
+        # None in CLI means "not provided", so ENV wins
+        assert settings.debug is True
 
 
 class TestLoadYamlConfig:
