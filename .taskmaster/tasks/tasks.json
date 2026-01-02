@@ -1453,7 +1453,7 @@
         "dependencies": [
           "16"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1517,7 +1517,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:54:35.088Z"
+        "updatedAt": "2026-01-02T19:56:53.711Z"
       },
       {
         "id": "21",
@@ -5106,7 +5106,7 @@
         "dependencies": [
           "65"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -5166,7 +5166,8 @@
             "testStrategy": "Use pytest caplog fixture to capture logs. Set log level to DEBUG. Verify exact log level (INFO vs DEBUG) for each field type. Grep captured logs for test secret values to ensure they're never present.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:57:04.532Z"
       },
       {
         "id": "70",
@@ -6723,9 +6724,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:54:35.090Z",
+      "lastModified": "2026-01-02T19:57:04.534Z",
       "taskCount": 90,
-      "completedCount": 84,
+      "completedCount": 85,
       "tags": [
         "master"
       ]
