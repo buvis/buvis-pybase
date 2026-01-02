@@ -1,5 +1,9 @@
 class ConfigurationKeyNotFoundError(Exception):
-    """Key not found in configuration exception."""
+    """Key not found in configuration exception.
+
+    Args:
+        message: Error message describing the missing key.
+    """
 
     def __init__(
         self: "ConfigurationKeyNotFoundError",
@@ -13,7 +17,14 @@ class ConfigurationError(Exception):
 
 
 class MissingEnvVarError(Exception):
-    """Required env var not set."""
+    """Required env var not set.
+
+    Args:
+        var_names: List of missing environment variable names.
+
+    Attributes:
+        var_names: The missing variable names.
+    """
 
     def __init__(self, var_names: list[str]) -> None:
         self.var_names = var_names

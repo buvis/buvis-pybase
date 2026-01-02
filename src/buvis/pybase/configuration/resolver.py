@@ -183,21 +183,21 @@ class ConfigResolver:
 
         Args:
             settings_class: The Pydantic settings class to instantiate.
-            config_dir: Optional configuration directory that overrides the
+            config_dir: Optional configuration directory that overrides
                 ``BUVIS_CONFIG_DIR`` environment variable for this resolution.
             config_path: Optional path to YAML config file.
-            cli_overrides: Explicit overrides typically parsed from CLI options
-                that take precedence over discovered configuration values.
+            cli_overrides: Explicit overrides typically parsed from CLI options.
 
         Returns:
-            T: An immutable instance of ``settings_class`` populated with resolved
-                values. The instance is frozen and cannot be modified after creation.
+            An immutable instance of ``settings_class`` populated with resolved
+            values. The instance is frozen and cannot be modified after creation.
 
         Raises:
             ConfigurationError: If validation fails for any configuration value.
 
         Note:
             Precedence order (highest to lowest):
+
             1. CLI overrides (explicit values passed in cli_overrides)
             2. Environment variables (Pydantic handles automatically)
             3. YAML config file values

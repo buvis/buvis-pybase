@@ -29,7 +29,8 @@ def validate_env_var_name(name: str) -> bool:
     """Check if env var name follows BUVIS convention.
 
     Rules:
-    - Must start with BUVIS_
+
+    - Must start with ``BUVIS_``
     - SCREAMING_SNAKE_CASE only
     - No hyphens (env vars don't support them anyway)
     - At least one char after prefix
@@ -79,14 +80,15 @@ def create_tool_settings_class(
     """Factory for tool-specific settings classes.
 
     Creates a BaseSettings subclass with:
-    - env_prefix = BUVIS_{TOOL}_
-    - case_sensitive = False
-    - frozen = True
-    - extra = "forbid"
+
+    - ``env_prefix = BUVIS_{TOOL}_``
+    - ``case_sensitive = False``
+    - ``frozen = True``
+    - ``extra = "forbid"``
 
     Args:
         tool_name: Tool identifier in SCREAMING_SNAKE_CASE.
-        **field_definitions: Field name to (type, default) tuples.
+        field_definitions: Field name to (type, default) tuples.
 
     Returns:
         A new BaseSettings subclass.
@@ -94,7 +96,8 @@ def create_tool_settings_class(
     Raises:
         ValueError: If tool_name is not SCREAMING_SNAKE_CASE.
 
-    Example:
+    Example::
+
         PayrollSettings = create_tool_settings_class(
             "PAYROLL",
             batch_size=(int, 1000),

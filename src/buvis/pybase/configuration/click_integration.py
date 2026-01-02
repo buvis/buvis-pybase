@@ -40,10 +40,12 @@ F = TypeVar("F", bound=Callable[..., Any])
 def buvis_options(f: F) -> F:
     """Add standard BUVIS options to a Click command.
 
-    Adds --debug/--no-debug, --log-level, --config-dir, and --config options.
-    Resolves settings using ConfigResolver and injects into Click context.
+    Adds ``--debug/--no-debug``, ``--log-level``, ``--config-dir``, and
+    ``--config`` options. Resolves settings using ConfigResolver and
+    injects into Click context.
 
-    Example:
+    Example::
+
         @click.command()
         @buvis_options
         @click.pass_context
