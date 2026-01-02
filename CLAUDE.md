@@ -15,7 +15,7 @@ uv run pytest           # run tests
 
 ```
 src/buvis/pybase/
-├── configuration/   # YAML config, singleton `cfg`
+├── configuration/   # YAML config, pydantic-settings based
 ├── adapters/        # Shell, UV, Poetry, JIRA, Console wrappers
 ├── filesystem/      # DirTree utils, FileMetadataReader
 ├── formatting/      # StringOperator (slugify, abbreviations, case)
