@@ -6,7 +6,11 @@ import pytest
 
 from pathlib import Path
 
-from buvis.pybase.configuration.loader import ConfigurationLoader, _ENV_PATTERN
+from buvis.pybase.configuration.loader import (
+    ConfigurationLoader,
+    _ENV_PATTERN,
+    _substitute,
+)
 
 
 class TestConfigurationLoaderScaffold:
@@ -38,6 +42,76 @@ class TestEnvPattern:
         assert match is not None
         assert match.group(1) == "VAR"
         assert match.group(2) == "default"
+
+
+class TestSubstitute:
+    """Tests for _substitute env var replacement."""
+
+    def test_var_set_substituted(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """${VAR} with VAR set -> value substituted."""
+        monkeypatch.setenv("DB_HOST", "localhost")
+
+        result, missing = _substitute("host: ${DB_HOST}")
+
+        assert result == "host: localhost"
+        assert missing == []
+
+    def test_var_unset_tracked_in_missing(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """${VAR} with VAR unset -> tracked in missing list."""
+        monkeypatch.delenv("UNSET_VAR", raising=False)
+
+        result, missing = _substitute("key: ${UNSET_VAR}")
+
+        assert result == "key: ${UNSET_VAR}"  # Kept for error msg
+        assert missing == ["UNSET_VAR"]
+
+    def test_var_unset_uses_default(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """${VAR:-default} with VAR unset -> uses default."""
+        monkeypatch.delenv("DB_PORT", raising=False)
+
+        result, missing = _substitute("port: ${DB_PORT:-5432}")
+
+        assert result == "port: 5432"
+        assert missing == []
+
+    def test_var_set_ignores_default(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """${VAR:-default} with VAR set -> uses VAR value."""
+        monkeypatch.setenv("DB_PORT", "3306")
+
+        result, missing = _substitute("port: ${DB_PORT:-5432}")
+
+        assert result == "port: 3306"
+        assert missing == []
+
+    def test_nested_not_expanded(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Env value containing ${} is NOT re-processed."""
+        monkeypatch.setenv("VAR", "${NESTED}")
+
+        result, missing = _substitute("val: ${VAR}")
+
+        assert result == "val: ${NESTED}"  # Literal, not expanded
+        assert missing == []
+
+    def test_multiple_vars(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Multiple vars in same content all substituted."""
+        monkeypatch.setenv("HOST", "localhost")
+        monkeypatch.setenv("PORT", "5432")
+
+        result, missing = _substitute("url: ${HOST}:${PORT}")
+
+        assert result == "url: localhost:5432"
+        assert missing == []
+
+    def test_multiple_missing_vars(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Multiple missing vars all tracked."""
+        monkeypatch.delenv("VAR1", raising=False)
+        monkeypatch.delenv("VAR2", raising=False)
+
+        result, missing = _substitute("a: ${VAR1}, b: ${VAR2}")
+
+        assert missing == ["VAR1", "VAR2"]
 
 
 class TestGetSearchPaths:

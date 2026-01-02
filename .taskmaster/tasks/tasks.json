@@ -1668,7 +1668,7 @@
           "21",
           "22"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -1728,7 +1728,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_loader.py -v` - all 4 test cases must pass",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:56:29.951Z"
       },
       {
         "id": "24",
@@ -6175,7 +6176,7 @@
         "dependencies": [
           "83"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -6236,7 +6237,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:54:12.225Z"
+        "updatedAt": "2026-01-02T18:56:10.721Z"
       },
       {
         "id": "85",
@@ -6677,9 +6678,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:54:12.227Z",
+      "lastModified": "2026-01-02T18:56:29.954Z",
       "taskCount": 90,
-      "completedCount": 38,
+      "completedCount": 39,
       "tags": [
         "master"
       ]
