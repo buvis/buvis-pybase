@@ -47,6 +47,24 @@ class ConfigurationLoader:
         return paths
 
     @staticmethod
+    def _get_candidate_files(paths: list[Path], tool_name: str | None) -> list[Path]:
+        """Generate candidate config file paths from search locations.
+
+        Args:
+            paths: Base directories to search for config files.
+            tool_name: Optional tool name for tool-specific configs.
+
+        Returns:
+            Ordered list of candidate paths (buvis.yaml + buvis-{tool}.yaml per location).
+        """
+        candidates: list[Path] = []
+        for base in paths:
+            candidates.append(base / "buvis.yaml")
+            if tool_name:
+                candidates.append(base / f"buvis-{tool_name}.yaml")
+        return candidates
+
+    @staticmethod
     def find_config_files(tool_name: str | None = None) -> list[Path]:
         """Find configuration files that apply to a tool.
 
