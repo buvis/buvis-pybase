@@ -323,7 +323,7 @@
         "dependencies": [
           "3"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -386,7 +386,8 @@
             "testStrategy": "All tests in tests/configuration/ pass: uv run pytest tests/configuration/ -v exits with code 0",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:04:43.376Z"
       },
       {
         "id": "6",
@@ -5739,7 +5740,7 @@
           "74",
           "75"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5800,7 +5801,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:02:55.834Z"
+        "updatedAt": "2026-01-02T19:04:17.730Z"
       },
       {
         "id": "79",
@@ -6681,9 +6682,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:02:55.836Z",
+      "lastModified": "2026-01-02T19:04:43.378Z",
       "taskCount": 90,
-      "completedCount": 42,
+      "completedCount": 43,
       "tags": [
         "master"
       ]
