@@ -23,6 +23,29 @@ class TestBuvisSettingsEnvLoading:
         assert settings.debug is True
 
 
+class TestCaseInsensitiveEnvLoading:
+    def test_uppercase_env_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("BUVIS_DEBUG", "true")
+
+        settings = BuvisSettings()
+
+        assert settings.debug is True
+
+    def test_lowercase_env_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("buvis_debug", "true")
+
+        settings = BuvisSettings()
+
+        assert settings.debug is True
+
+    def test_mixed_case_env_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("Buvis_Debug", "true")
+
+        settings = BuvisSettings()
+
+        assert settings.debug is True
+
+
 class TestBuvisSettingsImmutability:
     def test_immutable(self) -> None:
         settings = BuvisSettings()
