@@ -3530,7 +3530,7 @@
         "dependencies": [
           "41"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3590,7 +3590,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T19:26:29.489Z"
+        "updatedAt": "2026-01-02T19:27:11.267Z"
       },
       {
         "id": "49",
@@ -3602,7 +3602,7 @@
         "dependencies": [
           "46"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3662,7 +3662,8 @@
             "testStrategy": "Run: python -c 'from buvis.pybase.configuration import validate_nesting_depth; print(\"OK\")'",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:27:31.342Z"
       },
       {
         "id": "50",
@@ -3680,7 +3681,7 @@
           "48",
           "49"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3743,7 +3744,8 @@
             "testStrategy": "Final run of both commands exits 0. Pre-commit shows 'Passed' for all hooks. Pytest shows 100% pass rate with no failures or errors.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:27:55.229Z"
       },
       {
         "id": "51",
@@ -4202,7 +4204,7 @@
         "dependencies": [
           "56"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -4262,7 +4264,8 @@
             "testStrategy": "Run `uv run pytest tests/configuration/test_secure_settings.py -v` and verify all tests pass.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T19:28:17.282Z"
       },
       {
         "id": "58",
@@ -6701,9 +6704,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T19:26:29.491Z",
+      "lastModified": "2026-01-02T19:28:17.284Z",
       "taskCount": 90,
-      "completedCount": 62,
+      "completedCount": 65,
       "tags": [
         "master"
       ]

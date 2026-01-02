@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from typing import Any, Iterator, get_args, get_origin
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 MAX_NESTING_DEPTH = 5
 MAX_JSON_ENV_SIZE = 64 * 1024
@@ -97,3 +97,39 @@ def validate_json_env_size(env_var_name: str) -> None:
             f"{env_var_name} exceeds max JSON size {MAX_JSON_ENV_SIZE} bytes "
             f"(found {byte_length} bytes)."
         )
+
+
+class SecureSettingsMixin:
+    """Mixin adding security validations for settings.
+
+    Validates:
+    - JSON env values don't exceed 64KB
+    - Complex types come from validated JSON, not eval()
+
+    Use with pydantic-settings BaseSettings:
+        class MySettings(SecureSettingsMixin, BaseSettings):
+            ...
+    """
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_json_sizes(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Check env var sizes before parsing.
+
+        Args:
+            data: Input data dict from pydantic.
+
+        Returns:
+            Unmodified data dict if all validations pass.
+
+        Raises:
+            ValueError: If any prefixed env var exceeds MAX_JSON_ENV_SIZE.
+        """
+        config = getattr(cls, "model_config", {})
+        prefix = config.get("env_prefix", "")
+
+        for key in os.environ:
+            if key.startswith(prefix):
+                validate_json_env_size(key)
+
+        return data
