@@ -87,35 +87,43 @@ class ConfigResolver:
             3. YAML config file values
             4. Model field defaults
         """
-        if config_dir is not None:
-            os.environ["BUVIS_CONFIG_DIR"] = config_dir
-            logger.debug("Set BUVIS_CONFIG_DIR to %s", config_dir)
+        original_config_dir = os.environ.get("BUVIS_CONFIG_DIR")
 
-        # Load YAML config (priority 3)
-        yaml_config = _load_yaml_config(config_path)
-        logger.debug("Loaded YAML config: %s", yaml_config)
+        try:
+            if config_dir is not None:
+                os.environ["BUVIS_CONFIG_DIR"] = config_dir
+                logger.debug("Set BUVIS_CONFIG_DIR to %s", config_dir)
 
-        # Create base settings with YAML + ENV (ENV overrides YAML via Pydantic)
-        # Note: Pydantic kwargs override env, so we create without YAML first
-        base_settings = settings_class()
+            # Load YAML config (priority 3)
+            yaml_config = _load_yaml_config(config_path)
+            logger.debug("Loaded YAML config: %s", yaml_config)
 
-        # Apply YAML for fields not set by env (check against defaults)
-        merged: dict[str, Any] = {}
-        for key, value in yaml_config.items():
-            if hasattr(base_settings, key):
-                field_value = getattr(base_settings, key)
-                default = settings_class.model_fields.get(key)
-                if default and field_value == default.default:
-                    # Field has default value, apply YAML
-                    merged[key] = value
+            # Create base settings with YAML + ENV (ENV overrides YAML via Pydantic)
+            # Note: Pydantic kwargs override env, so we create without YAML first
+            base_settings = settings_class()
 
-        # Apply CLI overrides (priority 1, highest)
-        if cli_overrides:
-            for key, value in cli_overrides.items():
-                if value is not None:
-                    merged[key] = value
+            # Apply YAML for fields not set by env (check against defaults)
+            merged: dict[str, Any] = {}
+            for key, value in yaml_config.items():
+                if hasattr(base_settings, key):
+                    field_value = getattr(base_settings, key)
+                    default = settings_class.model_fields.get(key)
+                    if default and field_value == default.default:
+                        # Field has default value, apply YAML
+                        merged[key] = value
 
-        # Return settings with merged overrides
-        if merged:
-            return base_settings.model_copy(update=merged)
-        return base_settings
+            # Apply CLI overrides (priority 1, highest)
+            if cli_overrides:
+                for key, value in cli_overrides.items():
+                    if value is not None:
+                        merged[key] = value
+
+            # Return settings with merged overrides
+            if merged:
+                return base_settings.model_copy(update=merged)
+            return base_settings
+        finally:
+            if original_config_dir is None:
+                os.environ.pop("BUVIS_CONFIG_DIR", None)
+            else:
+                os.environ["BUVIS_CONFIG_DIR"] = original_config_dir
