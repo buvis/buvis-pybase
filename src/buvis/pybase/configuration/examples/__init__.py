@@ -1,6 +1,10 @@
 """Convenience exports for example configuration models."""
 
-from .complex_env_settings import PaymentRule, PayrollSettings as _PaymentRulesSettings
+from .complex_env_settings import (
+    HCMSettings,
+    PaymentRule,
+    PayrollSettings as _PaymentRulesSettings,
+)
 from .nested_settings import (
     DatabaseSettings,
     PayrollSettings as NestedPayrollSettings,
@@ -11,9 +15,10 @@ from .nested_settings import (
 PayrollSettings = _PaymentRulesSettings
 
 __all__ = [
-    "PoolSettings",
     "DatabaseSettings",
+    "HCMSettings",
     "NestedPayrollSettings",
     "PaymentRule",
     "PayrollSettings",
+    "PoolSettings",
 ]
