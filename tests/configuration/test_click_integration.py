@@ -8,7 +8,7 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from buvis.pybase.configuration import buvis_options
+from buvis.pybase.configuration import buvis_options, get_settings
 from buvis.pybase.configuration.buvis_settings import BuvisSettings
 
 
@@ -188,3 +188,67 @@ class TestBuvisOptionsConfigFile:
 
         assert captured_settings[0].debug is False
         assert captured_settings[0].log_level == "ERROR"
+
+
+class TestGetSettings:
+    """Tests for get_settings helper function."""
+
+    def test_returns_settings_from_context(self, runner: CliRunner) -> None:
+        """get_settings returns settings from ctx.obj."""
+        captured = []
+
+        @click.command()
+        @buvis_options
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            settings = get_settings(ctx)
+            captured.append(settings)
+
+        runner.invoke(cmd, [])
+
+        assert len(captured) == 1
+        assert isinstance(captured[0], BuvisSettings)
+
+    def test_returns_same_object_as_context(self, runner: CliRunner) -> None:
+        """get_settings returns identical object to ctx.obj['settings']."""
+        captured = []
+
+        @click.command()
+        @buvis_options
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            captured.append((ctx.obj["settings"], get_settings(ctx)))
+
+        runner.invoke(cmd, [])
+
+        assert captured[0][0] is captured[0][1]
+
+    def test_raises_when_ctx_obj_none(self) -> None:
+        """RuntimeError raised when ctx.obj is None."""
+        from unittest.mock import MagicMock
+
+        ctx = MagicMock(spec=click.Context)
+        ctx.obj = None
+
+        with pytest.raises(RuntimeError, match="buvis_options decorator not applied"):
+            get_settings(ctx)
+
+    def test_raises_when_settings_key_missing(self) -> None:
+        """RuntimeError raised when 'settings' key missing."""
+        from unittest.mock import MagicMock
+
+        ctx = MagicMock(spec=click.Context)
+        ctx.obj = {}
+
+        with pytest.raises(RuntimeError, match="buvis_options decorator not applied"):
+            get_settings(ctx)
+
+    def test_raises_when_ctx_obj_has_other_keys(self) -> None:
+        """RuntimeError raised when ctx.obj has other keys but not 'settings'."""
+        from unittest.mock import MagicMock
+
+        ctx = MagicMock(spec=click.Context)
+        ctx.obj = {"other": "value"}
+
+        with pytest.raises(RuntimeError, match="buvis_options decorator not applied"):
+            get_settings(ctx)
