@@ -104,6 +104,29 @@ class ConfigurationLoader:
             return False
 
     @staticmethod
+    def _is_safe_path(candidate: Path, allowed_bases: list[Path]) -> bool:
+        """Reject symlinks pointing outside expected directories.
+
+        Args:
+            candidate: Path to validate (may be symlink).
+            allowed_bases: Directories the resolved path must be under.
+
+        Returns:
+            True if resolved path is under one of allowed_bases, False otherwise.
+        """
+        try:
+            resolved = candidate.resolve()
+            for base in allowed_bases:
+                try:
+                    resolved.relative_to(base.resolve())
+                    return True
+                except ValueError:
+                    continue
+            return False
+        except (OSError, RuntimeError):
+            return False
+
+    @staticmethod
     def _get_candidate_files(paths: list[Path], tool_name: str | None) -> list[Path]:
         """Generate candidate config file paths from search locations.
 
@@ -191,13 +214,23 @@ class ConfigurationLoader:
 
         Returns:
             list[Path]: Config file paths ordered from highest to lowest priority.
-
-        Raises:
-            NotImplementedError: Always raised until configuration discovery is implemented.
         """
+        paths = ConfigurationLoader._get_search_paths()
+        candidates = ConfigurationLoader._get_candidate_files(paths, tool_name)
+        result: list[Path] = []
 
-        message = (
-            "ConfigurationLoader.find_config_files is not implemented yet."
-            f" Expected to inspect {DEFAULT_CONFIG_DIRECTORY} or tool-specific paths."
-        )
-        raise NotImplementedError(message)
+        for candidate in candidates:
+            try:
+                if not candidate.is_file():
+                    continue
+                if not ConfigurationLoader._is_safe_path(candidate, paths):
+                    logger.warning("Skipping unsafe config path: %s", candidate)
+                    continue
+                if ConfigurationLoader._is_world_writable(candidate):
+                    logger.warning("Config file is world-writable: %s", candidate)
+                result.append(candidate.resolve())
+            except PermissionError:
+                logger.debug("Permission denied: %s", candidate)
+                continue
+
+        return result

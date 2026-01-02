@@ -21,13 +21,131 @@ class TestConfigurationLoaderScaffold:
         assert hasattr(ConfigurationLoader, "find_config_files")
         assert isinstance(ConfigurationLoader.find_config_files, types.FunctionType)
 
-    def test_find_config_files_with_tool_name(self) -> None:
-        with pytest.raises(NotImplementedError):
-            ConfigurationLoader.find_config_files(tool_name="test")
 
-    def test_find_config_files_without_args(self) -> None:
-        with pytest.raises(NotImplementedError):
-            ConfigurationLoader.find_config_files()
+class TestFindConfigFiles:
+    """Tests for find_config_files method."""
+
+    def test_no_files_returns_empty(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Empty directory returns empty list."""
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
+        monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
+
+        result = ConfigurationLoader.find_config_files()
+
+        assert result == []
+
+    def test_single_buvis_yaml_found(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Single buvis.yaml is returned."""
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
+        config = tmp_path / "buvis.yaml"
+        config.write_text("key: value\n")
+
+        result = ConfigurationLoader.find_config_files()
+
+        assert len(result) == 1
+        assert result[0] == config.resolve()
+
+    def test_tool_specific_file_found(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Tool-specific config file is found."""
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
+        tool_config = tmp_path / "buvis-cli.yaml"
+        tool_config.write_text("tool: true\n")
+
+        result = ConfigurationLoader.find_config_files(tool_name="cli")
+
+        assert any("buvis-cli.yaml" in str(p) for p in result)
+
+    def test_both_buvis_and_tool_config_found(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Both buvis.yaml and tool-specific are found."""
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
+        (tmp_path / "buvis.yaml").write_text("base: true\n")
+        (tmp_path / "buvis-mytool.yaml").write_text("tool: true\n")
+
+        result = ConfigurationLoader.find_config_files(tool_name="mytool")
+
+        assert len(result) == 2
+
+    def test_permission_denied_skipped(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Permission error skips file without crashing."""
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
+        config = tmp_path / "buvis.yaml"
+        config.write_text("key: value\n")
+
+        original_is_file = Path.is_file
+
+        def mock_is_file(self):
+            if self == config:
+                raise PermissionError("Access denied")
+            return original_is_file(self)
+
+        monkeypatch.setattr(Path, "is_file", mock_is_file)
+
+        result = ConfigurationLoader.find_config_files()
+
+        assert result == []
+
+
+class TestIsSafePath:
+    """Tests for _is_safe_path security validation."""
+
+    def test_regular_file_is_safe(self, tmp_path: Path) -> None:
+        """Normal file under allowed base is safe."""
+        file = tmp_path / "config.yaml"
+        file.touch()
+
+        assert ConfigurationLoader._is_safe_path(file, [tmp_path]) is True
+
+    def test_symlink_within_allowed_is_safe(self, tmp_path: Path) -> None:
+        """Symlink pointing within allowed base is safe."""
+        target = tmp_path / "target.yaml"
+        target.touch()
+        link = tmp_path / "link.yaml"
+        link.symlink_to(target)
+
+        assert ConfigurationLoader._is_safe_path(link, [tmp_path]) is True
+
+    def test_symlink_outside_is_unsafe(self, tmp_path: Path) -> None:
+        """Symlink pointing outside allowed base is unsafe."""
+        allowed = tmp_path / "allowed"
+        allowed.mkdir()
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        target = outside / "target.yaml"
+        target.touch()
+        link = allowed / "escape.yaml"
+        link.symlink_to(target)
+
+        assert ConfigurationLoader._is_safe_path(link, [allowed]) is False
+
+    def test_broken_symlink_within_base_is_safe(self, tmp_path: Path) -> None:
+        """Broken symlink within allowed base is path-safe (existence checked elsewhere)."""
+        link = tmp_path / "broken.yaml"
+        link.symlink_to(tmp_path / "nonexistent")
+
+        # Path-safe because resolved target is under allowed base
+        # (find_config_files filters non-existent files via is_file())
+        assert ConfigurationLoader._is_safe_path(link, [tmp_path]) is True
+
+    def test_multiple_allowed_bases(self, tmp_path: Path) -> None:
+        """File is safe if under any allowed base."""
+        dir1 = tmp_path / "dir1"
+        dir2 = tmp_path / "dir2"
+        dir1.mkdir()
+        dir2.mkdir()
+        file = dir2 / "config.yaml"
+        file.touch()
+
+        assert ConfigurationLoader._is_safe_path(file, [dir1, dir2]) is True
 
 
 class TestEnvPattern:
