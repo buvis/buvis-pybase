@@ -1,4 +1,29 @@
-"""Resolve Buvis settings using the configuration loader and optional CLI overrides."""
+"""Resolve Buvis settings using the configuration loader and optional CLI overrides.
+
+This module provides ConfigResolver for unified configuration loading with
+precedence handling across multiple sources (CLI, ENV, YAML, defaults).
+
+Example:
+    Basic usage::
+
+        from buvis.pybase.configuration import ConfigResolver, GlobalSettings
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(GlobalSettings)
+        print(settings.debug)
+
+    Error handling::
+
+        from buvis.pybase.configuration import ConfigResolver, ConfigurationError
+        import sys
+
+        try:
+            resolver = ConfigResolver()
+            settings = resolver.resolve(GlobalSettings)
+        except ConfigurationError as e:
+            print(f"Config error: {e}")
+            sys.exit(1)
+"""
 
 from __future__ import annotations
 
@@ -80,7 +105,50 @@ def _format_validation_errors(error: ValidationError) -> str:
 
 
 class ConfigResolver:
-    """Resolve Pydantic settings classes using configuration discovery."""
+    """Unified configuration loader with precedence handling.
+
+    Orchestrates config loading from multiple sources:
+
+    - YAML files (via ConfigurationLoader discovery)
+    - Environment variables (via Pydantic, BUVIS_* prefix)
+    - CLI overrides (passed to resolve())
+
+    Precedence (highest to lowest):
+
+    1. CLI overrides
+    2. Environment variables (BUVIS_* prefix)
+    3. YAML config files
+    4. Model defaults
+
+    Example:
+        Basic usage::
+
+            resolver = ConfigResolver()
+            settings = resolver.resolve(GlobalSettings)
+
+        Tool-specific config::
+
+            resolver = ConfigResolver(tool_name="payroll")
+            settings = resolver.resolve(PayrollSettings)
+
+        With CLI overrides from Click::
+
+            @click.command()
+            @click.option('--debug', is_flag=True)
+            def main(debug):
+                resolver = ConfigResolver()
+                settings = resolver.resolve(
+                    GlobalSettings,
+                    cli_overrides={"debug": debug} if debug else None,
+                )
+
+        Custom config directory::
+
+            settings = resolver.resolve(GlobalSettings, config_dir="/etc/buvis")
+
+    Note:
+        Settings are immutable after resolve(). Instances are frozen.
+    """
 
     def __init__(self, tool_name: str | None = None) -> None:
         """Create a resolver.
@@ -88,6 +156,8 @@ class ConfigResolver:
         Args:
             tool_name: Optional identifier for a CLI tool whose configs should be
                 considered during discovery. Must be lowercase without hyphens.
+                Affects config file discovery (buvis-{tool}.yaml) and can be used
+                for tool-specific ENV prefix patterns.
 
         Raises:
             ValueError: If tool_name contains uppercase letters or hyphens.
