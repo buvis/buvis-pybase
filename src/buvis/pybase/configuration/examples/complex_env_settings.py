@@ -42,3 +42,25 @@ class PayrollSettings(BaseSettings):
 
     payment_rules: list[PaymentRule] = Field(default_factory=list)
     batch_size: int = 1000
+
+
+class HCMSettings(BaseSettings):
+    """HCM settings demonstrating dict parsing from JSON.
+
+    Env vars:
+        BUVIS_HCM_HEADERS: JSON object for HTTP headers.
+        BUVIS_HCM_API_URL: API endpoint URL.
+
+    Example:
+        export BUVIS_HCM_HEADERS='{"Authorization":"Bearer xxx","X-Api-Key":"yyy"}'
+    """
+
+    model_config = SettingsConfigDict(
+        env_prefix="BUVIS_HCM_",
+        case_sensitive=False,
+        frozen=True,
+        extra="forbid",
+    )
+
+    headers: dict[str, str] = Field(default_factory=dict)
+    api_url: str = ""

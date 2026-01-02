@@ -6,7 +6,10 @@ import pytest
 from pydantic import ValidationError
 from pydantic_settings.exceptions import SettingsError
 
-from buvis.pybase.configuration.examples.complex_env_settings import PayrollSettings
+from buvis.pybase.configuration.examples.complex_env_settings import (
+    HCMSettings,
+    PayrollSettings,
+)
 
 
 class TestJSONListParsing:
@@ -113,3 +116,49 @@ class TestJSONParseErrors:
             PayrollSettings()
 
         assert "rule_id" in str(exc_info.value)
+
+
+class TestHCMSettings:
+    """Tests for HCMSettings dict parsing."""
+
+    def test_headers_default_empty_dict(self) -> None:
+        """Default headers is empty dict."""
+        settings = HCMSettings()
+
+        assert settings.headers == {}
+
+    def test_api_url_default_empty(self) -> None:
+        """Default api_url is empty string."""
+        settings = HCMSettings()
+
+        assert settings.api_url == ""
+
+    def test_json_dict_parsing_from_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """PRD test: JSON object -> dict[str, str]."""
+        monkeypatch.setenv("BUVIS_HCM_HEADERS", '{"X-Api-Key":"test123"}')
+
+        settings = HCMSettings()
+
+        assert settings.headers == {"X-Api-Key": "test123"}
+
+    def test_multiple_headers_from_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Multiple key-value pairs parse correctly."""
+        headers_json = (
+            '{"Authorization":"Bearer abc","X-Api-Key":"xyz",'
+            '"Content-Type":"application/json"}'
+        )
+        monkeypatch.setenv("BUVIS_HCM_HEADERS", headers_json)
+
+        settings = HCMSettings()
+
+        assert settings.headers["Authorization"] == "Bearer abc"
+        assert settings.headers["X-Api-Key"] == "xyz"
+        assert settings.headers["Content-Type"] == "application/json"
+        assert len(settings.headers) == 3
+
+    def test_immutable(self) -> None:
+        """HCMSettings is frozen."""
+        settings = HCMSettings()
+
+        with pytest.raises(ValidationError):
+            settings.api_url = "changed"

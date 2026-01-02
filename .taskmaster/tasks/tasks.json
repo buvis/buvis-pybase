@@ -3884,7 +3884,7 @@
         "dependencies": [
           "51"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3947,7 +3947,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T18:36:42.844Z"
+        "updatedAt": "2026-01-02T18:39:06.726Z"
       },
       {
         "id": "54",
@@ -3959,7 +3959,7 @@
         "dependencies": [
           "51"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -4019,7 +4019,8 @@
             "testStrategy": "All pre-commit hooks pass, all pytest tests pass, integration check prints 'Dict parsing OK'.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T18:39:15.432Z"
       },
       {
         "id": "55",
@@ -6666,9 +6667,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T18:36:42.846Z",
+      "lastModified": "2026-01-02T18:39:15.434Z",
       "taskCount": 90,
-      "completedCount": 27,
+      "completedCount": 28,
       "tags": [
         "master"
       ]
