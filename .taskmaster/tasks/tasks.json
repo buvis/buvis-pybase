@@ -3686,7 +3686,7 @@
         "testStrategy": "Import PayrollSettings, set BUVIS_PAYROLL_PAYMENT_RULES='[{\"rule_id\":\"a\",\"enabled\":true}]', verify payment_rules is list of PaymentRule objects.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -3694,9 +3694,10 @@
             "description": "Add pydantic and pydantic-settings to project dependencies in pyproject.toml.",
             "dependencies": [],
             "details": "Add `pydantic>=2.0,<3` and `pydantic-settings>=2.0,<3` to the dependencies list in pyproject.toml. Run `uv sync` to install. These are required for BaseModel and BaseSettings with SettingsConfigDict support.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run python -c \"from pydantic import BaseModel; from pydantic_settings import BaseSettings\"` to verify imports work.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:54:29.722Z"
           },
           {
             "id": 2,
@@ -3706,9 +3707,10 @@
               1
             ],
             "details": "Create `src/buvis/pybase/configuration/examples/__init__.py` with empty `__all__` list. This subpackage will contain example settings classes demonstrating various env var patterns.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify `from buvis.pybase.configuration.examples import *` works without error.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:54:29.763Z"
           },
           {
             "id": 3,
@@ -3718,9 +3720,10 @@
               2
             ],
             "details": "In `src/buvis/pybase/configuration/examples/complex_env_settings.py`, create PaymentRule(BaseModel) with: rule_id: str, enabled: bool, bonus_pct: float | None = None. Use `from __future__ import annotations` and Google docstring format per project conventions.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test PaymentRule(rule_id='test', enabled=True) instantiates correctly and bonus_pct defaults to None.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:57:49.903Z"
           },
           {
             "id": 4,
@@ -3730,9 +3733,10 @@
               3
             ],
             "details": "Add PayrollSettings(BaseSettings) with: model_config using env_prefix='BUVIS_PAYROLL_', case_sensitive=False, frozen=True, extra='forbid'. Fields: payment_rules: list[PaymentRule] = Field(default_factory=list), batch_size: int = 1000. Export both classes in examples/__init__.py.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Set BUVIS_PAYROLL_PAYMENT_RULES='[{\"rule_id\":\"a\",\"enabled\":true}]' and verify PayrollSettings().payment_rules is list of PaymentRule.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:57:49.943Z"
           },
           {
             "id": 5,
@@ -3742,11 +3746,13 @@
               4
             ],
             "details": "Create test file following project patterns (class-based, fixtures). Test classes: TestPaymentRule (defaults, validation), TestPayrollSettings (defaults, env parsing, JSON list parsing, immutability, batch_size override). Use @patch.dict(os.environ, {...}) for env var mocking. Ensure tests cover the JSON array parsing feature specifically.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `uv run pytest tests/configuration/test_complex_env_settings.py -v` and verify all tests pass.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-01-02T17:57:49.984Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T17:57:49.984Z"
       },
       {
         "id": "52",
@@ -6589,9 +6595,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T17:53:58.706Z",
+      "lastModified": "2026-01-02T17:57:49.985Z",
       "taskCount": 90,
-      "completedCount": 6,
+      "completedCount": 7,
       "tags": [
         "master"
       ]
