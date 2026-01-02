@@ -2203,7 +2203,7 @@
           "28",
           "29"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -2264,7 +2264,8 @@
             "testStrategy": "Run full test suite. Verify both old behavior (literal ${) and new behavior (substitution) work correctly based on flag.",
             "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-01-02T20:03:22.170Z"
       },
       {
         "id": "31",
@@ -5180,7 +5181,7 @@
           "67",
           "68"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -5239,7 +5240,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-01-02T20:01:50.720Z"
+        "updatedAt": "2026-01-02T20:03:10.004Z"
       },
       {
         "id": "71",
@@ -6727,9 +6728,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-02T20:01:50.722Z",
+      "lastModified": "2026-01-02T20:03:22.172Z",
       "taskCount": 90,
-      "completedCount": 88,
+      "completedCount": 89,
       "tags": [
         "master"
       ]
