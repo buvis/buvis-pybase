@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
+from pydantic_settings.exceptions import SettingsError
 
 from buvis.pybase.configuration.examples.complex_env_settings import PayrollSettings
 
@@ -73,3 +75,41 @@ class TestPlainScalarParsing:
         settings = PayrollSettings()
 
         assert settings.batch_size == 1000
+
+
+class TestJSONParseErrors:
+    """Tests for JSON parsing error handling."""
+
+    def test_invalid_json_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """PRD test: '[{broken' -> SettingsError with JSON parse error."""
+        monkeypatch.setenv("BUVIS_PAYROLL_PAYMENT_RULES", "[{broken")
+
+        with pytest.raises(SettingsError) as exc_info:
+            PayrollSettings()
+
+        error_str = str(exc_info.value).lower()
+        assert "payment_rules" in error_str or "json" in error_str
+
+    def test_wrong_type_in_json(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """PRD test: rule_id:123 (wrong type) -> ValidationError."""
+        monkeypatch.setenv(
+            "BUVIS_PAYROLL_PAYMENT_RULES",
+            '[{"rule_id":123,"enabled":true}]',
+        )
+
+        with pytest.raises(ValidationError) as exc_info:
+            PayrollSettings()
+
+        assert "rule_id" in str(exc_info.value)
+
+    def test_missing_required_field(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """PRD: Missing field -> ValidationError."""
+        monkeypatch.setenv(
+            "BUVIS_PAYROLL_PAYMENT_RULES",
+            '[{"enabled":true}]',
+        )
+
+        with pytest.raises(ValidationError) as exc_info:
+            PayrollSettings()
+
+        assert "rule_id" in str(exc_info.value)
