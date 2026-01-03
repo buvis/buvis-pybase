@@ -19,12 +19,37 @@ abbr_pattern = r"\b(\w+)\b(?!\s*\))"
 
 
 class Abbr:
+    """Abbreviation replacement utility.
+
+    Provides static methods for expanding abbreviations in text with configurable expansion levels.
+    """
+
     @staticmethod
     def replace_abbreviations(
         text: str = "",
         abbreviations: list[dict] | None = None,
         level: int = 0,
     ) -> str:
+        """Expand abbreviations found in the provided text.
+
+        Args:
+            text: The text to process.
+            abbreviations: A list of dictionaries that map abbreviations to expansion strings, where an
+                expansion can include an optional long form delimited by `<<` and `>>` (e.g.
+                ``{"API": "Application Programming Interface<<Application Programming Interface>>"}``).
+            level: Determines how much of the expansion to use (0=fix case, 1=short, 2=short+(abbr),
+                3=long, 4=long+(abbr)).
+
+        Returns:
+            A string where each abbreviation is replaced according to the requested level.
+
+        Example:
+            Abbr.replace_abbreviations(
+                "Send an API request",
+                [{"API": "Application Programming Interface<<Application Programming Interface>>"}],
+                level=2,
+            )
+        """
         if abbreviations is None:
             abbreviations = []
 
@@ -65,6 +90,17 @@ class Abbr:
 def _get_abbreviations_replacements(
     abbreviations: list[dict] | None = None,
 ) -> dict:
+    """Parse abbreviation definitions into replacement metadata.
+
+    Args:
+        abbreviations: List of abbreviation definitions in the same expansion format accepted by
+            ``replace_abbreviations`` (each mapping an abbreviation to a string that can include
+            a long form wrapped in ``<<``/``>>``).
+
+    Returns:
+        A dict mapping the lowercase abbreviation to a tuple of (original abbreviation, short expansion,
+        long expansion).
+    """
     if not abbreviations:
         return {}
 
