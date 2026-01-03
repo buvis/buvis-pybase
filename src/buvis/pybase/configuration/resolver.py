@@ -192,6 +192,8 @@ class ConfigResolver:
             3. YAML config file values
             4. Model field defaults
         """
+        env_prefix = settings_class.model_config.get("env_prefix", "BUVIS_")
+        tool_name = _extract_tool_name(env_prefix)
         original_config_dir = os.environ.get("BUVIS_CONFIG_DIR")
 
         try:
@@ -200,7 +202,17 @@ class ConfigResolver:
                 logger.debug("Set BUVIS_CONFIG_DIR to %s", config_dir)
 
             # Load YAML config (priority 3)
-            yaml_config = _load_yaml_config(config_path)
+            if config_path is not None:
+                yaml_config = _load_yaml_config(config_path)
+            else:
+                discovered_files = self.loader.find_config_files(tool_name)
+                loaded_configs = [
+                    self.loader.load_yaml(path)
+                    for path in reversed(discovered_files)  # lowest -> highest
+                ]
+                yaml_config = (
+                    self.loader.merge_configs(*loaded_configs) if loaded_configs else {}
+                )
             logger.debug("Loaded YAML config: %s", yaml_config)
 
             try:
@@ -233,7 +245,6 @@ class ConfigResolver:
                     final_settings = base_settings
 
                 # Track sources for each field
-                env_prefix = settings_class.model_config.get("env_prefix", "")
                 env_keys = {
                     k.removeprefix(env_prefix).lower()
                     for k in os.environ
