@@ -27,6 +27,7 @@ Example:
 
 from __future__ import annotations
 
+import re
 import logging
 import os
 from pathlib import Path
@@ -80,6 +81,14 @@ def _load_yaml_config(file_path: Path | None = None) -> dict[str, Any]:
     except PermissionError:
         logger.warning("Permission denied reading %s, skipping", file_path)
         return {}
+
+
+def _extract_tool_name(env_prefix: str) -> str | None:
+    """Extract tool name from env prefix like BUVIS_FOO_ -> foo."""
+    match = re.match(r"^BUVIS_([A-Z][A-Z0-9_]*)_$", env_prefix)
+    if not match:
+        return None
+    return match.group(1).lower()
 
 
 def _format_validation_errors(error: ValidationError) -> str:
