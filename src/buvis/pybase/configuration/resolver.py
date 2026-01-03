@@ -136,11 +136,6 @@ class ConfigResolver:
             resolver = ConfigResolver()
             settings = resolver.resolve(GlobalSettings)
 
-        Tool-specific config::
-
-            resolver = ConfigResolver(tool_name="payroll")
-            settings = resolver.resolve(PayrollSettings)
-
         With CLI overrides from Click::
 
             @click.command()
@@ -160,26 +155,11 @@ class ConfigResolver:
         Settings are immutable after resolve(). Instances are frozen.
     """
 
-    def __init__(self, tool_name: str | None = None) -> None:
-        """Create a resolver.
-
-        Args:
-            tool_name: Optional identifier for a CLI tool whose configs should be
-                considered during discovery. Must be lowercase without hyphens.
-                Affects config file discovery (buvis-{tool}.yaml) and can be used
-                for tool-specific ENV prefix patterns.
-
-        Raises:
-            ValueError: If tool_name contains uppercase letters or hyphens.
-        """
-        if tool_name is not None:
-            if not tool_name.islower() or "-" in tool_name:
-                msg = "tool_name must be lowercase without hyphens"
-                raise ValueError(msg)
-        self.tool_name = tool_name
+    def __init__(self) -> None:
+        """Create a resolver."""
         self.loader = ConfigurationLoader()
         self._sources: dict[str, ConfigSource] = {}
-        logger.debug("ConfigResolver initialized for tool %s", tool_name)
+        logger.debug("ConfigResolver initialized")
 
     def resolve(
         self,

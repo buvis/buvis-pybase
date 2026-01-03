@@ -8,7 +8,7 @@
     },
     "research": {
       "provider": "codex-cli",
-      "modelId": "gpt-5.1",
+      "modelId": "gpt-5.2",
       "maxTokens": 128000,
       "temperature": 0.2
     },
