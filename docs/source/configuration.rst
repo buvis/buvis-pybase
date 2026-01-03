@@ -433,6 +433,43 @@ For nested fields, use double underscores:
 Custom Settings Classes
 -----------------------
 
+GlobalSettings vs ToolSettings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use the right base class:
+
+- **GlobalSettings** (``pydantic_settings.BaseSettings``) - For your root settings class. Loads from environment variables automatically using the ``env_prefix``.
+- **ToolSettings** (``pydantic.BaseModel``) - For nested settings within a root class. Does NOT load from env directly; the parent ``GlobalSettings`` handles env resolution for nested fields.
+
+.. code-block:: python
+
+    from buvis.pybase.configuration import GlobalSettings, ToolSettings
+
+    # ToolSettings for nested - no env loading, just structure
+    class DatabaseSettings(ToolSettings):
+        host: str = "localhost"
+        port: int = 5432
+
+    # GlobalSettings for root - loads BUVIS_MYAPP_* from env
+    class MyAppSettings(GlobalSettings):
+        model_config = SettingsConfigDict(env_prefix="BUVIS_MYAPP_")
+        db: DatabaseSettings = DatabaseSettings()  # Nested
+
+    # Environment variable for nested field:
+    # BUVIS_MYAPP__DB__HOST=prod.db.local  (double underscore!)
+
+**Why this matters**: If you used ``GlobalSettings`` for nested classes, each would try to load from env independently with potentially conflicting prefixes.
+
+Both classes are **frozen** (immutable) - you cannot modify settings after creation:
+
+.. code-block:: python
+
+    settings = get_settings(ctx, MyAppSettings)
+    settings.db.host = "other"  # Raises: ValidationError (frozen)
+
+Composing Settings
+~~~~~~~~~~~~~~~~~~
+
 Model tool namespaces with ``ToolSettings`` and compose them into your root
 ``GlobalSettings`` subclass:
 
@@ -537,6 +574,71 @@ Error Handling
         print(f"Missing required env vars: {e.var_names}")
     except ConfigurationError as e:
         print(f"Config error: {e}")
+
+Testing
+-------
+
+Testing Code That Uses Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For unit tests, create settings directly without the resolver:
+
+.. code-block:: python
+
+    import pytest
+    from myapp.settings import MyAppSettings
+
+    def test_with_custom_settings():
+        # Create settings with test values directly
+        settings = MyAppSettings(
+            debug=True,
+            db={"host": "test-db", "port": 5433},
+        )
+        assert settings.debug is True
+        assert settings.db.host == "test-db"
+
+Mocking get_settings in Click Commands
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use ``pytest-mock`` to mock ``get_settings`` in CLI tests:
+
+.. code-block:: python
+
+    import pytest
+    from click.testing import CliRunner
+    from myapp.cli import main
+    from myapp.settings import MyAppSettings
+
+    @pytest.fixture
+    def mock_settings(mocker):
+        settings = MyAppSettings(debug=True)
+        mocker.patch("myapp.cli.get_settings", return_value=settings)
+        return settings
+
+    def test_cli_with_mocked_settings(mock_settings):
+        runner = CliRunner()
+        result = runner.invoke(main)
+        assert result.exit_code == 0
+
+Testing with Environment Variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use ``monkeypatch`` to set env vars for integration tests:
+
+.. code-block:: python
+
+    def test_settings_from_env(monkeypatch):
+        monkeypatch.setenv("BUVIS_MYAPP_DEBUG", "true")
+        monkeypatch.setenv("BUVIS_MYAPP__DB__HOST", "env-db")
+
+        from buvis.pybase.configuration import ConfigResolver
+        from myapp.settings import MyAppSettings
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(MyAppSettings)
+
+        assert settings.debug is True
+        assert settings.db.host == "env-db"
 
 Troubleshooting
 ---------------
