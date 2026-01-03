@@ -15,26 +15,51 @@ if TYPE_CHECKING:
     from pydantic_settings import BaseSettings
 
 
-def get_settings(ctx: click.Context) -> GlobalSettings:
+F = TypeVar("F", bound=Callable[..., Any])
+T = TypeVar("T", bound="BaseSettings")
+
+
+@overload
+def get_settings(ctx: click.Context) -> GlobalSettings: ...
+
+
+@overload
+def get_settings(ctx: click.Context, settings_class: type[T]) -> T: ...
+
+
+def get_settings(
+    ctx: click.Context, settings_class: type[T] | None = None
+) -> T | GlobalSettings:
     """Get settings from Click context.
 
     Args:
         ctx: Click context with settings stored by buvis_options decorator.
+        settings_class: Specific settings class to retrieve from context.
+            Defaults to GlobalSettings for backward compatibility.
 
     Raises:
         RuntimeError: If called before buvis_options decorator ran.
 
     Returns:
-        The GlobalSettings instance from context.
+        The requested settings instance from context.
     """
-    if ctx.obj is None or "settings" not in ctx.obj:
-        msg = "get_settings() called but buvis_options decorator not applied"
+    msg = "get_settings() called but buvis_options decorator not applied"
+
+    if ctx.obj is None:
         raise RuntimeError(msg)
-    return ctx.obj["settings"]
 
+    if settings_class is None:
+        # Backward compat: return ctx.obj['settings']
+        if "settings" not in ctx.obj:
+            raise RuntimeError(msg)
+        return ctx.obj["settings"]
 
-F = TypeVar("F", bound=Callable[..., Any])
-T = TypeVar("T", bound="BaseSettings")
+    if settings_class not in ctx.obj:
+        raise RuntimeError(
+            f"Settings class {settings_class.__name__} not found. "
+            f"Did you use @buvis_options(settings_class={settings_class.__name__})?"
+        )
+    return ctx.obj[settings_class]
 
 
 def _create_buvis_options(settings_class: type[T]) -> Callable[[F], F]:

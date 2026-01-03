@@ -367,6 +367,50 @@ class TestGetSettings:
         with pytest.raises(RuntimeError, match="buvis_options decorator not applied"):
             get_settings(ctx)
 
+    def test_returns_custom_settings_class(
+        self, custom_settings_cls: type[GlobalSettings]
+    ) -> None:
+        """get_settings returns requested custom settings instance."""
+        from unittest.mock import MagicMock
+
+        ctx = MagicMock(spec=click.Context)
+        settings = custom_settings_cls()
+        ctx.obj = {custom_settings_cls: settings}
+
+        resolved = get_settings(ctx, custom_settings_cls)
+
+        assert resolved is settings
+
+    def test_raises_when_settings_class_not_in_context(
+        self, custom_settings_cls: type[GlobalSettings]
+    ) -> None:
+        """RuntimeError raised when requested class is missing in ctx.obj."""
+        from unittest.mock import MagicMock
+
+        ctx = MagicMock(spec=click.Context)
+        ctx.obj = {GlobalSettings: GlobalSettings()}
+
+        with pytest.raises(RuntimeError, match=custom_settings_cls.__name__):
+            get_settings(ctx, custom_settings_cls)
+
+    def test_error_message_includes_class_name(
+        self, custom_settings_cls: type[GlobalSettings]
+    ) -> None:
+        """Error message includes class name and decorator hint."""
+        from unittest.mock import MagicMock
+
+        ctx = MagicMock(spec=click.Context)
+        ctx.obj = {}
+
+        with pytest.raises(RuntimeError) as excinfo:
+            get_settings(ctx, custom_settings_cls)
+
+        message = str(excinfo.value)
+        assert custom_settings_cls.__name__ in message
+        assert (
+            f"@buvis_options(settings_class={custom_settings_cls.__name__})" in message
+        )
+
 
 class TestClickIntegration:
     """Integration tests for Click group/subcommand settings inheritance."""
