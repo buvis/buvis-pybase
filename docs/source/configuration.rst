@@ -25,27 +25,53 @@ environment, which wins over ``debug: false`` in a YAML file.
 Quick Start
 -----------
 
-For Click-based CLI tools, use the ``buvis_options`` decorator:
+Define a tool-specific settings class that inherits from ``GlobalSettings`` and
+register it with the Click decorator:
 
 .. code-block:: python
 
+    from typing import Literal
     import click
-    from buvis.pybase.configuration import get_settings, buvis_options
+    from buvis.pybase.configuration import (
+        buvis_options,
+        get_settings,
+        GlobalSettings,
+        ToolSettings,
+    )
+    from pydantic_settings import SettingsConfigDict
+
+    class MusicSettings(ToolSettings):
+        normalize: bool = True
+        bitrate: int = 320
+
+    class PhotoSettings(GlobalSettings):
+        model_config = SettingsConfigDict(
+            env_prefix="BUVIS_PHOTO_",
+            env_nested_delimiter="__",
+        )
+        watermark: bool = False
+        default_album: str = "camera-roll"
+        resolution: Literal["low", "medium", "high"] = "high"
+        music: MusicSettings = MusicSettings()
 
     @click.command()
-    @buvis_options
+    @buvis_options(settings_class=PhotoSettings)
     @click.pass_context
-    def main(ctx):
-        settings = get_settings(ctx)
-        if settings.debug:
-            click.echo("Debug mode enabled")
-        click.echo(f"Log level: {settings.log_level}")
+    def main(ctx: click.Context) -> None:
+        photo_settings = get_settings(ctx, PhotoSettings)
+        if photo_settings.watermark:
+            click.echo("Watermark enabled")
+        click.echo(f"Saving to {photo_settings.default_album} at {photo_settings.resolution} quality")
 
     if __name__ == "__main__":
         main()
 
 This automatically adds ``--debug``, ``--log-level``, ``--config-dir``, and
-``--config`` options to your CLI.
+``--config`` options, then resolves ``PhotoSettings`` from CLI, environment, and
+YAML files. The ``get_settings(ctx, PhotoSettings)`` call returns the typed
+settings you registered with ``buvis_options(settings_class=PhotoSettings)``.
+Using ``@buvis_options`` without arguments resolves ``GlobalSettings``; retrieve
+it with ``get_settings(ctx)`` for backward compatibility.
 
 YAML Configuration
 ------------------
@@ -73,9 +99,12 @@ File Format
     output_format: text
 
     # Tool-specific sections
-    payroll:
-      enabled: true
-      batch_size: 1000
+    photo:
+      watermark: true
+      default_album: shared
+    music:
+      normalize: true
+      bitrate: 320
 
 Environment Variable Substitution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,48 +119,63 @@ YAML files support environment variable interpolation:
       password: ${DB_PASSWORD}
       connection_string: $${NOT_EXPANDED} # Escaped - becomes literal ${NOT_EXPANDED}
 
-To enable substitution, initialize with ``enable_env_substitution=True``:
+Substitution is applied automatically by ``ConfigResolver`` when it loads YAML:
 
 .. code-block:: python
 
-    from buvis.pybase.configuration import Configuration
+    from buvis.pybase.configuration import ConfigResolver
+    from myapp.settings import PhotoSettings
 
-    cfg = Configuration(enable_env_substitution=True)
+    resolver = ConfigResolver()
+    settings = resolver.resolve(PhotoSettings)
 
 Environment Variables
 ---------------------
 
-All environment variables use the ``BUVIS_`` prefix in SCREAMING_SNAKE_CASE:
+The ``GlobalSettings`` base class uses the ``BUVIS_`` prefix in
+SCREAMING_SNAKE_CASE. Override ``env_prefix`` on your settings class (as shown
+in ``PhotoSettings`` above) to scope variables per tool:
 
 .. code-block:: bash
 
-    export BUVIS_DEBUG=true
-    export BUVIS_LOG_LEVEL=DEBUG
-    export BUVIS_OUTPUT_FORMAT=json
+    export BUVIS_PHOTO_DEBUG=true
+    export BUVIS_PHOTO_LOG_LEVEL=DEBUG
+    export BUVIS_PHOTO_OUTPUT_FORMAT=json
 
-For nested settings, use double underscore as delimiter:
+For nested fields, use double underscores:
 
 .. code-block:: bash
 
-    export BUVIS_PAYROLL__ENABLED=true
-    export BUVIS_PAYROLL__BATCH_SIZE=500
+    export BUVIS_PHOTO__MUSIC__NORMALIZE=true
+    export BUVIS_PHOTO__MUSIC__BITRATE=256
 
 Custom Settings Classes
 -----------------------
 
-Extend ``GlobalSettings`` for tool-specific configuration:
+Model tool namespaces with ``ToolSettings`` and compose them into your root
+``GlobalSettings`` subclass:
 
 .. code-block:: python
 
     from typing import Literal
     from buvis.pybase.configuration import GlobalSettings, ToolSettings
+    from pydantic_settings import SettingsConfigDict
 
-    class PayrollSettings(ToolSettings):
-        batch_size: int = 1000
-        output_dir: str = "/tmp/payroll"
+    class MusicSettings(ToolSettings):
+        normalize: bool = True
+        bitrate: int = 320
 
-    class MyToolSettings(GlobalSettings):
-        payroll: PayrollSettings = PayrollSettings()
+    class PhotoSettings(GlobalSettings):
+        model_config = SettingsConfigDict(
+            env_prefix="BUVIS_PHOTO_",
+            env_nested_delimiter="__",
+        )
+        resolution: Literal["low", "medium", "high"] = "high"
+        watermark: bool = False
+        music: MusicSettings = MusicSettings()
+
+Nested environment variables map to these namespaces (for example,
+``BUVIS_PHOTO__RESOLUTION=medium`` or ``BUVIS_PHOTO__MUSIC__BITRATE=256``).
 
 Using ConfigResolver Directly
 -----------------------------
@@ -140,55 +184,17 @@ For non-Click applications or custom resolution:
 
 .. code-block:: python
 
-    from buvis.pybase.configuration import ConfigResolver, GlobalSettings
+    from buvis.pybase.configuration import ConfigResolver
+    from myapp.settings import PhotoSettings
 
-    resolver = ConfigResolver(tool_name="mytool")
+    resolver = ConfigResolver()
     settings = resolver.resolve(
-        GlobalSettings,
+        PhotoSettings,
         cli_overrides={"debug": True},  # Simulate CLI args
     )
 
     # Check where each value came from
     print(resolver.sources)  # {"debug": ConfigSource.CLI, "log_level": ConfigSource.DEFAULT}
-
-Configuration Class
--------------------
-
-The ``Configuration`` class provides dict-style access for simple scripts:
-
-.. code-block:: python
-
-    from buvis.pybase.configuration import Configuration
-
-    config = Configuration()  # Auto-discovers config file
-
-    # Get values
-    hostname = config.get_configuration_item("hostname")
-    timeout = config.get_configuration_item_or_default("timeout", 30)
-
-    # Set values at runtime
-    config.set_configuration_item("custom_key", "value")
-
-.. note::
-
-    The ``Configuration`` class doesn't support precedence handling.
-    Use ``ConfigResolver`` with ``get_settings()`` for CLI tools.
-
-Migration from cfg Singleton
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If migrating from the legacy ``cfg`` singleton:
-
-.. code-block:: python
-
-    # Old
-    from buvis.pybase.configuration import cfg
-    value = cfg.get_configuration_item("key")
-
-    # New
-    from buvis.pybase.configuration import Configuration
-    config = Configuration()
-    value = config.get_configuration_item("key")
 
 Security Considerations
 -----------------------
@@ -240,12 +246,12 @@ Error Handling
         ConfigResolver,
         ConfigurationError,
         MissingEnvVarError,
-        GlobalSettings,
     )
+    from myapp.settings import PhotoSettings
 
     try:
         resolver = ConfigResolver()
-        settings = resolver.resolve(GlobalSettings)
+        settings = resolver.resolve(PhotoSettings)
     except MissingEnvVarError as e:
         print(f"Missing required env vars: {e.var_names}")
     except ConfigurationError as e:
@@ -259,14 +265,6 @@ API Reference
 Core Classes
 ------------
 
-Configuration
-~~~~~~~~~~~~~
-
-.. autoclass:: buvis.pybase.configuration.Configuration
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 GlobalSettings
 ~~~~~~~~~~~~~~
 
@@ -279,14 +277,6 @@ ToolSettings
 ~~~~~~~~~~~~
 
 .. autoclass:: buvis.pybase.configuration.ToolSettings
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ConfigurationLoader
-~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: buvis.pybase.configuration.ConfigurationLoader
    :members:
    :undoc-members:
    :show-inheritance:

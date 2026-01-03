@@ -25,7 +25,7 @@ src/buvis/pybase/
 **Key patterns:**
 - **Adapters**: wrap external tools (subprocess, APIs). Return `(stderr, stdout)` tuples
 - **Static utility classes**: no instance state (DirTree, StringOperator)
-- **Configuration**: `from buvis.pybase.configuration import Configuration` or `get_settings()` with Click
+- **Configuration**: use Click decorators (`@buvis_options`) and `get_settings()` to resolve typed settings classes
 
 ## Code Conventions
 

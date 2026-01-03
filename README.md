@@ -10,7 +10,7 @@ pip install buvis-pybase
 
 ## Features
 
-- **Configuration** - YAML-based config with singleton access (`cfg`)
+- **Configuration** - Pydantic settings with Click helpers (`buvis_options`, `get_settings`)
 - **Adapters** - Shell, UV, Poetry, JIRA, Console wrappers
 - **Filesystem** - Cross-platform file metadata, directory operations
 - **Formatting** - String slugify, abbreviations, case conversion
@@ -18,14 +18,19 @@ pip install buvis-pybase
 ## Usage
 
 ```python
-from buvis.pybase.configuration import Configuration
+import click
+from buvis.pybase.configuration import buvis_options, get_settings, GlobalSettings
 from buvis.pybase.adapters import ShellAdapter, ConsoleAdapter
 from buvis.pybase.filesystem import DirTree
 from buvis.pybase.formatting import StringOperator
 
-# Config (reads ~/.config/buvis/config.yaml)
-config = Configuration()
-value = config.get_configuration_item("some.key", default="fallback")
+# Config via Click (adds --debug/--log-level/--config-dir/--config)
+@click.command()
+@buvis_options  # Use settings_class=CustomSettings for tool-specific models
+@click.pass_context
+def main(ctx: click.Context) -> None:
+    settings = get_settings(ctx)  # GlobalSettings by default
+    click.echo(f"Debug: {settings.debug}")
 
 # Shell commands
 shell = ShellAdapter()
