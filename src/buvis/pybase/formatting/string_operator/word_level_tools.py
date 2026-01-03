@@ -1,3 +1,14 @@
+"""Word-level string operations.
+WordLevelTools provides singularization and pluralization using the inflection library.
+Certain words (e.g. minutes) are excluded from transformation.
+
+Example:
+    >>> WordLevelTools.pluralize('cat')
+    'cats'
+    >>> WordLevelTools.singularize('dogs')
+    'dog'
+"""
+
 from inflection import pluralize as infl_pluralize
 from inflection import singularize as infl_singularize
 
