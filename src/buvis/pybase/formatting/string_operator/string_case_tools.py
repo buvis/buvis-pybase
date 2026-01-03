@@ -1,3 +1,10 @@
+"""String case conversion utilities. StringCaseTools converts strings between naming conventions wrapping inflection library. Supports: humanize, underscore, camelize, as_note_field_name, as_graphql_field_name.
+
+Example:
+    StringCaseTools.camelize('some-name')
+    StringCaseTools.underscore('SomeName')
+"""
+
 from inflection import camelize as infl_camelize
 from inflection import humanize as infl_humanize
 from inflection import underscore as infl_underscore
