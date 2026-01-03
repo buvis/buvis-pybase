@@ -22,56 +22,337 @@ precedence rules:
 This means a ``--debug`` flag always wins over ``BUVIS_DEBUG=false`` in the
 environment, which wins over ``debug: false`` in a YAML file.
 
-Quick Start
------------
+Source Mapping
+~~~~~~~~~~~~~~
 
-Define a tool-specific settings class that inherits from ``GlobalSettings`` and
-register it with the Click decorator:
+Each Python field maps to CLI, ENV, and YAML sources with consistent naming:
+
+.. list-table:: Mapping Example for ``PhotoSettings``
+   :header-rows: 1
+   :widths: 25 25 25 25
+
+   * - Python Field
+     - CLI Argument
+     - Environment Variable
+     - YAML Path
+   * - ``debug``
+     - ``--debug``
+     - ``BUVIS_PHOTO_DEBUG``
+     - ``photo.debug``
+   * - ``log_level``
+     - ``--log-level``
+     - ``BUVIS_PHOTO_LOG_LEVEL``
+     - ``photo.log_level``
+   * - ``library_path``
+     - (custom option)
+     - ``BUVIS_PHOTO_LIBRARY_PATH``
+     - ``photo.library_path``
+   * - ``db.host`` (nested)
+     - (custom option)
+     - ``BUVIS_PHOTO__DB__HOST``
+     - ``photo.db.host``
+
+**Naming rules:**
+
+- **CLI**: Built-in options (``--debug``, ``--log-level``) are added automatically. Custom fields require explicit Click options - see `Adding Custom CLI Options`_ below.
+- **ENV**: Prefix from ``env_prefix`` + field name in SCREAMING_SNAKE_CASE. Nested fields use ``__`` delimiter.
+- **YAML**: Tool name (derived from prefix) as root key, then field names with ``.`` for nesting.
+
+Adding Custom CLI Options
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``@buvis_options`` decorator only adds ``--debug``, ``--log-level``,
+``--config-dir``, and ``--config``. For custom fields, add your own Click
+options and pass them to ``cli_overrides``:
 
 .. code-block:: python
 
-    from typing import Literal
     import click
-    from buvis.pybase.configuration import (
-        buvis_options,
-        get_settings,
-        GlobalSettings,
-        ToolSettings,
-    )
+    from buvis.pybase.configuration import ConfigResolver, GlobalSettings
     from pydantic_settings import SettingsConfigDict
+    from pathlib import Path
 
-    class MusicSettings(ToolSettings):
-        normalize: bool = True
-        bitrate: int = 320
+    class PhotoSettings(GlobalSettings):
+        model_config = SettingsConfigDict(env_prefix="BUVIS_PHOTO_")
+        library_path: Path = Path.home() / "Pictures"
+        quality: int = 85
+
+    @click.command()
+    @click.option("--library", type=click.Path(exists=True), help="Photo library path")
+    @click.option("--quality", type=int, help="JPEG quality (1-100)")
+    @click.option("--debug/--no-debug", default=None)
+    def main(library: str | None, quality: int | None, debug: bool | None) -> None:
+        cli_overrides = {
+            k: v for k, v in {
+                "library_path": Path(library) if library else None,
+                "quality": quality,
+                "debug": debug,
+            }.items() if v is not None
+        }
+
+        resolver = ConfigResolver()
+        settings = resolver.resolve(PhotoSettings, cli_overrides=cli_overrides)
+        click.echo(f"Library: {settings.library_path}")
+
+For nested fields (e.g., ``db.host``), flatten them in cli_overrides:
+
+.. code-block:: python
+
+    # Nested settings don't have direct CLI support in cli_overrides.
+    # Use ENV vars or YAML for nested fields, or restructure as top-level.
+
+Tool-Specific Configuration Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can separate tool configuration from global settings using dedicated files.
+The loader searches for both ``buvis.yaml`` AND ``buvis-{tool}.yaml``:
+
+**Option 1: Section in global file**
+
+.. code-block:: yaml
+
+    # ~/.config/buvis/buvis.yaml
+    debug: false
+    log_level: INFO
+
+    photo:                    # Tool section (from BUVIS_PHOTO_ prefix)
+      library_path: /media/photos
+      quality: 90
+
+**Option 2: Separate tool file**
+
+.. code-block:: yaml
+
+    # ~/.config/buvis/buvis-photo.yaml
+    library_path: /media/photos
+    quality: 90
+
+Both are merged. Tool-specific file values override global file values for that tool.
+
+The tool name is derived from ``env_prefix``:
+
+- ``BUVIS_PHOTO_`` → searches for ``buvis-photo.yaml`` and ``photo:`` section
+- ``BUVIS_`` (default) → only ``buvis.yaml``, no tool section
+
+**Complete example:**
+
+.. code-block:: python
+
+    from buvis.pybase.configuration import GlobalSettings, ToolSettings
+    from pydantic_settings import SettingsConfigDict
+    from pathlib import Path
+
+    class DatabaseSettings(ToolSettings):
+        host: str = "localhost"
+        port: int = 5432
 
     class PhotoSettings(GlobalSettings):
         model_config = SettingsConfigDict(
             env_prefix="BUVIS_PHOTO_",
             env_nested_delimiter="__",
         )
-        watermark: bool = False
-        default_album: str = "camera-roll"
-        resolution: Literal["low", "medium", "high"] = "high"
-        music: MusicSettings = MusicSettings()
+        library_path: Path = Path.home() / "Pictures"
+        db: DatabaseSettings = DatabaseSettings()
+
+All equivalent ways to set ``db.host`` to ``"prod.db.local"``:
+
+.. code-block:: bash
+
+    # Environment variable (note double underscore for nesting)
+    export BUVIS_PHOTO__DB__HOST=prod.db.local
+
+.. code-block:: yaml
+
+    # YAML (~/.config/buvis/buvis.yaml)
+    photo:
+      db:
+        host: prod.db.local
+
+.. code-block:: python
+
+    # Python default
+    class DatabaseSettings(ToolSettings):
+        host: str = "prod.db.local"
+
+Quick Start
+-----------
+
+Add configuration to any Click command:
+
+.. code-block:: python
+
+    import click
+    from buvis.pybase.configuration import buvis_options, get_settings
 
     @click.command()
-    @buvis_options(settings_class=PhotoSettings)
+    @buvis_options
     @click.pass_context
     def main(ctx: click.Context) -> None:
-        photo_settings = get_settings(ctx, PhotoSettings)
-        if photo_settings.watermark:
-            click.echo("Watermark enabled")
-        click.echo(f"Saving to {photo_settings.default_album} at {photo_settings.resolution} quality")
+        settings = get_settings(ctx)
+        if settings.debug:
+            click.echo("Debug mode enabled")
+        click.echo(f"Log level: {settings.log_level}")
 
     if __name__ == "__main__":
         main()
 
-This automatically adds ``--debug``, ``--log-level``, ``--config-dir``, and
-``--config`` options, then resolves ``PhotoSettings`` from CLI, environment, and
-YAML files. The ``get_settings(ctx, PhotoSettings)`` call returns the typed
-settings you registered with ``buvis_options(settings_class=PhotoSettings)``.
-Using ``@buvis_options`` without arguments resolves ``GlobalSettings``; retrieve
-it with ``get_settings(ctx)`` for backward compatibility.
+This adds ``--debug``, ``--log-level``, ``--config-dir``, and ``--config``
+options. Values resolve from CLI > ENV > YAML > defaults.
+
+For tool-specific settings, see `Downstream Project Integration`_ or
+`Custom Settings Classes`_.
+
+Migration Guide
+---------------
+
+This section covers migrating from deprecated patterns to the new configuration
+system.
+
+From BuvisCommand Pattern
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``BuvisCommand`` is deprecated. Replace YAML spec files with typed settings.
+
+**Before (deprecated):**
+
+.. code-block:: python
+
+    from buvis.pybase.command import BuvisCommand
+
+    class MyCommand(BuvisCommand):
+        def __init__(self):
+            super().__init__()
+            self._setattr_from_config(cfg, __file__)
+
+With ``command_input_spec.yaml``:
+
+.. code-block:: yaml
+
+    source_dir:
+      default: /tmp/source
+    output_format:
+      default: json
+
+**After:**
+
+.. code-block:: python
+
+    from pathlib import Path
+    import click
+    from buvis.pybase.configuration import GlobalSettings, buvis_options, get_settings
+    from pydantic_settings import SettingsConfigDict
+
+    class MyCommandSettings(GlobalSettings):
+        model_config = SettingsConfigDict(env_prefix="BUVIS_MYCMD_")
+        source_dir: Path = Path("/tmp/source")
+        output_format: str = "json"
+
+    @click.command()
+    @buvis_options(settings_class=MyCommandSettings)
+    @click.pass_context
+    def main(ctx: click.Context) -> None:
+        settings = get_settings(ctx, MyCommandSettings)
+        # Use settings.source_dir, settings.output_format
+
+Benefits: type safety, validation at startup, environment variable support
+built-in.
+
+Downstream Project Integration
+------------------------------
+
+Step-by-step guide for projects depending on buvis-pybase.
+
+Step 1: Define Settings
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    # myproject/settings.py
+    from buvis.pybase.configuration import GlobalSettings
+    from pydantic_settings import SettingsConfigDict
+    from pathlib import Path
+
+    class MyProjectSettings(GlobalSettings):
+        model_config = SettingsConfigDict(
+            env_prefix="MYPROJECT_",
+            env_nested_delimiter="__",
+        )
+        data_dir: Path = Path.home() / ".myproject"
+        verbose: bool = False
+
+Step 2: Wire CLI
+~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    # myproject/cli.py
+    import click
+    from buvis.pybase.configuration import buvis_options, get_settings
+    from myproject.settings import MyProjectSettings
+
+    @click.command()
+    @buvis_options(settings_class=MyProjectSettings)
+    @click.pass_context
+    def main(ctx: click.Context) -> None:
+        settings = get_settings(ctx, MyProjectSettings)
+        if settings.verbose:
+            click.echo(f"Data dir: {settings.data_dir}")
+
+Step 3: Configure (any combination)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CLI: ``myproject --debug --log-level DEBUG``
+
+Environment:
+
+.. code-block:: bash
+
+    export MYPROJECT_DATA_DIR=/var/data
+    export MYPROJECT_VERBOSE=true
+
+YAML (``~/.config/buvis/buvis.yaml``):
+
+.. code-block:: yaml
+
+    myproject:
+      data_dir: /var/data
+      verbose: true
+
+Example: Abbreviations from Config
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Load abbreviation definitions from YAML and pass to ``StringOperator``:
+
+.. code-block:: python
+
+    from buvis.pybase.configuration import GlobalSettings, ToolSettings
+    from buvis.pybase.formatting import StringOperator
+    from pydantic_settings import SettingsConfigDict
+
+    class FormattingSettings(ToolSettings):
+        abbreviations: list[dict] = []
+
+    class DocSettings(GlobalSettings):
+        model_config = SettingsConfigDict(env_prefix="DOC_")
+        formatting: FormattingSettings = FormattingSettings()
+
+    # In CLI:
+    settings = get_settings(ctx, DocSettings)
+    expanded = StringOperator.replace_abbreviations(
+        text="Use the API",
+        abbreviations=settings.formatting.abbreviations,
+        level=1,
+    )  # -> "Use the Application Programming Interface"
+
+YAML:
+
+.. code-block:: yaml
+
+    doc:
+      formatting:
+        abbreviations:
+          - API: Application Programming Interface
+          - CLI: Command Line Interface
 
 YAML Configuration
 ------------------
@@ -256,6 +537,55 @@ Error Handling
         print(f"Missing required env vars: {e.var_names}")
     except ConfigurationError as e:
         print(f"Config error: {e}")
+
+Troubleshooting
+---------------
+
+Missing Environment Variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If YAML uses ``${VAR}`` without a default, you'll get ``MissingEnvVarError``:
+
+.. code-block:: yaml
+
+    # buvis.yaml
+    database:
+      password: ${DB_PASSWORD}  # Fails if not set
+
+    # Fix: provide default
+    database:
+      password: ${DB_PASSWORD:-}  # Empty string default
+
+YAML Not Loading
+~~~~~~~~~~~~~~~~
+
+Check file locations (in order):
+
+1. ``$BUVIS_CONFIG_DIR/buvis.yaml``
+2. ``~/.config/buvis/buvis.yaml``
+3. ``~/.buvis/buvis.yaml``
+4. ``./buvis.yaml``
+
+Debug with:
+
+.. code-block:: python
+
+    from buvis.pybase.configuration import ConfigResolver
+
+    resolver = ConfigResolver()
+    settings = resolver.resolve(MySettings)
+    print(resolver.sources)  # Shows where each value came from
+
+Precedence Confusion
+~~~~~~~~~~~~~~~~~~~~
+
+CLI always wins, then ENV, then YAML, then defaults.
+
+.. code-block:: bash
+
+    # This won't work as expected:
+    export BUVIS_DEBUG=true
+    myapp --no-debug  # CLI wins -> debug=False
 
 --------------
 

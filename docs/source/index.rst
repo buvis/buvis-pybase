@@ -1,19 +1,37 @@
-.. Bob's Universal and Very Intelligent System scripts documentation master file, created by
-   sphinx-quickstart on Thu Aug 22 12:11:01 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+buvis-pybase Documentation
+==========================
 
-Bob's Universal and Very Intelligent System scripts documentation
-=================================================================
+Foundation library for BUVIS Python projects. Provides configuration management,
+filesystem utilities, adapters for external tools, and string manipulation.
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+Getting Started
+---------------
 
+**Configuration** is the recommended entry point. It defines how your tools load
+settings from CLI arguments, environment variables, YAML files, and defaults.
+
+Quick Example
+~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    import click
+    from buvis.pybase.configuration import buvis_options, get_settings
+
+    @click.command()
+    @buvis_options
+    @click.pass_context
+    def main(ctx: click.Context) -> None:
+        settings = get_settings(ctx)
+        if settings.debug:
+            click.echo("Debug mode")
+
+See :doc:`configuration` for custom settings classes, YAML configuration,
+environment variables, and migration guides.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   configuration.rst
+   configuration
 
