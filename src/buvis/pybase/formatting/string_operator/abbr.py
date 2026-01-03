@@ -1,3 +1,16 @@
+"""Abbreviation expansion utilities.
+
+The :class:`Abbr` class expands abbreviations with configurable levels
+(0=fix case, 1=short, 2=short+abbr, 3=long, 4=long+abbr).
+
+Example:
+    Abbr.replace_abbreviations(
+        "Send an API request",
+        [{"API": "Application Programming Interface<<Application Programming Interface>>"}],
+        level=2,
+    )
+"""
+
 from __future__ import annotations
 
 import re
