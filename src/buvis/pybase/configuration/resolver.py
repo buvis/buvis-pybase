@@ -152,7 +152,10 @@ class ConfigResolver:
             settings = resolver.resolve(GlobalSettings, config_dir="/etc/buvis")
 
     Note:
-        Settings are immutable after resolve(). Instances are frozen.
+        Settings are immutable after resolve(). Instances are frozen. The tool
+        name is inferred from ``settings_class.model_config['env_prefix']``
+        following the pattern ``BUVIS_{TOOL}_`` -> ``"tool"``; you no longer
+        pass ``tool_name`` manually.
     """
 
     def __init__(self) -> None:
@@ -191,6 +194,10 @@ class ConfigResolver:
             2. Environment variables (Pydantic handles automatically)
             3. YAML config file values
             4. Model field defaults
+
+            Config file discovery uses the tool name derived from
+            ``settings_class.model_config['env_prefix']`` (``BUVIS_{TOOL}_`` ->
+            ``"tool"``) to locate YAML files.
         """
         env_prefix = settings_class.model_config.get("env_prefix", "BUVIS_")
         tool_name = _extract_tool_name(env_prefix)

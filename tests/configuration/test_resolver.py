@@ -7,7 +7,28 @@ import pytest
 
 from buvis.pybase.configuration import ConfigurationError
 from buvis.pybase.configuration.settings import GlobalSettings
-from buvis.pybase.configuration.resolver import ConfigResolver, _load_yaml_config
+from buvis.pybase.configuration.resolver import (
+    ConfigResolver,
+    _extract_tool_name,
+    _load_yaml_config,
+)
+
+
+class TestExtractToolName:
+    def test_global_settings_prefix_returns_none(self) -> None:
+        assert _extract_tool_name("BUVIS_") is None
+
+    def test_photo_prefix_returns_photo(self) -> None:
+        assert _extract_tool_name("BUVIS_PHOTO_") == "photo"
+
+    def test_hcm_tools_prefix_returns_hcm_tools(self) -> None:
+        assert _extract_tool_name("BUVIS_HCM_TOOLS_") == "hcm_tools"
+
+    def test_empty_string_returns_none(self) -> None:
+        assert _extract_tool_name("") is None
+
+    def test_invalid_pattern_returns_none(self) -> None:
+        assert _extract_tool_name("INVALID_PREFIX_") is None
 
 
 class TestConfigResolverResolve:
