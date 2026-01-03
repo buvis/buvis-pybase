@@ -133,21 +133,6 @@ Extend ``GlobalSettings`` for tool-specific configuration:
     class MyToolSettings(GlobalSettings):
         payroll: PayrollSettings = PayrollSettings()
 
-Or use the factory for simple cases:
-
-.. code-block:: python
-
-    from buvis.pybase.configuration import create_tool_settings_class
-
-    PayrollSettings = create_tool_settings_class(
-        "PAYROLL",
-        batch_size=(int, 1000),
-        output_dir=(str, "/tmp/payroll"),
-    )
-
-    # Reads from BUVIS_PAYROLL_BATCH_SIZE, BUVIS_PAYROLL_OUTPUT_DIR
-    settings = PayrollSettings()
-
 Using ConfigResolver Directly
 -----------------------------
 
@@ -366,12 +351,6 @@ Exceptions
 Validators
 ----------
 
-.. autofunction:: buvis.pybase.configuration.validate_env_var_name
-
-.. autofunction:: buvis.pybase.configuration.assert_valid_env_var_name
-
-.. autofunction:: buvis.pybase.configuration.validate_tool_name
-
 .. autofunction:: buvis.pybase.configuration.validate_nesting_depth
 
 .. autofunction:: buvis.pybase.configuration.validate_json_env_size
@@ -379,11 +358,6 @@ Validators
 .. autofunction:: buvis.pybase.configuration.get_model_depth
 
 .. autofunction:: buvis.pybase.configuration.is_sensitive_field
-
-Factory Functions
------------------
-
-.. autofunction:: buvis.pybase.configuration.create_tool_settings_class
 
 Constants
 ---------
