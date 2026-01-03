@@ -18,6 +18,14 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
+@pytest.fixture
+def custom_settings_cls() -> type[GlobalSettings]:
+    class CustomSettings(GlobalSettings):
+        custom_field: str = "default"
+
+    return CustomSettings
+
+
 class TestBuvisOptionsHelp:
     """Tests for --help output."""
 
@@ -151,6 +159,112 @@ class TestBuvisOptionsCLIOverrides:
         runner.invoke(cmd, ["--log-level", "DEBUG"])
 
         assert captured_settings[0].log_level == "DEBUG"
+
+
+class TestBuvisOptionsParameterized:
+    """Tests for decorator invocation styles and custom settings."""
+
+    def test_bare_decorator_works(self, runner: CliRunner) -> None:
+        """@buvis_options without parentheses uses GlobalSettings."""
+        captured = []
+
+        @click.command()
+        @buvis_options
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            captured.append((ctx.obj["settings"], ctx.obj[GlobalSettings]))
+
+        runner.invoke(cmd, [])
+
+        settings, cached = captured[0]
+        assert isinstance(settings, GlobalSettings)
+        assert settings is cached
+
+    def test_empty_parens_works(self, runner: CliRunner) -> None:
+        """@buvis_options() without args still uses GlobalSettings."""
+        captured = []
+
+        @click.command()
+        @buvis_options()
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            captured.append((ctx.obj["settings"], get_settings(ctx)))
+
+        runner.invoke(cmd, [])
+
+        settings, resolved = captured[0]
+        assert isinstance(settings, GlobalSettings)
+        assert settings is resolved
+
+    def test_custom_settings_class(
+        self, runner: CliRunner, custom_settings_cls: type[GlobalSettings]
+    ) -> None:
+        """Custom settings class is used and includes custom_field."""
+        captured = []
+
+        @click.command()
+        @buvis_options(settings_class=custom_settings_cls)
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            captured.append(ctx.obj[custom_settings_cls])
+
+        runner.invoke(cmd, [])
+
+        settings = captured[0]
+        assert isinstance(settings, custom_settings_cls)
+        assert settings.custom_field == "default"
+
+    def test_settings_cached_by_class(
+        self, runner: CliRunner, custom_settings_cls: type[GlobalSettings]
+    ) -> None:
+        """Settings instance is stored by class key in ctx.obj."""
+        captured = []
+
+        @click.command()
+        @buvis_options(settings_class=custom_settings_cls)
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            captured.append(ctx.obj[custom_settings_cls])
+
+        runner.invoke(cmd, [])
+
+        assert len(captured) == 1
+        assert isinstance(captured[0], custom_settings_cls)
+
+    def test_global_settings_backward_compat(self, runner: CliRunner) -> None:
+        """Legacy ctx.obj['settings'] remains for GlobalSettings."""
+        captured = []
+
+        @click.command()
+        @buvis_options
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            captured.append((ctx.obj[GlobalSettings], ctx.obj["settings"]))
+
+        runner.invoke(cmd, [])
+
+        by_class, legacy = captured[0]
+        assert isinstance(legacy, GlobalSettings)
+        assert legacy is by_class
+
+    def test_non_global_settings_no_legacy_key(
+        self, runner: CliRunner, custom_settings_cls: type[GlobalSettings]
+    ) -> None:
+        """When using custom settings, ctx.obj['settings'] is not set."""
+        captured = []
+
+        @click.command()
+        @buvis_options(settings_class=custom_settings_cls)
+        @click.pass_context
+        def cmd(ctx: click.Context) -> None:
+            captured.append(ctx.obj[custom_settings_cls])
+            captured.append("settings" in ctx.obj)
+
+        runner.invoke(cmd, [])
+
+        settings, legacy_present = captured
+        assert isinstance(settings, custom_settings_cls)
+        assert legacy_present is False
 
 
 class TestBuvisOptionsConfigFile:
