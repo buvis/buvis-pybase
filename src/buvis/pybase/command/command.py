@@ -1,18 +1,27 @@
 from pathlib import Path
+import warnings
+from typing import Any
 
 import yaml
 
 from buvis.pybase.adapters.console.console import console
-from buvis.pybase.configuration.configuration import Configuration
 from buvis.pybase.configuration.exceptions import ConfigurationKeyNotFoundError
 
 FILENAME_COMMAND_INPUT_SPECIFICATION = "command_input_spec.yaml"
 
 
 class BuvisCommand:
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        warnings.warn(
+            "BuvisCommand is deprecated and will be removed in a future release.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
     def _setattr_from_config(
         self: "BuvisCommand",
-        cfg: Configuration,
+        cfg: Any,
         child_module_path: str,
     ) -> None:
         input_spec_file = Path(child_module_path).parent.joinpath(

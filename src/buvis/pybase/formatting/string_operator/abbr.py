@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import re
 
-from buvis.pybase.configuration import Configuration, ConfigurationKeyNotFoundError
-
 abbr_pattern = r"\b(\w+)\b(?!\s*\))"
 
 
@@ -13,17 +11,9 @@ class Abbr:
         text: str = "",
         abbreviations: list[dict] | None = None,
         level: int = 0,
-        config: Configuration | None = None,
     ) -> str:
-        # Check if the passed list is None or empty, then use config if provided
-        if abbreviations is None or len(abbreviations) == 0:
-            if config is not None:
-                try:
-                    abbreviations = config.get_configuration_item("abbreviations")
-                except ConfigurationKeyNotFoundError:
-                    abbreviations = []
-            else:
-                abbreviations = []
+        if abbreviations is None:
+            abbreviations = []
 
         replacements = _get_abbreviations_replacements(abbreviations)
 

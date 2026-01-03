@@ -1,13 +1,13 @@
 import os
+from typing import Any
 
 from jira import JIRA
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
-from buvis.pybase.configuration import Configuration
 
 
 class JiraAdapter:
-    def __init__(self: "JiraAdapter", cfg: Configuration) -> None:
+    def __init__(self: "JiraAdapter", cfg: Any) -> None:
         self._cfg = cfg
         if self._cfg.get_configuration_item_or_default("proxy", None):
             os.environ.pop("https_proxy")

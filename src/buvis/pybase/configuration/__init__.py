@@ -19,8 +19,11 @@ Precedence (highest to lowest):
     4. Model defaults
 """
 
-from .configuration import Configuration, ConfigurationKeyNotFoundError
-from .exceptions import ConfigurationError, MissingEnvVarError
+from .exceptions import (
+    ConfigurationError,
+    ConfigurationKeyNotFoundError,
+    MissingEnvVarError,
+)
 from .loader import ConfigurationLoader
 from .buvis_settings import (
     assert_valid_env_var_name,
@@ -44,7 +47,6 @@ from .validators import (
 )
 
 __all__ = [
-    "Configuration",
     "ConfigurationKeyNotFoundError",
     "ConfigurationError",
     "MissingEnvVarError",
