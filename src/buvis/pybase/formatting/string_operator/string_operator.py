@@ -1,3 +1,13 @@
+"""Main StringOperator facade class for string manipulation.
+Provides unified interface delegating to StringCaseTools, WordLevelTools, and Abbr helpers.
+
+Example:
+    >>> StringOperator.slugify("Foo Bar")
+    'foo-bar'
+    >>> StringOperator.camelize("foo_bar")
+    'fooBar'
+"""
+
 from __future__ import annotations
 
 import re
