@@ -50,9 +50,9 @@ slug = StringOperator.slugify("Hello World!")  # "hello-world"
 ## Development
 
 ```bash
-uv sync --all-groups    # install deps
-pre-commit install      # setup hooks
-uv run pytest           # run tests
+uv sync --all-groups                        # install deps
+pre-commit install --hook-type pre-commit --hook-type post-commit  # setup hooks
+uv run pytest                               # run tests
 ```
 
 ## Release

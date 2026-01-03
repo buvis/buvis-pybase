@@ -5,10 +5,10 @@ Foundation library for BUVIS Python projects. Provides configuration, filesystem
 ## Quick Start
 
 ```bash
-uv sync --all-groups    # install deps
-pre-commit install      # setup hooks (runs ruff + pytest on commit)
-uv run pytest           # run tests
-./dev/bin/bmv bump patch  # release (tests run automatically)
+uv sync --all-groups                        # install deps
+pre-commit install --hook-type pre-commit --hook-type post-commit  # setup hooks
+uv run pytest                               # run tests
+./dev/bin/bmv bump patch                    # release (tests run automatically)
 ```
 
 ## Architecture

@@ -27,7 +27,7 @@ class GlobalSettings(BaseSettings):
     """Global runtime settings for BUVIS tools.
 
     Loads from environment variables with ``BUVIS_`` prefix.
-    Nested delimiter is ``__`` (e.g., ``BUVIS_PAYROLL__ENABLED``).
+    Nested delimiter is ``__`` (e.g., ``BUVIS_PHOTO__LIBRARY_PATH``).
     """
 
     model_config = SettingsConfigDict(
