@@ -5,6 +5,23 @@ from pathlib import Path
 
 
 class PoetryAdapter:
+    """Poetry virtual environment and script management.
+
+    Discovers and runs scripts using their associated Poetry projects,
+    with fallback to direct module import.
+
+    Expected directory structure::
+
+        scripts_root/
+        ├── bin/
+        │   └── my-tool         # Launcher script
+        └── src/
+            └── my_tool/        # Project directory
+                ├── pyproject.toml
+                └── my_tool/
+                    └── cli.py  # Module with main()
+    """
+
     @classmethod
     def run_script(cls, script_path: str, args: list[str]) -> None:
         """Run a script, using its own Poetry virtual environment if available."""
