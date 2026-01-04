@@ -168,6 +168,13 @@ class ConsoleAdapter:
         return Confirm.ask(question)
 
     def print(self: ConsoleAdapter, message: str, *, mode: str = "normal") -> None:
+        """Render text through the console with optional rendering modes.
+
+        Args:
+            message (str): Content to print.
+            mode (str): Rendering mode, one of ``normal``, ``raw``, or
+                ``markdown_with_frontmatter``.
+        """
         return self.console.print(_stylize_text(message, mode))
 
     def print_side_by_side(  # noqa: PLR0913
@@ -180,6 +187,27 @@ class ConsoleAdapter:
         mode_left: str = "normal",
         mode_right: str = "normal",
     ) -> None:
+        """Render two panels in a half-width, side-by-side layout where each panel
+        uses half the console width to keep columns balanced.
+
+        Args:
+            title_left (str): Panel title for the left column.
+            text_left (str): Content for the left column body.
+            title_right (str): Panel title for the right column.
+            text_right (str): Content for the right column body.
+            mode_left (str): Rendering mode for the left column content.
+            mode_right (str): Rendering mode for the right column content.
+
+        Example:
+            >>> console.print_side_by_side(
+            ...     title_left="Config",
+            ...     text_left="name: buvis\\n---\\n# details",
+            ...     title_right="Result",
+            ...     text_right="Success",
+            ...     mode_left="markdown_with_frontmatter",
+            ...     mode_right="raw",
+            ... )
+        """
         width = self.console.width // 2
 
         panel_left = Panel.fit(
