@@ -55,7 +55,25 @@ class UvToolManager:
 
     @classmethod
     def run(cls, script_path: str, args: list[str] | None = None) -> None:
-        """Run from local venv, project source, or installed tool."""
+        """Run a tool from local venv, project source, or installed uv tool.
+
+        Execution priority when BUVIS_DEV_MODE=1:
+            1. Local .venv/bin/{tool} if exists
+            2. uv run from project source (src/{pkg}/pyproject.toml)
+            3. Exit with error if neither found
+
+        Execution priority when BUVIS_DEV_MODE unset:
+            1. uv tool run {tool}
+            2. Auto-install from local source if tool not found
+            3. Exit with error if no source available
+
+        Args:
+            script_path: Path to the launcher script (used to derive tool name).
+            args: Command arguments. Defaults to sys.argv[1:].
+
+        Note:
+            Tool name derived from script stem: my-tool -> pkg my_tool.
+        """
         UvAdapter.ensure_uv()
 
         if args is None:
