@@ -49,3 +49,30 @@ Rich console output wrapper for styled terminal messages.
 `console` singleton instance exposes the adapter for quick access.
 
 .. autofunction:: buvis.pybase.adapters.logging_to_console
+
+UvAdapter
+~~~~~~~~~
+Fast Python package manager integration with auto-installation.
+
+.. autoclass:: buvis.pybase.adapters.UvAdapter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+UvToolManager
+~~~~~~~~~~~~~
+Manage and run CLI tools installed via uv.
+
+.. autoclass:: buvis.pybase.adapters.UvToolManager
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+PoetryAdapter
+~~~~~~~~~~~~~
+Poetry project management for legacy projects.
+
+.. autoclass:: buvis.pybase.adapters.PoetryAdapter
+   :members:
+   :undoc-members:
+   :show-inheritance:
