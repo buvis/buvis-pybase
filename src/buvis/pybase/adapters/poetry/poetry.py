@@ -24,7 +24,21 @@ class PoetryAdapter:
 
     @classmethod
     def run_script(cls, script_path: str, args: list[str]) -> None:
-        """Run a script, using its own Poetry virtual environment if available."""
+        """Run a script using its Poetry virtual environment.
+
+        Discovery logic:
+            1. Derive package name from script: my-tool -> my_tool
+            2. Look for src/{pkg}/pyproject.toml relative to script parent
+            3. If found: run via poetry run python -m {pkg}.cli
+            4. If not found: import {pkg}.cli and call main(args)
+
+        Args:
+            script_path: Path to the launcher script in bin/.
+            args: Arguments to pass to the script main().
+
+        Note:
+            Exits with Poetry return code when running via Poetry.
+        """
         script_file = Path(script_path)
         pkg_name = script_file.stem.replace("-", "_")
         scripts_root = script_file.parent.parent
