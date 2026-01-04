@@ -60,33 +60,34 @@ Choosing the Right Adapter
 UvAdapter vs PoetryAdapter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Use UvAdapter when:**
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
 
-- Starting new projects
-- Speed is critical (CI/CD pipelines)
-- You want simpler dependency resolution
-
-**Use PoetryAdapter when:**
-
-- Maintaining existing Poetry-based projects
-- You need Poetry-specific features (plugin system)
-- Team already standardized on Poetry
+   * - UvAdapter
+     - PoetryAdapter
+   * - New projects
+     - Existing Poetry projects
+   * - Speed-critical CI/CD pipelines
+     - Need Poetry plugin system
+   * - Simpler dependency resolution
+     - Team standardized on Poetry
 
 ShellAdapter vs Specific Adapters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Prefer specific adapters (JiraAdapter, OutlookLocalAdapter) over ShellAdapter
-when available - they provide:
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
 
-- Type-safe interfaces (DTOs)
-- Error handling for API-specific failures
-- Abstraction over protocol details (REST, COM)
-
-Use ShellAdapter for:
-
-- One-off commands without dedicated adapters
-- Scripts requiring alias expansion
-- Commands needing environment variable interpolation
+   * - Specific Adapters (JiraAdapter, OutlookLocalAdapter)
+     - ShellAdapter
+   * - Type-safe interfaces via DTOs
+     - One-off commands without dedicated adapters
+   * - API-specific error handling
+     - Scripts requiring alias expansion
+   * - Protocol abstraction (REST, COM)
+     - Commands needing env var interpolation
 
 API Reference
 -------------
