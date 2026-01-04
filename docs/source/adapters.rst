@@ -170,3 +170,106 @@ and a local Outlook installation. Only available when ``os.name == "nt"``.
 
     adapter = OutlookLocalAdapter()
     adapter.create_appointment(subject="Meeting", start=dt, end=dt)
+
+Examples
+~~~~~~~~
+
+ShellAdapter Example
+^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    from pathlib import Path
+
+    from buvis.pybase.adapters import ShellAdapter
+
+    shell = ShellAdapter()
+    shell.alias("lint", "poetry run lint")
+    if not shell.is_command_available("git"):
+        raise RuntimeError("git is required for this workflow")
+
+    stderr, stdout = shell.exe("lint", Path("src"))
+    if stderr:
+        raise RuntimeError(f"lint failed: {stderr.strip()}")
+    print(stdout)
+
+ConsoleAdapter Example
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    from buvis.pybase.adapters.console.console import console
+
+    with console.status("Deploying service"):
+        console.print("Gathering assets")
+        if not console.confirm("Continue deployment?"):
+            console.failure("Deployment aborted by user")
+            raise SystemExit(1)
+    console.success("Deployment finished")
+
+JiraAdapter Example
+^^^^^^^^^^^^^^^^^^^
+
+Ensure configuration exposes ``server`` and ``token`` before instantiating the adapter.
+
+.. code-block:: python
+
+    from buvis.pybase.adapters import JiraAdapter
+    from buvis.pybase.adapters.jira.domain import JiraIssueDTO
+
+    cfg = MyConfig()  # supplies server, token, and optional proxy
+    jira = JiraAdapter(cfg)
+    issue = JiraIssueDTO(
+        project="BUV",
+        title="Document new adapter patterns",
+        description="Describe adapter usage in docs",
+        issue_type="Task",
+        labels=["docs", "pybase"],
+        priority="Medium",
+        ticket="BUV-123",
+        feature="adapter-workflows",
+        assignee="alice",
+        reporter="bob",
+        team="platform",
+        region="emea",
+    )
+    created = jira.create(issue)
+    print(f"Issue created: {created.id} -> {created.link}")
+
+UvToolManager Example
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    from pathlib import Path
+
+    from buvis.pybase.adapters import UvToolManager
+
+    project_root = Path("/project")
+    # Directory layout:
+    # /project
+    # ├── bin/
+    # └── src/
+    #     └── my_tool/
+    UvToolManager.install_all(project_root)
+    UvToolManager.install_tool(project_root / "src" / "my_tool")
+    UvToolManager.run(project_root / "bin" / "my-tool", ["--help"])
+
+PoetryAdapter Example
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    from pathlib import Path
+
+    from buvis.pybase.adapters import PoetryAdapter
+
+    # Expected directory structure:
+    # scripts_root/
+    # ├── bin/
+    # │   └── my-tool
+    # └── src/
+    #     └── my_tool/
+    #         └── pyproject.toml
+    PoetryAdapter.run_script("/project/bin/my-tool", ["--config", "dev"])
+    PoetryAdapter.update_all_scripts(Path("/project"))
