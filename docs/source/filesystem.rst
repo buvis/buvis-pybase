@@ -38,3 +38,18 @@ Quick Start
 API Reference
 -------------
 
+DirTree
+~~~~~~
+
+.. autoclass:: buvis.pybase.filesystem.DirTree
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+FileMetadataReader
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: buvis.pybase.filesystem.FileMetadataReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
