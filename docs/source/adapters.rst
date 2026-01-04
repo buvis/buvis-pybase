@@ -154,6 +154,7 @@ JIRA REST API adapter for issue creation.
    :show-inheritance:
 
 .. autoclass:: buvis.pybase.adapters.jira.domain.JiraIssueDTO
+   :members:
    :show-inheritance:
 
 Platform-Specific Adapters

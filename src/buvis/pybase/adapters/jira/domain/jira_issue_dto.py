@@ -29,7 +29,7 @@ class JiraIssueDTO:
     title: str
     description: str
     issue_type: str
-    labels: list
+    labels: list[str]
     priority: str
     ticket: str
     feature: str

@@ -1,4 +1,5 @@
 import importlib
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -21,6 +22,8 @@ class PoetryAdapter:
                 └── my_tool/
                     └── cli.py  # Module with main()
     """
+
+    logger = logging.getLogger(__name__)
 
     @classmethod
     def run_script(cls, script_path: str, args: list[str]) -> None:
@@ -116,8 +119,8 @@ class PoetryAdapter:
         except UnicodeDecodeError:
             return False
 
-    @staticmethod
-    def _update_poetry_project(project_path: Path) -> None:
+    @classmethod
+    def _update_poetry_project(cls, project_path: Path) -> None:
         """Update dependencies for a Poetry project."""
         try:
             lock_file = project_path / "poetry.lock"
@@ -136,5 +139,5 @@ class PoetryAdapter:
                 check=True,
                 capture_output=True,
             )
-        except subprocess.CalledProcessError:
-            pass
+        except subprocess.CalledProcessError as e:
+            cls.logger.error("Poetry update failed for %s: %s", project_path, e)

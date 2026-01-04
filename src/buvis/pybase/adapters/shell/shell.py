@@ -44,7 +44,7 @@ class ShellAdapter:
         self: ShellAdapter,
         command: str,
         working_dir: Path | None,
-    ) -> tuple[str, str]:
+    ) -> None:
         """
         Execute a shell command and log its output.
 
@@ -87,7 +87,7 @@ class ShellAdapter:
         command: str,
         prompt: str,
         working_dir: Path | None,
-    ) -> tuple[str, str]:
+    ) -> None:
         expanded_command = self._expand_alias(command)
         expanded_command = self._expand_environment_variables(expanded_command)
 
