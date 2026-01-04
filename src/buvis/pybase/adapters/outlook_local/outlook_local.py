@@ -89,6 +89,11 @@ class OutlookLocalAdapter:
             raise OutlookAppointmentCreationFailedError(msg) from e
 
     def get_all_appointments(self: OutlookLocalAdapter) -> list:
+        """Retrieve all calendar appointments sorted by start time.
+
+        Returns:
+            list: AppointmentItem COM objects with recurrences included.
+        """
         appointments: Any = self.calendar.Items
         appointments.IncludeRecurrences = True
         appointments.Sort("[Start]")
@@ -99,6 +104,15 @@ class OutlookLocalAdapter:
         appointments: Any,  # noqa: ANN401 (The win32com.client library dynamically creates Python wrappers for COM objects, which means the exact type of the object can vary and is not known at compile time.)
         date: datetime,
     ) -> list:
+        """Filter appointments to a single day.
+
+        Args:
+            appointments (Any): Collection from get_all_appointments.
+            date (datetime): datetime for the target day.
+
+        Returns:
+            list: AppointmentItems for that day.
+        """
         restrict_from = date.strftime("%Y-%d-%m")
         restrict_to = date + timedelta(days=1)
         restrict_to = restrict_to.strftime("%Y-%d-%m")
