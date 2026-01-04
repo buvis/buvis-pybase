@@ -163,13 +163,33 @@ OutlookLocalAdapter
 Windows-only adapter for local Outlook COM automation. Requires ``pywin32``
 and a local Outlook installation. Only available when ``os.name == "nt"``.
 
+.. note::
+   This adapter cannot be autodocumented cross-platform as it raises ``OSError``
+   on import when ``os.name != "nt"``.
+
+**Methods:**
+
+- ``__init__()``: Connect to local Outlook via COM. Initializes MAPI namespace and default calendar.
+- ``create_timeblock(appointment_input: dict)``: Create a calendar appointment. Keys: ``subject``, ``body``, ``duration`` (minutes), ``location``, ``categories``, ``start`` (optional datetime).
+- ``get_all_appointments()``: Retrieve all calendar appointments sorted by start time.
+- ``get_day_appointments(appointments, date)``: Filter appointments to a single day.
+- ``get_conflicting_appointment(desired_start, desired_duration, debug_level=0)``: Find appointment conflicting with proposed time slot.
+
+**Example:**
+
 .. code-block:: python
 
     # Windows only
     from buvis.pybase.adapters import OutlookLocalAdapter
 
     adapter = OutlookLocalAdapter()
-    adapter.create_appointment(subject="Meeting", start=dt, end=dt)
+    adapter.create_timeblock({
+        "subject": "Check-in",
+        "body": "Daily sync",
+        "duration": 30,
+        "location": "Desk",
+        "categories": "Work"
+    })
 
 Examples
 ~~~~~~~~
