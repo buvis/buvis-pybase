@@ -7,9 +7,27 @@ from pathlib import Path
 
 
 class UvAdapter:
+    """uv package manager integration.
+
+    Provides auto-installation of uv and PATH configuration for
+    cross-platform Python tooling.
+    """
+
     @staticmethod
     def ensure_uv() -> None:
-        """Ensure uv is installed and available in PATH."""
+        """Ensure uv is installed and available in PATH.
+
+        If uv is not found, automatically installs it using:
+        - Windows: PowerShell installer from astral.sh
+        - Unix: curl installer from astral.sh
+
+        Updates PATH to include common uv installation directories:
+        - ~/.cargo/bin
+        - ~/.local/bin (Unix)
+        - ~/AppData/Local/uv (Windows)
+
+        Exits with code 1 if installation fails.
+        """
         if shutil.which("uv"):
             return
 

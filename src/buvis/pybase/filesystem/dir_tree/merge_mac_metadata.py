@@ -2,6 +2,8 @@ import logging
 import os
 from pathlib import Path
 
+from buvis.pybase.filesystem.dir_tree.safe_rglob import safe_rglob
+
 if os.name != "nt":
     import xattr
 
@@ -20,7 +22,7 @@ def merge_mac_metadata(directory: Path) -> None:
     :return: None. The function modifies the <directory> in place.
     """
     directory = Path(directory)
-    for apple_double in directory.rglob("._*"):
+    for apple_double in safe_rglob(directory, "._*"):
         if apple_double.is_file():
             data_file = apple_double.with_name(apple_double.name[2:])
             if os.name != "nt" and data_file.exists():

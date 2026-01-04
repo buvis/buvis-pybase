@@ -4,16 +4,19 @@ build-backend = "hatchling.build"
 
 [project]
 name = "buvis-pybase"
-version = "0.7.3"
+version = "0.8.0"
 description = "Foundation of BUVIS python projects"
 authors = [{ name = "Tomáš Bouška", email = "tomas@buvis.net" }]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.12,<4.0"
 dependencies = [
+  "click>=8.1.0,<9",
   "inflection>=0.5.1,<1",
   "jira>=3.10.5,<4",
   "pexpect>=4.9.0,<5",
+  "pydantic>=2.0,<3",
+  "pydantic-settings>=2.0,<3",
   "pyyaml>=6.0.3,<7",
   "rake-nltk>=1.0.6,<2",
   "rich>=14.2.0,<15",
@@ -41,7 +44,7 @@ url = "https://test.pypi.org/simple/"
 explicit = true
 
 [tool.bumpversion]
-current_version = "0.7.3"
+current_version = "0.8.0"
 parse = """(?x)
     (?P<major>0|[1-9]\\d*)\\.
     (?P<minor>0|[1-9]\\d*)\\.
