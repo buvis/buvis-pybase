@@ -1,3 +1,8 @@
+"""JIRA REST API adapter for issue creation.
+
+Provides JiraAdapter for creating JIRA issues with custom field support.
+"""
+
 import os
 from typing import Any
 
