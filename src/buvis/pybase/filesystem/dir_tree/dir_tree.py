@@ -39,8 +39,7 @@ class DirTree:
 
     @staticmethod
     def count_files(directory: Path) -> int:
-        """
-        Count the number of files in the directory and its subdirectories.
+        """Count the number of files in the directory and its subdirectories.
 
         Args:
             directory: Path to the directory to process.
@@ -52,8 +51,7 @@ class DirTree:
 
     @staticmethod
     def get_max_depth(directory: Path) -> int:
-        """
-        Determine the maximum depth of the directory tree.
+        """Determine the maximum depth of the directory tree.
 
         Args:
             directory: Path to the directory to process.
@@ -68,8 +66,7 @@ class DirTree:
 
     @staticmethod
     def delete_by_extension(directory: Path, extensions_to_delete: list[str]) -> None:
-        """
-        Delete files with specific extensions in the given directory.
+        """Delete files with specific extensions in the given directory.
 
         Args:
             directory: Path to the directory to process.
@@ -82,8 +79,7 @@ class DirTree:
 
     @staticmethod
     def normalize_file_extensions(directory: Path) -> None:
-        """
-        Normalize file extensions in the given directory:
+        """Normalize file extensions in the given directory:
         1) lowercase the extensions
         2) replace equivalents
 
