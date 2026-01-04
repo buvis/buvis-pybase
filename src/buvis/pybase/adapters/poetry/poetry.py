@@ -77,7 +77,20 @@ class PoetryAdapter:
 
     @classmethod
     def update_all_scripts(cls, scripts_root: Path | None = None) -> None:
-        """Update all scripts in bin/ and all Poetry projects in src/."""
+        """Update dependencies for all Poetry projects.
+
+        Scans:
+            1. bin/ for scripts importing PoetryAdapter
+            2. src/ for directories containing pyproject.toml
+
+        For each project: removes poetry.lock, runs poetry lock then poetry install.
+
+        Args:
+            scripts_root: Root directory. Defaults to cwd.
+
+        Note:
+            Scripts in bin/ are identified by checking for PoetryAdapter import.
+        """
         if scripts_root is None:
             scripts_root = Path.cwd()
 
