@@ -20,6 +20,18 @@ from buvis.pybase.adapters import console
 
 
 class OutlookLocalAdapter:
+    """Local Outlook COM automation for calendar operations.
+
+    .. warning:: Windows-only. Importing on non-Windows raises OSError.
+
+    Requires Microsoft Outlook installed with a default calendar.
+
+    Example:
+        >>> from buvis.pybase.adapters.outlook_local.outlook_local import OutlookLocalAdapter
+        >>> adapter = OutlookLocalAdapter()
+        >>> adapter.create_timeblock({"subject": "Check-in", "body": "Daily sync", "duration": 30, "location": "Desk", "categories": "Work"})
+    """
+
     def __init__(self: OutlookLocalAdapter) -> None:
         try:
             self.app = win32com.client.Dispatch("Outlook.Application")
