@@ -33,6 +33,13 @@ class OutlookLocalAdapter:
     """
 
     def __init__(self: OutlookLocalAdapter) -> None:
+        """Connect to local Outlook application via COM.
+
+        Initializes the MAPI namespace and default calendar (folder 9).
+
+        Raises:
+            SystemExit: Outlook connection failed (console.panic).
+        """
         try:
             self.app = win32com.client.Dispatch("Outlook.Application")
             self.api = self.app.GetNamespace("MAPI")
