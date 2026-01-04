@@ -134,6 +134,18 @@ class OutlookLocalAdapter:
         desired_duration: int,
         debug_level: int = 0,
     ) -> Any | None:  # noqa: ANN401 (The win32com.client library dynamically creates Python wrappers for COM objects, which means the exact type of the object can vary and is not known at compile time.)
+        """Find appointment conflicting with proposed time slot.
+
+        Appointments are sorted by `Start`, so the method terminates early when possible.
+
+        Args:
+            desired_start (datetime): Proposed start datetime
+            desired_duration (int): Proposed duration in minutes
+            debug_level (int): If >0, prints collision check details
+
+        Returns:
+            Any | None: Conflicting Outlook AppointmentItem COM object, or None if slot is free.
+        """
         appointments = self.get_day_appointments(
             self.get_all_appointments(),
             desired_start,
