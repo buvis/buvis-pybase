@@ -7,6 +7,12 @@ from pathlib import Path
 
 
 class UvAdapter:
+    """uv package manager integration.
+
+    Provides auto-installation of uv and PATH configuration for
+    cross-platform Python tooling.
+    """
+
     @staticmethod
     def ensure_uv() -> None:
         """Ensure uv is installed and available in PATH."""
