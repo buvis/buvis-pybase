@@ -285,6 +285,24 @@ def logging_to_console(
     show_time: bool = False,
     show_path: bool = False,
 ) -> Generator[None, None, None]:
+    """Context manager that routes logging output through the Rich console.
+
+    Temporarily adds a :class:`CapturingRichHandler` to the root logger, setting the
+    logger level to ``INFO`` while the context is active and restoring the previous
+    handler and level on exit.
+
+    Args:
+        show_level (bool): Include the log level in the captured output. Defaults to ``True``.
+        show_time (bool): Include timestamps in the captured output. Defaults to ``False``.
+        show_path (bool): Include the logger path in the captured output. Defaults to ``False``.
+
+    Yields:
+        None: Logging is redirected to the Rich console for the duration of the context.
+
+    Example:
+        >>> with logging_to_console():
+        ...     logging.info("Hello Rich")
+    """
     handler = CapturingRichHandler(
         console=console,
         show_level=show_level,
