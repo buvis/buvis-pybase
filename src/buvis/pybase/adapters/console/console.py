@@ -68,6 +68,11 @@ class ConsoleAdapter:
         return f" {CHECKMARK} [{STYLE_SUCCESS_MSG}]{message}[/{STYLE_SUCCESS_MSG}]"
 
     def success(self: ConsoleAdapter, message: str) -> None:
+        """Print a green checkmark status message.
+
+        Args:
+            message (str): Text to display.
+        """
         self.console.print(self.format_success(message))
 
     def format_warning(self: ConsoleAdapter, message: str) -> str:
@@ -82,6 +87,11 @@ class ConsoleAdapter:
         return f" {WARNING} [{STYLE_WARNING_MSG}]{message}[/{STYLE_WARNING_MSG}]"
 
     def warning(self: ConsoleAdapter, message: str) -> None:
+        """Print an orange warning status message.
+
+        Args:
+            message (str): Text to display.
+        """
         self.console.print(self.format_warning(message))
 
     def format_failure(
@@ -105,10 +115,25 @@ class ConsoleAdapter:
 
         return formatted_message
 
-    def failure(self: ConsoleAdapter, message: str, details: str = "") -> None:
+    def failure(self: ConsoleAdapter, message: str, details: str | None = None) -> None:
+        """Print a red failure message, optionally including details.
+
+        Args:
+            message (str): Text to display.
+            details (str | None): Additional information to display after the failure message.
+        """
         self.console.print(self.format_failure(message, details))
 
-    def panic(self: ConsoleAdapter, message: str, details: str = "") -> None:
+    def panic(self: ConsoleAdapter, message: str, details: str | None = None) -> None:
+        """Print a failure message and exit the program.
+
+        Args:
+            message (str): Text to display.
+            details (str | None): Additional information to display after the failure message.
+
+        Note:
+            Terminates the program by calling `sys.exit()`.
+        """
         self.failure(message, details)
         sys.exit()
 
