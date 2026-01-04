@@ -36,7 +36,7 @@ Quick Start
     camel = StringOperator.camelize("cli_utilities")
 
     print(slug)   # => "buvis-cli-utilities"
-    print(camel)  # => "cliUtilities"
+    print(camel)  # => "CliUtilities"
 
 API Reference
 -------------
