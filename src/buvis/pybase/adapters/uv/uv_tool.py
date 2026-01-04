@@ -16,7 +16,14 @@ class UvToolManager:
 
     @staticmethod
     def install_all(scripts_root: Path | None = None) -> None:
-        """Install all projects in src/ as uv tools."""
+        """Install all projects in src/ as uv tools.
+
+        Scans scripts_root/src/ for directories containing pyproject.toml
+        and installs each as a uv tool.
+
+        Args:
+            scripts_root: Root directory containing src/. Defaults to cwd.
+        """
         UvAdapter.ensure_uv()
 
         if scripts_root is None:
@@ -31,7 +38,14 @@ class UvToolManager:
 
     @staticmethod
     def install_tool(project_path: Path) -> None:
-        """Install a project as a uv tool."""
+        """Install a project as a uv tool.
+
+        Uses --force --upgrade to ensure latest version. On failure,
+        cleans the tool cache and retries once.
+
+        Args:
+            project_path: Directory containing pyproject.toml.
+        """
         pkg_name = project_path.name
         console.status(f"Installing {pkg_name} as uv tool...")
 
