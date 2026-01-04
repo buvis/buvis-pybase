@@ -29,6 +29,23 @@ class JiraAdapter:
     """
 
     def __init__(self: "JiraAdapter", cfg: Any) -> None:
+        """Initialize JIRA connection.
+
+        Args:
+            cfg: Configuration object with methods:
+                - get_configuration_item(key) -> str
+                - get_configuration_item_or_default(key, default) -> str | None
+
+                Required keys: 'server' (JIRA URL), 'token' (API token).
+                Optional keys: 'proxy' (HTTP proxy URL).
+
+        Raises:
+            ValueError: If server or token not provided in cfg.
+
+        Note:
+            Proxy handling clears existing `https_proxy` and `http_proxy` before
+            setting the configured proxy.
+        """
         self._cfg = cfg
         if self._cfg.get_configuration_item_or_default("proxy", None):
             os.environ.pop("https_proxy")
