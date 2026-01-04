@@ -232,6 +232,7 @@ Ensure configuration exposes ``server`` and ``token`` before instantiating the a
 
 .. code-block:: python
 
+    from jira.exceptions import JIRAError
     from buvis.pybase.adapters import JiraAdapter
     from buvis.pybase.adapters.jira.domain import JiraIssueDTO
 
@@ -251,8 +252,12 @@ Ensure configuration exposes ``server`` and ``token`` before instantiating the a
         team="platform",
         region="emea",
     )
-    created = jira.create(issue)
-    print(f"Issue created: {created.id} -> {created.link}")
+    try:
+        created = jira.create(issue)
+        print(f"Issue created: {created.id} -> {created.link}")
+    except JIRAError as e:
+        print(f"JIRA API error: {e.status_code} - {e.text}")
+        raise
 
 UvAdapter Example
 ^^^^^^^^^^^^^^^^^
@@ -283,7 +288,10 @@ UvToolManager Example
     #     └── my_tool/
     UvToolManager.install_all(project_root)
     UvToolManager.install_tool(project_root / "src" / "my_tool")
-    UvToolManager.run(project_root / "bin" / "my-tool", ["--help"])
+    stderr, stdout = UvToolManager.run(project_root / "bin" / "my-tool", ["--help"])
+    if stderr:
+        raise RuntimeError(f"Tool execution failed: {stderr.strip()}")
+    print(stdout)
 
 PoetryAdapter Example
 ^^^^^^^^^^^^^^^^^^^^^
@@ -301,5 +309,8 @@ PoetryAdapter Example
     # └── src/
     #     └── my_tool/
     #         └── pyproject.toml
-    PoetryAdapter.run_script("/project/bin/my-tool", ["--config", "dev"])
+    stderr, stdout = PoetryAdapter.run_script("/project/bin/my-tool", ["--config", "dev"])
+    if stderr:
+        raise RuntimeError(f"Script failed: {stderr.strip()}")
+    print(stdout)
     PoetryAdapter.update_all_scripts(Path("/project"))
