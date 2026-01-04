@@ -20,7 +20,7 @@ class FileMetadataReader:
     Example:
 
         >>> FileMetadataReader.get_creation_datetime(Path("example.txt"))
-        datetime(2024, 7, 8, 12, 34, tzinfo=... )
+        datetime(2024, 7, 8, 12, 34, tzinfo=...)
     """
 
     @staticmethod
