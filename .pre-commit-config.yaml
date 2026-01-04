@@ -14,8 +14,8 @@ repos:
         always_run: true
       - id: build-docs
         name: build docs
-        entry: uv run sphinx-build -M html docs/source docs/build -q
-        language: system
+        entry: ./dev/bin/refresh-docs
+        language: script
         pass_filenames: false
         always_run: true
         stages: [post-commit]
