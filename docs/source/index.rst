@@ -35,3 +35,4 @@ environment variables, and migration guides.
 
    configuration
    formatting
+   adapters

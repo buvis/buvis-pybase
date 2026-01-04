@@ -76,3 +76,29 @@ Poetry project management for legacy projects.
    :members:
    :undoc-members:
    :show-inheritance:
+
+JiraAdapter
+~~~~~~~~~~
+JIRA REST API adapter for issue creation.
+
+.. autoclass:: buvis.pybase.adapters.JiraAdapter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: buvis.pybase.adapters.jira.domain.JiraIssueDTO
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Platform-Specific Adapters
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OutlookLocalAdapter is Windows-only (conditional import).
+
+.. autoclass:: buvis.pybase.adapters.OutlookLocalAdapter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Windows-only. Requires local Outlook installation.
