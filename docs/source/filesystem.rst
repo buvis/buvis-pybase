@@ -39,7 +39,7 @@ API Reference
 -------------
 
 DirTree
-~~~~~~
+~~~~~~~
 
 .. autoclass:: buvis.pybase.filesystem.DirTree
    :members:

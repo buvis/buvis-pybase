@@ -41,7 +41,7 @@ ConsoleAdapter
 ~~~~~~~~~~~~~~~
 Rich console output wrapper for styled terminal messages.
 
-.. autoclass:: buvis.pybase.adapters.ConsoleAdapter
+.. autoclass:: buvis.pybase.adapters.console.console.ConsoleAdapter
    :members:
    :undoc-members:
    :show-inheritance:
@@ -78,7 +78,7 @@ Poetry project management for legacy projects.
    :show-inheritance:
 
 JiraAdapter
-~~~~~~~~~~
+~~~~~~~~~~~
 JIRA REST API adapter for issue creation.
 
 .. autoclass:: buvis.pybase.adapters.JiraAdapter
@@ -94,11 +94,16 @@ JIRA REST API adapter for issue creation.
 Platform-Specific Adapters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-OutlookLocalAdapter is Windows-only (conditional import).
+OutlookLocalAdapter
+^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: buvis.pybase.adapters.OutlookLocalAdapter
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Windows-only adapter for local Outlook COM automation. Requires ``pywin32``
+and a local Outlook installation. Only available when ``os.name == "nt"``.
 
-Windows-only. Requires local Outlook installation.
+.. code-block:: python
+
+    # Windows only
+    from buvis.pybase.adapters import OutlookLocalAdapter
+
+    adapter = OutlookLocalAdapter()
+    adapter.create_appointment(subject="Meeting", start=dt, end=dt)
