@@ -30,7 +30,26 @@ STYLE_FAILURE_MSG = "bold light_salmon3"
 
 
 class ConsoleAdapter:
+    """Rich console wrapper for styled terminal output.
+
+    Example:
+        >>> from buvis.pybase.adapters import ConsoleAdapter
+        >>> console = ConsoleAdapter()
+        >>> console.success("Operation completed")
+
+    Checkmark, warning, and failure flows reuse the
+    `CHECKMARK`, `WARNING`, and `CROSSMARK` markers together with
+    `STYLE_SUCCESS_MSG`, `STYLE_WARNING_MSG`, and `STYLE_FAILURE_MSG`
+    so decorated messages remain consistent.
+    """
+
     def __init__(self: ConsoleAdapter) -> None:
+        """Initialize the console adapter.
+
+        On Windows wrap `sys.stdout.buffer` with UTF-8 so `CHECKMARK`,
+        `WARNING`, and `CROSSMARK` glyphs render properly using their
+        respective `STYLE_*_MSG` colors.
+        """
         if sys.platform == "win32" and hasattr(sys.stdout, "buffer"):
             utf8_stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
             self.console = Console(file=utf8_stdout, log_path=False)
