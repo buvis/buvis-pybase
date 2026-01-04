@@ -27,3 +27,25 @@ Return Convention
 
 API Reference
 -------------
+
+ShellAdapter
+~~~~~~~~~~~~
+Subprocess execution with alias and environment variable expansion.
+
+.. autoclass:: buvis.pybase.adapters.ShellAdapter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ConsoleAdapter
+~~~~~~~~~~~~~~~
+Rich console output wrapper for styled terminal messages.
+
+.. autoclass:: buvis.pybase.adapters.ConsoleAdapter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+`console` singleton instance exposes the adapter for quick access.
+
+.. autofunction:: buvis.pybase.adapters.logging_to_console
