@@ -4,3 +4,4 @@ uv = "latest"
 
 [env]
 _.path = ["./dev/bin"]
+_.file = '.env'

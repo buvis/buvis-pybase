@@ -20,7 +20,26 @@ from buvis.pybase.adapters import console
 
 
 class OutlookLocalAdapter:
+    """Local Outlook COM automation for calendar operations.
+
+    .. warning:: Windows-only. Importing on non-Windows raises OSError.
+
+    Requires Microsoft Outlook installed with a default calendar.
+
+    Example:
+        >>> from buvis.pybase.adapters.outlook_local.outlook_local import OutlookLocalAdapter
+        >>> adapter = OutlookLocalAdapter()
+        >>> adapter.create_timeblock({"subject": "Check-in", "body": "Daily sync", "duration": 30, "location": "Desk", "categories": "Work"})
+    """
+
     def __init__(self: OutlookLocalAdapter) -> None:
+        """Connect to local Outlook application via COM.
+
+        Initializes the MAPI namespace and default calendar (folder 9).
+
+        Raises:
+            SystemExit: Outlook connection failed (console.panic).
+        """
         try:
             self.app = win32com.client.Dispatch("Outlook.Application")
             self.api = self.app.GetNamespace("MAPI")
@@ -32,6 +51,20 @@ class OutlookLocalAdapter:
         self: OutlookLocalAdapter,
         appointment_input: dict,
     ) -> None:
+        """Create a calendar appointment.
+
+        Args:
+            appointment_input (dict): Dict with keys:
+                subject (str): Appointment title
+                body (str): Description text
+                duration (int): Length in minutes
+                location (str): Location field
+                categories (str): Outlook category
+                start (datetime, optional): Start time. Defaults to current hour when omitted.
+
+        Raises:
+            OutlookAppointmentCreationFailedError: If creation fails.
+        """
         try:
             appointment = self.app.CreateItem(1)  # 1 represents AppointmentItem
             if appointment_input.get("start") and isinstance(
@@ -56,6 +89,11 @@ class OutlookLocalAdapter:
             raise OutlookAppointmentCreationFailedError(msg) from e
 
     def get_all_appointments(self: OutlookLocalAdapter) -> list:
+        """Retrieve all calendar appointments sorted by start time.
+
+        Returns:
+            list: AppointmentItem COM objects with recurrences included.
+        """
         appointments: Any = self.calendar.Items
         appointments.IncludeRecurrences = True
         appointments.Sort("[Start]")
@@ -66,9 +104,18 @@ class OutlookLocalAdapter:
         appointments: Any,  # noqa: ANN401 (The win32com.client library dynamically creates Python wrappers for COM objects, which means the exact type of the object can vary and is not known at compile time.)
         date: datetime,
     ) -> list:
-        restrict_from = date.strftime("%Y-%d-%m")
+        """Filter appointments to a single day.
+
+        Args:
+            appointments (Any): Collection from get_all_appointments.
+            date (datetime): datetime for the target day.
+
+        Returns:
+            list: AppointmentItems for that day.
+        """
+        restrict_from = date.strftime("%Y-%m-%d")
         restrict_to = date + timedelta(days=1)
-        restrict_to = restrict_to.strftime("%Y-%d-%m")
+        restrict_to = restrict_to.strftime("%Y-%m-%d")
         restrict_query = f"[Start] >= '{restrict_from}' AND [End] <= '{restrict_to}'"
         appointments = appointments.Restrict(restrict_query)
         return [
@@ -87,6 +134,18 @@ class OutlookLocalAdapter:
         desired_duration: int,
         debug_level: int = 0,
     ) -> Any | None:  # noqa: ANN401 (The win32com.client library dynamically creates Python wrappers for COM objects, which means the exact type of the object can vary and is not known at compile time.)
+        """Find appointment conflicting with proposed time slot.
+
+        Appointments are sorted by `Start`, so the method terminates early when possible.
+
+        Args:
+            desired_start (datetime): Proposed start datetime
+            desired_duration (int): Proposed duration in minutes
+            debug_level (int): If >0, prints collision check details
+
+        Returns:
+            Any | None: Conflicting Outlook AppointmentItem COM object, or None if slot is free.
+        """
         appointments = self.get_day_appointments(
             self.get_all_appointments(),
             desired_start,

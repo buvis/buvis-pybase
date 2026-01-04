@@ -12,3 +12,10 @@ repos:
         language: script
         pass_filenames: false
         always_run: true
+      - id: build-docs
+        name: build docs
+        entry: ./dev/bin/refresh-docs
+        language: script
+        pass_filenames: false
+        always_run: true
+        stages: [post-commit]
