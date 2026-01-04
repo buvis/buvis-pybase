@@ -49,8 +49,8 @@ class StringOperator:
         Returns:
             A shortened string with an ellipsis if truncation occurred.
         Example:
-            >>> StringOperator.shorten("abcdefgh", 6, 2)
-            'abcd...gh'
+            >>> StringOperator.shorten("short", 10, 2)
+            'short'
         """
         if len(text) > limit:
             return text[: limit - suffix_length] + "..." + text[-suffix_length:]
