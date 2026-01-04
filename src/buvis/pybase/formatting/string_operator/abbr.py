@@ -34,21 +34,20 @@ class Abbr:
 
         Args:
             text: The text to process.
-            abbreviations: A list of dictionaries that map abbreviations to expansion strings, where an
-                expansion can include an optional long form delimited by `<<` and `>>` (e.g.
-                ``{"API": "Application Programming Interface<<Application Programming Interface>>"}``).
-            level: Determines how much of the expansion to use (0=fix case, 1=short, 2=short+(abbr),
-                3=long, 4=long+(abbr)).
+            abbreviations: A list of dictionaries that map abbreviations to
+                expansion strings, where an expansion can include an optional
+                long form delimited by ``<<`` and ``>>`` (e.g.
+                ``{"API": "App<<Application Programming Interface>>"}``).
+            level: Determines how much of the expansion to use (0=fix case,
+                1=short, 2=short+(abbr), 3=long, 4=long+(abbr)).
 
         Returns:
-            A string where each abbreviation is replaced according to the requested level.
+            A string where each abbreviation is replaced according to level.
 
-        Example:
-            Abbr.replace_abbreviations(
-                "Send an API request",
-                [{"API": "Application Programming Interface<<Application Programming Interface>>"}],
-                level=2,
-            )
+        Example::
+
+            >>> Abbr.replace_abbreviations("Use the API", [{"API": "App"}], 1)
+            'Use the App'
         """
         if abbreviations is None:
             abbreviations = []
