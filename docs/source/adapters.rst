@@ -254,6 +254,18 @@ Ensure configuration exposes ``server`` and ``token`` before instantiating the a
     created = jira.create(issue)
     print(f"Issue created: {created.id} -> {created.link}")
 
+UvAdapter Example
+^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    from buvis.pybase.adapters import UvAdapter
+
+    # Ensure uv is installed and PATH is configured
+    UvAdapter.ensure_uv()
+    # uv is now available for subprocess calls
+    # Use UvToolManager for running uv-managed tools
+
 UvToolManager Example
 ^^^^^^^^^^^^^^^^^^^^^
 
