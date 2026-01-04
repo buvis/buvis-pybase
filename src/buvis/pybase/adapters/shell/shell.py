@@ -57,8 +57,6 @@ class ShellAdapter:
         Returns:
             A tuple of (stderr, stdout) from command execution. On failure, returns
             (error_message, empty string).
-        Raises:
-            subprocess.CalledProcessError: If the command execution fails.
         """
         expanded_command = self._expand_alias(command)
         expanded_command = self._expand_environment_variables(expanded_command)
