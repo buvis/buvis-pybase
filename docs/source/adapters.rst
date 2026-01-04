@@ -11,9 +11,12 @@ Overview
 --------
 
 - Wrap subprocess calls, COM automation, or REST APIs.
-- Return tuple[str, str] as (stderr, stdout) for shell operations.
+- `ShellAdapter.exe()` returns (stderr, stdout) tuples for standard shell operations.
+- `UvToolManager.run()` and `PoetryAdapter.run_script()` exit the process directly after execution.
 - Handle platform-specific differences internally.
 - Log operations via the standard logging module.
+
+Adapters differ in how they return results: shell wrappers yield `(stderr, stdout)` for post-processing, while uv/poetry runners terminate the process as part of their flow.
 
 Return Convention
 ~~~~~~~~~~~~~~~~~
@@ -289,10 +292,7 @@ UvToolManager Example
     #     └── my_tool/
     UvToolManager.install_all(project_root)
     UvToolManager.install_tool(project_root / "src" / "my_tool")
-    stderr, stdout = UvToolManager.run(project_root / "bin" / "my-tool", ["--help"])
-    if stderr:
-        raise RuntimeError(f"Tool execution failed: {stderr.strip()}")
-    print(stdout)
+    UvToolManager.run(project_root / "bin" / "my-tool", ["--help"])  # exits on completion
 
 PoetryAdapter Example
 ^^^^^^^^^^^^^^^^^^^^^
@@ -310,8 +310,5 @@ PoetryAdapter Example
     # └── src/
     #     └── my_tool/
     #         └── pyproject.toml
-    stderr, stdout = PoetryAdapter.run_script("/project/bin/my-tool", ["--config", "dev"])
-    if stderr:
-        raise RuntimeError(f"Script failed: {stderr.strip()}")
-    print(stdout)
     PoetryAdapter.update_all_scripts(Path("/project"))
+    PoetryAdapter.run_script("/project/bin/my-tool", ["--config", "dev"])  # exits on completion
