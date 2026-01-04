@@ -12,6 +12,22 @@ from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 
 
 class JiraAdapter:
+    """JIRA REST API adapter for issue creation.
+
+    Requirements:
+        Config must provide `server` and `token`.
+
+    Optional:
+        Set `proxy` in the config to route requests through a proxy server.
+
+    Example:
+        >>> cfg = MyConfig()  # provides server, token
+        >>> jira = JiraAdapter(cfg)
+        >>> issue = JiraIssueDTO(project='PROJ', title='Bug', ...)
+        >>> created = jira.create(issue)
+        >>> print(created.link)
+    """
+
     def __init__(self: "JiraAdapter", cfg: Any) -> None:
         self._cfg = cfg
         if self._cfg.get_configuration_item_or_default("proxy", None):
