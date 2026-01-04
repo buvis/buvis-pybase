@@ -8,9 +8,22 @@ from buvis.pybase.adapters.uv.uv import UvAdapter
 
 
 class UvToolManager:
+    """Manage and run Python tools via uv.
+
+    Supports development workflows with automatic tool discovery
+    and installation from local project sources.
+    """
+
     @staticmethod
     def install_all(scripts_root: Path | None = None) -> None:
-        """Install all projects in src/ as uv tools."""
+        """Install all projects in src/ as uv tools.
+
+        Scans scripts_root/src/ for directories containing pyproject.toml
+        and installs each as a uv tool.
+
+        Args:
+            scripts_root: Root directory containing src/. Defaults to cwd.
+        """
         UvAdapter.ensure_uv()
 
         if scripts_root is None:
@@ -25,7 +38,14 @@ class UvToolManager:
 
     @staticmethod
     def install_tool(project_path: Path) -> None:
-        """Install a project as a uv tool."""
+        """Install a project as a uv tool.
+
+        Uses --force --upgrade to ensure latest version. On failure,
+        cleans the tool cache and retries once.
+
+        Args:
+            project_path: Directory containing pyproject.toml.
+        """
         pkg_name = project_path.name
         console.status(f"Installing {pkg_name} as uv tool...")
 
@@ -49,7 +69,25 @@ class UvToolManager:
 
     @classmethod
     def run(cls, script_path: str, args: list[str] | None = None) -> None:
-        """Run from local venv, project source, or installed tool."""
+        """Run a tool from local venv, project source, or installed uv tool.
+
+        Execution priority when BUVIS_DEV_MODE=1:
+            1. Local .venv/bin/{tool} if exists
+            2. uv run from project source (src/{pkg}/pyproject.toml)
+            3. Exit with error if neither found
+
+        Execution priority when BUVIS_DEV_MODE unset:
+            1. uv tool run {tool}
+            2. Auto-install from local source if tool not found
+            3. Exit with error if no source available
+
+        Args:
+            script_path: Path to the launcher script (used to derive tool name).
+            args: Command arguments. Defaults to sys.argv[1:].
+
+        Note:
+            Tool name derived from script stem: my-tool -> pkg my_tool.
+        """
         UvAdapter.ensure_uv()
 
         if args is None:

@@ -30,7 +30,26 @@ STYLE_FAILURE_MSG = "bold light_salmon3"
 
 
 class ConsoleAdapter:
+    """Rich console wrapper for styled terminal output.
+
+    Example:
+        >>> from buvis.pybase.adapters import ConsoleAdapter
+        >>> console = ConsoleAdapter()
+        >>> console.success("Operation completed")
+
+    Checkmark, warning, and failure flows reuse the
+    `CHECKMARK`, `WARNING`, and `CROSSMARK` markers together with
+    `STYLE_SUCCESS_MSG`, `STYLE_WARNING_MSG`, and `STYLE_FAILURE_MSG`
+    so decorated messages remain consistent.
+    """
+
     def __init__(self: ConsoleAdapter) -> None:
+        """Initialize the console adapter.
+
+        On Windows wrap `sys.stdout.buffer` with UTF-8 so `CHECKMARK`,
+        `WARNING`, and `CROSSMARK` glyphs render properly using their
+        respective `STYLE_*_MSG` colors.
+        """
         if sys.platform == "win32" and hasattr(sys.stdout, "buffer"):
             utf8_stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
             self.console = Console(file=utf8_stdout, log_path=False)
@@ -38,18 +57,55 @@ class ConsoleAdapter:
             self.console = Console(log_path=False)
 
     def format_success(self: ConsoleAdapter, message: str) -> str:
+        """Return a green checkmark Rich markup string.
+
+        Args:
+            message (str): Text to format.
+
+        Returns:
+            str: Rich markup string with checkmark and green styling.
+        """
         return f" {CHECKMARK} [{STYLE_SUCCESS_MSG}]{message}[/{STYLE_SUCCESS_MSG}]"
 
     def success(self: ConsoleAdapter, message: str) -> None:
+        """Print a green checkmark status message.
+
+        Args:
+            message (str): Text to display.
+        """
         self.console.print(self.format_success(message))
 
     def format_warning(self: ConsoleAdapter, message: str) -> str:
+        """Return an orange warning symbol Rich markup string.
+
+        Args:
+            message (str): Text to format.
+
+        Returns:
+            str: Rich markup string with warning symbol and orange styling.
+        """
         return f" {WARNING} [{STYLE_WARNING_MSG}]{message}[/{STYLE_WARNING_MSG}]"
 
     def warning(self: ConsoleAdapter, message: str) -> None:
+        """Print an orange warning status message.
+
+        Args:
+            message (str): Text to display.
+        """
         self.console.print(self.format_warning(message))
 
-    def format_failure(self: ConsoleAdapter, message: str, details: str = "") -> str:
+    def format_failure(
+        self: ConsoleAdapter, message: str, details: str | None = None
+    ) -> str:
+        """Return a red crossmark Rich markup string with optional details.
+
+        Args:
+            message (str): Text to format.
+            details (str | None): Additional detail text to append.
+
+        Returns:
+            str: Rich markup string with crossmark and red styling.
+        """
         formatted_message = (
             f" {CROSSMARK} [{STYLE_FAILURE_MSG}]{message}[/{STYLE_FAILURE_MSG}]"
         )
@@ -59,23 +115,66 @@ class ConsoleAdapter:
 
         return formatted_message
 
-    def failure(self: ConsoleAdapter, message: str, details: str = "") -> None:
+    def failure(self: ConsoleAdapter, message: str, details: str | None = None) -> None:
+        """Print a red failure message, optionally including details.
+
+        Args:
+            message (str): Text to display.
+            details (str | None): Additional information to display after the failure message.
+        """
         self.console.print(self.format_failure(message, details))
 
-    def panic(self: ConsoleAdapter, message: str, details: str = "") -> None:
+    def panic(self: ConsoleAdapter, message: str, details: str | None = None) -> None:
+        """Print a failure message and exit the program.
+
+        Args:
+            message (str): Text to display.
+            details (str | None): Additional information to display after the failure message.
+
+        Note:
+            Terminates the program by calling `sys.exit()`.
+        """
         self.failure(message, details)
         sys.exit()
 
     def status(self: ConsoleAdapter, message: str) -> Status:
+        """Return a Rich Status context manager with arrow3 spinner.
+
+        Args:
+            message (str): Text to display while the status context is active.
+
+        Returns:
+            Status: Context manager for long-running operations.
+        """
         return self.console.status(message, spinner="arrow3")
 
     def capture(self: ConsoleAdapter) -> Capture:
+        """Return a Rich Capture context manager for console output.
+
+        Returns:
+            Capture: Context manager that captures console output.
+        """
         return self.console.capture()
 
-    def confirm(self: ConsoleAdapter, message: str) -> bool:
-        return Confirm.ask(message)
+    def confirm(self: ConsoleAdapter, question: str) -> bool:
+        """Prompt the user for confirmation via Rich Confirm.ask.
+
+        Args:
+            question (str): Prompt text presented to the user.
+
+        Returns:
+            bool: Result of the confirmation.
+        """
+        return Confirm.ask(question)
 
     def print(self: ConsoleAdapter, message: str, *, mode: str = "normal") -> None:
+        """Render text through the console with optional rendering modes.
+
+        Args:
+            message (str): Content to print.
+            mode (str): Rendering mode, one of ``normal``, ``raw``, or
+                ``markdown_with_frontmatter``.
+        """
         return self.console.print(_stylize_text(message, mode))
 
     def print_side_by_side(  # noqa: PLR0913
@@ -88,6 +187,27 @@ class ConsoleAdapter:
         mode_left: str = "normal",
         mode_right: str = "normal",
     ) -> None:
+        """Render two panels in a half-width, side-by-side layout where each panel
+        uses half the console width to keep columns balanced.
+
+        Args:
+            title_left (str): Panel title for the left column.
+            text_left (str): Content for the left column body.
+            title_right (str): Panel title for the right column.
+            text_right (str): Content for the right column body.
+            mode_left (str): Rendering mode for the left column content.
+            mode_right (str): Rendering mode for the right column content.
+
+        Example:
+            >>> console.print_side_by_side(
+            ...     title_left="Config",
+            ...     text_left="name: buvis\\n---\\n# details",
+            ...     title_right="Result",
+            ...     text_right="Success",
+            ...     mode_left="markdown_with_frontmatter",
+            ...     mode_right="raw",
+            ... )
+        """
         width = self.console.width // 2
 
         panel_left = Panel.fit(
@@ -111,6 +231,7 @@ class ConsoleAdapter:
         return self.console.print(columns)
 
     def nl(self: ConsoleAdapter) -> None:
+        """Output an empty line to the console."""
         return self.console.out("")
 
 
@@ -164,6 +285,24 @@ def logging_to_console(
     show_time: bool = False,
     show_path: bool = False,
 ) -> Generator[None, None, None]:
+    """Context manager that routes logging output through the Rich console.
+
+    Temporarily adds a :class:`CapturingRichHandler` to the root logger, setting the
+    logger level to ``INFO`` while the context is active and restoring the previous
+    handler and level on exit.
+
+    Args:
+        show_level (bool): Include the log level in the captured output. Defaults to ``True``.
+        show_time (bool): Include timestamps in the captured output. Defaults to ``False``.
+        show_path (bool): Include the logger path in the captured output. Defaults to ``False``.
+
+    Yields:
+        None: Logging is redirected to the Rich console for the duration of the context.
+
+    Example:
+        >>> with logging_to_console():
+        ...     logging.info("Hello Rich")
+    """
     handler = CapturingRichHandler(
         console=console,
         show_level=show_level,

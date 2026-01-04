@@ -9,6 +9,20 @@ import tzlocal
 
 
 class FileMetadataReader:
+    """Utility reader that exposes static helpers for file metadata.
+
+    The class is not meant to be instantiated; callers just need to invoke the
+    static helpers to obtain timestamps such as the file creation datetime or
+    the first commit datetime in a Git repository. Creation-time resolution is
+    platform specific (Windows uses `st_ctime` while Unix systems prefer
+    `st_birthtime` with a fallback to modification time).
+
+    Example:
+
+        >>> FileMetadataReader.get_creation_datetime(Path("example.txt"))
+        datetime(2024, 7, 8, 12, 34, tzinfo=...)
+    """
+
     @staticmethod
     def get_creation_datetime(file_path: Path) -> datetime:
         """

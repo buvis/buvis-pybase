@@ -34,4 +34,6 @@ environment variables, and migration guides.
    :caption: Contents:
 
    configuration
-
+   formatting
+   filesystem
+   adapters
