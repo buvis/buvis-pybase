@@ -54,7 +54,19 @@ class PoetryAdapter:
 
     @classmethod
     def update_script(cls, script_path: str) -> None:
-        """Update dependencies for a script's project."""
+        """Update dependencies for a single script Poetry project.
+
+        Uses same path derivation as run_script to locate project directory.
+
+        Args:
+            script_path: Path to the launcher script in bin/.
+
+        Note:
+            Only updates if pyproject.toml exists; silently skips otherwise.
+
+        See Also:
+            update_all_scripts: Batch update for all projects.
+        """
         script_file = Path(script_path)
         pkg_name = script_file.stem.replace("-", "_")
         scripts_root = script_file.parent.parent
