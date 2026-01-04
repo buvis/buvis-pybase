@@ -138,13 +138,34 @@ class ConsoleAdapter:
         sys.exit()
 
     def status(self: ConsoleAdapter, message: str) -> Status:
+        """Return a Rich Status context manager with arrow3 spinner.
+
+        Args:
+            message (str): Text to display while the status context is active.
+
+        Returns:
+            Status: Context manager for long-running operations.
+        """
         return self.console.status(message, spinner="arrow3")
 
     def capture(self: ConsoleAdapter) -> Capture:
+        """Return a Rich Capture context manager for console output.
+
+        Returns:
+            Capture: Context manager that captures console output.
+        """
         return self.console.capture()
 
-    def confirm(self: ConsoleAdapter, message: str) -> bool:
-        return Confirm.ask(message)
+    def confirm(self: ConsoleAdapter, question: str) -> bool:
+        """Prompt the user for confirmation via Rich Confirm.ask.
+
+        Args:
+            question (str): Prompt text presented to the user.
+
+        Returns:
+            bool: Result of the confirmation.
+        """
+        return Confirm.ask(question)
 
     def print(self: ConsoleAdapter, message: str, *, mode: str = "normal") -> None:
         return self.console.print(_stylize_text(message, mode))
@@ -182,6 +203,7 @@ class ConsoleAdapter:
         return self.console.print(columns)
 
     def nl(self: ConsoleAdapter) -> None:
+        """Output an empty line to the console."""
         return self.console.out("")
 
 
