@@ -66,6 +66,17 @@ class JiraAdapter:
         )
 
     def create(self, issue: JiraIssueDTO) -> JiraIssueDTO:
+        """Create a JIRA issue via the REST API.
+
+        Args:
+            issue: JiraIssueDTO with fields: project, title, description, issue_type, labels, priority, ticket, feature, assignee, reporter, team, region
+
+        Returns:
+            JiraIssueDTO populated with server-assigned id and link.
+
+        Note:
+            Custom fields customfield_10001 (feature) and customfield_12900 (region) require post-creation update due to JIRA API limitations.
+        """
         new_issue = self._jira.create_issue(
             fields={
                 "assignee": {"key": issue.assignee, "name": issue.assignee},
