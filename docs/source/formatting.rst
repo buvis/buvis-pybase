@@ -33,7 +33,7 @@ Quick Start
     from buvis.pybase.formatting import StringOperator
 
     slug = StringOperator.slugify("BUVIS-CLI Utilities")
-    camel = StringOperator.camelize("cli utilities", pascal=False)
+    camel = StringOperator.camelize("cli_utilities")
 
     print(slug)   # => "buvis-cli-utilities"
     print(camel)  # => "cliUtilities"
