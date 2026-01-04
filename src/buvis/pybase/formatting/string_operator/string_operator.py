@@ -5,7 +5,7 @@ Example:
     >>> StringOperator.slugify("Foo Bar")
     'foo-bar'
     >>> StringOperator.camelize("foo_bar")
-    'fooBar'
+    'FooBar'
 """
 
 from __future__ import annotations
