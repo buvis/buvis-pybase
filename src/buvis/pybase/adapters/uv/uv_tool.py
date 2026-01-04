@@ -8,6 +8,12 @@ from buvis.pybase.adapters.uv.uv import UvAdapter
 
 
 class UvToolManager:
+    """Manage and run Python tools via uv.
+
+    Supports development workflows with automatic tool discovery
+    and installation from local project sources.
+    """
+
     @staticmethod
     def install_all(scripts_root: Path | None = None) -> None:
         """Install all projects in src/ as uv tools."""
