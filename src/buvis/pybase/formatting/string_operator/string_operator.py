@@ -192,15 +192,15 @@ class StringOperator:
 
     @staticmethod
     def as_graphql_field_name(text: str) -> str:
-        """Convert text to a GraphQL-friendly camelCase field name.
+        """Convert text to a GraphQL-friendly PascalCase field name.
 
         Args:
             text: Text to normalize.
         Returns:
-            A camelCase representation suitable for GraphQL schemas.
+            A PascalCase representation suitable for GraphQL schemas.
         Example:
-            >>> StringOperator.as_graphql_field_name("first name")
-            'firstName'
+            >>> StringOperator.as_graphql_field_name("first_name")
+            'FirstName'
         """
         return StringCaseTools.as_graphql_field_name(text)
 

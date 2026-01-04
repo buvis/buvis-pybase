@@ -63,13 +63,13 @@ class StringCaseTools:
 
     @staticmethod
     def as_graphql_field_name(text: str) -> str:
-        """Convert a string to a GraphQL-style field name (camelCase).
+        """Convert a string to a GraphQL-style field name (PascalCase).
 
         Args:
-            text: Text to convert into camelCase.
+            text: Text to convert into PascalCase.
 
         Returns:
-            CamelCase string suitable for GraphQL fields.
+            PascalCase string suitable for GraphQL fields.
 
         Example:
             >>> StringCaseTools.as_graphql_field_name('some_value')
