@@ -44,16 +44,21 @@ class ShellAdapter:
         self: ShellAdapter,
         command: str,
         working_dir: Path | None,
-    ) -> None:
+    ) -> tuple[str, str]:
         """
         Execute a shell command and log its output.
 
         This method runs the given command, logs stdout as info and stderr as error.
         If the command fails, it logs both stdout and stderr.
 
-        :param command: A string representing the command to execute.
-        :param working_dir: Path to directory where the command will be executed.
-        :raises subprocess.CalledProcessError: If the command execution fails.
+        Args:
+            command: A string representing the command to execute.
+            working_dir: Path to directory where the command will be executed.
+        Returns:
+            A tuple of (stderr, stdout) from command execution. On failure, returns
+            (error_message, empty string).
+        Raises:
+            subprocess.CalledProcessError: If the command execution fails.
         """
         expanded_command = self._expand_alias(command)
         expanded_command = self._expand_environment_variables(expanded_command)
