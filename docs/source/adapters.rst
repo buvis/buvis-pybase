@@ -25,6 +25,69 @@ Return Convention
         # Handle error
     # Process stdout
 
+When to Use
+-----------
+
+Choosing the Right Adapter
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table:: Adapter Selection Guide
+   :header-rows: 1
+   :widths: 25 25 50
+
+   * - Scenario
+     - Adapter
+     - Rationale
+   * - New projects, fast installs
+     - UvAdapter / UvToolManager
+     - uv is faster than Poetry, better for CI/CD
+   * - Existing Poetry projects
+     - PoetryAdapter
+     - Maintains compatibility with poetry.lock
+   * - Running arbitrary shell commands
+     - ShellAdapter
+     - Handles aliases, env vars, logging
+   * - JIRA issue creation
+     - JiraAdapter
+     - Typed DTO, handles custom field quirks
+   * - Windows Outlook calendar
+     - OutlookLocalAdapter
+     - COM automation for local Outlook
+   * - Styled terminal output
+     - ConsoleAdapter
+     - Rich formatting, spinners, confirmations
+
+UvAdapter vs PoetryAdapter
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Use UvAdapter when:**
+
+- Starting new projects
+- Speed is critical (CI/CD pipelines)
+- You want simpler dependency resolution
+
+**Use PoetryAdapter when:**
+
+- Maintaining existing Poetry-based projects
+- You need Poetry-specific features (plugin system)
+- Team already standardized on Poetry
+
+ShellAdapter vs Specific Adapters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Prefer specific adapters (JiraAdapter, OutlookLocalAdapter) over ShellAdapter
+when available - they provide:
+
+- Type-safe interfaces (DTOs)
+- Error handling for API-specific failures
+- Abstraction over protocol details (REST, COM)
+
+Use ShellAdapter for:
+
+- One-off commands without dedicated adapters
+- Scripts requiring alias expansion
+- Commands needing environment variable interpolation
+
 API Reference
 -------------
 
