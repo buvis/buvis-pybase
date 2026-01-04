@@ -116,4 +116,14 @@ class DirTree:
 
     @staticmethod
     def merge_mac_metadata(directory: Path) -> None:
+        """Restore macOS metadata from AppleDouble helper files.
+
+        Walks the directory tree for AppleDouble files (._*) and, when not on
+        Windows, applies their extended attributes back to the corresponding
+        originals before cleaning up any orphaned helper files. This serves as
+        a post-copy cleanup for macOS metadata files.
+
+        Args:
+            directory: Directory containing files and AppleDouble metadata.
+        """
         merge_mac_metadata(directory)
