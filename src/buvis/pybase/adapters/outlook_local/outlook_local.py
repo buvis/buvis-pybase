@@ -51,6 +51,20 @@ class OutlookLocalAdapter:
         self: OutlookLocalAdapter,
         appointment_input: dict,
     ) -> None:
+        """Create a calendar appointment.
+
+        Args:
+            appointment_input (dict): Dict with keys:
+                subject (str): Appointment title
+                body (str): Description text
+                duration (int): Length in minutes
+                location (str): Location field
+                categories (str): Outlook category
+                start (datetime, optional): Start time. Defaults to current hour when omitted.
+
+        Raises:
+            OutlookAppointmentCreationFailedError: If creation fails.
+        """
         try:
             appointment = self.app.CreateItem(1)  # 1 represents AppointmentItem
             if appointment_input.get("start") and isinstance(
