@@ -48,8 +48,8 @@ class JiraAdapter:
         """
         self._cfg = cfg
         if self._cfg.get_configuration_item_or_default("proxy", None):
-            os.environ.pop("https_proxy")
-            os.environ.pop("http_proxy")
+            os.environ.pop("https_proxy", None)
+            os.environ.pop("http_proxy", None)
             os.environ["https_proxy"] = str(self._cfg.get_configuration_item("proxy"))
         if not self._cfg.get_configuration_item_or_default(
             "server",
