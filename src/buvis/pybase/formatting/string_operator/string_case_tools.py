@@ -6,7 +6,12 @@ from inflection import underscore as infl_underscore
 
 
 class StringCaseTools:
-    """String case conversion utilities. Static utility class for converting strings between naming conventions. Wraps inflection library with BUVIS-specific field naming conventions."""
+    """String case conversion utilities.
+
+    Static utility class for converting strings between naming
+    conventions. Wraps the inflection library with BUVIS-specific
+    field naming conventions.
+    """
 
     @staticmethod
     def humanize(text: str) -> str:
@@ -19,7 +24,8 @@ class StringCaseTools:
             Human-readable string with spaces and capitalized words.
 
         Example:
-            StringCaseTools.humanize('some_value')
+            >>> StringCaseTools.humanize('some_value')
+            'Some value'
         """
         return infl_humanize(text)
 
@@ -34,7 +40,8 @@ class StringCaseTools:
             Snake_case version of the input text.
 
         Example:
-            StringCaseTools.underscore('SomeValue')
+            >>> StringCaseTools.underscore('SomeValue')
+            'some_value'
         """
         return infl_underscore(text)
 
@@ -49,7 +56,8 @@ class StringCaseTools:
             Kebab-case representation of the input text.
 
         Example:
-            StringCaseTools.as_note_field_name('some_value')
+            >>> StringCaseTools.as_note_field_name('SomeValue')
+            'some-value'
         """
         return StringCaseTools.underscore(text).replace("_", "-").lower()
 
@@ -64,7 +72,8 @@ class StringCaseTools:
             CamelCase string suitable for GraphQL fields.
 
         Example:
-            StringCaseTools.as_graphql_field_name('some_value')
+            >>> StringCaseTools.as_graphql_field_name('some_value')
+            'SomeValue'
         """
         return StringCaseTools.camelize(text)
 
@@ -79,7 +88,8 @@ class StringCaseTools:
             CamelCase representation of the input text.
 
         Example:
-            StringCaseTools.camelize('some-name')
+            >>> StringCaseTools.camelize('some-name')
+            'SomeName'
         """
         text = text.replace("-", "_")
 
