@@ -23,6 +23,17 @@ if TYPE_CHECKING:
 
 
 class DirTree:
+    """Utility with static directory operations.
+
+    Provides static methods for counting files, cleanup routines, and normalization
+    helpers. No instantiation is required.
+
+    Example:
+        >>> from buvis.pybase.filesystem import DirTree
+        >>> from pathlib import Path
+        >>> count = DirTree.count_files(Path('/data'))
+    """
+
     _is_safe_path = staticmethod(is_safe_path)
     _safe_rglob = staticmethod(safe_rglob)
 
