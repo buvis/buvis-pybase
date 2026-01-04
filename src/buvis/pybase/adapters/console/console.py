@@ -57,18 +57,45 @@ class ConsoleAdapter:
             self.console = Console(log_path=False)
 
     def format_success(self: ConsoleAdapter, message: str) -> str:
+        """Return a green checkmark Rich markup string.
+
+        Args:
+            message (str): Text to format.
+
+        Returns:
+            str: Rich markup string with checkmark and green styling.
+        """
         return f" {CHECKMARK} [{STYLE_SUCCESS_MSG}]{message}[/{STYLE_SUCCESS_MSG}]"
 
     def success(self: ConsoleAdapter, message: str) -> None:
         self.console.print(self.format_success(message))
 
     def format_warning(self: ConsoleAdapter, message: str) -> str:
+        """Return an orange warning symbol Rich markup string.
+
+        Args:
+            message (str): Text to format.
+
+        Returns:
+            str: Rich markup string with warning symbol and orange styling.
+        """
         return f" {WARNING} [{STYLE_WARNING_MSG}]{message}[/{STYLE_WARNING_MSG}]"
 
     def warning(self: ConsoleAdapter, message: str) -> None:
         self.console.print(self.format_warning(message))
 
-    def format_failure(self: ConsoleAdapter, message: str, details: str = "") -> str:
+    def format_failure(
+        self: ConsoleAdapter, message: str, details: str | None = None
+    ) -> str:
+        """Return a red crossmark Rich markup string with optional details.
+
+        Args:
+            message (str): Text to format.
+            details (str | None): Additional detail text to append.
+
+        Returns:
+            str: Rich markup string with crossmark and red styling.
+        """
         formatted_message = (
             f" {CROSSMARK} [{STYLE_FAILURE_MSG}]{message}[/{STYLE_FAILURE_MSG}]"
         )
