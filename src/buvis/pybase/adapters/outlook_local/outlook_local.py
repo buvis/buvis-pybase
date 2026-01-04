@@ -113,9 +113,9 @@ class OutlookLocalAdapter:
         Returns:
             list: AppointmentItems for that day.
         """
-        restrict_from = date.strftime("%Y-%d-%m")
+        restrict_from = date.strftime("%Y-%m-%d")
         restrict_to = date + timedelta(days=1)
-        restrict_to = restrict_to.strftime("%Y-%d-%m")
+        restrict_to = restrict_to.strftime("%Y-%m-%d")
         restrict_query = f"[Start] >= '{restrict_from}' AND [End] <= '{restrict_to}'"
         appointments = appointments.Restrict(restrict_query)
         return [
