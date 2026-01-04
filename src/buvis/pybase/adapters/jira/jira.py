@@ -69,10 +69,16 @@ class JiraAdapter:
         """Create a JIRA issue via the REST API.
 
         Args:
-            issue: JiraIssueDTO with fields: project, title, description, issue_type, labels, priority, ticket, feature, assignee, reporter, team, region
+            issue (JiraIssueDTO): containing all required fields.
 
         Returns:
-            JiraIssueDTO populated with server-assigned id and link.
+            JiraIssueDTO: populated with server-assigned id and link.
+
+        Custom Field Mappings:
+            ticket -> customfield_11502 (parent ticket reference)
+            team -> customfield_10501 (team selector)
+            feature -> customfield_10001 (epic/feature link)
+            region -> customfield_12900 (region selector)
 
         Note:
             Custom fields customfield_10001 (feature) and customfield_12900 (region) require post-creation update due to JIRA API limitations.
