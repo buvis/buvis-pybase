@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bob’s Universal and Very Intelligent System scripts documentation &mdash; BUVIS Python Base  documentation</title>
+  <title>buvis-pybase Documentation &mdash; BUVIS Python Base  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Configuration documentation" href="configuration.html" /> 
+    <link rel="next" title="Configuration" href="configuration.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,7 +43,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html#api-reference">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="formatting.html">Formatting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="adapters.html">Adapters</a></li>
 </ul>
 
         </div>
@@ -60,7 +64,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Bob’s Universal and Very Intelligent System scripts documentation</li>
+      <li class="breadcrumb-item active">buvis-pybase Documentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -70,27 +74,88 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="bob-s-universal-and-very-intelligent-system-scripts-documentation">
-<h1>Bob’s Universal and Very Intelligent System scripts documentation<a class="headerlink" href="#bob-s-universal-and-very-intelligent-system-scripts-documentation" title="Link to this heading"></a></h1>
-<p>Add your content using <code class="docutils literal notranslate"><span class="pre">reStructuredText</span></code> syntax. See the
-<a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html">reStructuredText</a>
-documentation for details.</p>
+  <section id="buvis-pybase-documentation">
+<h1>buvis-pybase Documentation<a class="headerlink" href="#buvis-pybase-documentation" title="Link to this heading"></a></h1>
+<p>Foundation library for BUVIS Python projects. Provides configuration management,
+filesystem utilities, adapters for external tools, and string manipulation.</p>
+<section id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h2>
+<p><strong>Configuration</strong> is the recommended entry point. It defines how your tools load
+settings from CLI arguments, environment variables, YAML files, and defaults.</p>
+<section id="quick-example">
+<h3>Quick Example<a class="headerlink" href="#quick-example" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">buvis.pybase.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="n">buvis_options</span><span class="p">,</span> <span class="n">get_settings</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@buvis_options</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">pass_context</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">click</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;Debug mode&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="configuration.html"><span class="doc">Configuration</span></a> for custom settings classes, YAML configuration,
+environment variables, and migration guides.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#buvis.pybase.configuration.configuration.Configuration"><code class="docutils literal notranslate"><span class="pre">Configuration</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#quick-start">Quick Start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#migration-guide">Migration Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#downstream-project-integration">Downstream Project Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#yaml-configuration">YAML Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#environment-variables">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#custom-settings-classes">Custom Settings Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#using-configresolver-directly">Using ConfigResolver Directly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#security-considerations">Security Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#error-handling">Error Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#testing">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html#api-reference">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#core-classes">Core Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#mixins">Mixins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#click-integration">Click Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#exceptions">Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#validators">Validators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#constants">Constants</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="formatting.html">Formatting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="formatting.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="formatting.html#quick-start">Quick Start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="formatting.html#api-reference">API Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="formatting.html#helper-classes">Helper Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="filesystem.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filesystem.html#quick-start">Quick Start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filesystem.html#api-reference">API Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filesystem.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="adapters.html">Adapters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adapters.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adapters.html#when-to-use">When to Use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adapters.html#api-reference">API Reference</a></li>
 </ul>
 </li>
 </ul>
 </div>
+</section>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
