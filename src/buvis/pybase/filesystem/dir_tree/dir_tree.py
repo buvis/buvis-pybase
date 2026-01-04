@@ -100,6 +100,18 @@ class DirTree:
 
     @staticmethod
     def remove_empty_directories(directory: Path) -> None:
+        """Recursively remove all empty directories.
+
+        Traverses bottom-up to remove directories that become empty
+        after their children are removed.
+
+        Args:
+            directory: Root directory to clean.
+
+        Note:
+            Modifies the directory tree in place. Non-empty directories
+            and files are preserved.
+        """
         remove_empty_directories(directory)
 
     @staticmethod
