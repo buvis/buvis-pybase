@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import os  # noqa: F401
+import os
 import subprocess
-import sys  # noqa: F401
+import sys
 from pathlib import Path  # noqa: F401
-from unittest.mock import MagicMock, patch  # noqa: F401
+from unittest.mock import patch
 
-import pytest  # noqa: F401
+import pytest
 
-from buvis.pybase.adapters.uv.uv_tool import UvToolManager  # noqa: F401
+from buvis.pybase.adapters.uv.uv_tool import UvToolManager
 
 
 @pytest.fixture
@@ -308,3 +308,32 @@ class TestRun:
         call_args = mock_subprocess_run.call_args[0][0]
         assert "--help" in call_args
         assert "-v" in call_args
+
+    def test_exits_with_error_when_auto_install_retry_fails(
+        self, mock_ensure_uv, mock_console, tmp_path
+    ):
+        """Should exit with non-zero when retry after auto-install fails."""
+        script = tmp_path / "bin" / "my-tool"
+        script.parent.mkdir(parents=True)
+        script.write_text("#!/usr/bin/env python")
+
+        project = tmp_path / "src" / "my_tool"
+        project.mkdir(parents=True)
+        (project / "pyproject.toml").write_text("[project]")
+
+        with patch.dict(os.environ, {}, clear=True):
+            with patch("subprocess.run") as mock_run:
+                mock_run.side_effect = [
+                    subprocess.CompletedProcess(
+                        args=[], returncode=1
+                    ),  # tool not found
+                    subprocess.CompletedProcess(
+                        args=[], returncode=0
+                    ),  # install succeeds
+                    subprocess.CompletedProcess(args=[], returncode=1),  # retry fails
+                ]
+                with pytest.raises(SystemExit) as exc_info:
+                    UvToolManager.run(str(script), [])
+
+        assert exc_info.value.code == 1
+        assert mock_run.call_count == 3
