@@ -137,3 +137,37 @@ class TestJiraAdapterCreate:
         assert call_fields["summary"] == "Test Issue"
         assert call_fields["assignee"] == {"key": "testuser", "name": "testuser"}
         assert call_fields["customfield_10501"] == {"value": "DevTeam"}
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_returns_dto_with_id_and_link(
+        self,
+        mock_jira_cls: MagicMock,
+        mock_config: MagicMock,
+        sample_issue_dto: JiraIssueDTO,
+    ) -> None:
+        """create() returns DTO with id and link populated."""
+        mock_jira = mock_jira_cls.return_value
+        mock_issue = MagicMock()
+        mock_issue.key = "PROJ-999"
+        mock_issue.permalink.return_value = "https://jira.example.com/browse/PROJ-999"
+        mock_issue.fields.project.key = "PROJ"
+        mock_issue.fields.summary = "Test Issue"
+        mock_issue.fields.description = "Test description"
+        mock_issue.fields.issuetype.name = "Task"
+        mock_issue.fields.labels = ["test", "automated"]
+        mock_issue.fields.priority.name = "Medium"
+        mock_issue.fields.customfield_11502 = "PARENT-123"
+        mock_issue.fields.customfield_10001 = "EPIC-456"
+        mock_issue.fields.assignee.key = "testuser"
+        mock_issue.fields.reporter.key = "reporter"
+        mock_issue.fields.customfield_10501.value = "DevTeam"
+        mock_issue.fields.customfield_12900.value = "US"
+        mock_jira.create_issue.return_value = mock_issue
+        mock_jira.issue.return_value = mock_issue
+
+        adapter = JiraAdapter(mock_config)
+        result = adapter.create(sample_issue_dto)
+
+        assert result.id == "PROJ-999"
+        assert result.link == "https://jira.example.com/browse/PROJ-999"
+        assert isinstance(result, JiraIssueDTO)
