@@ -56,7 +56,7 @@ commit = true
 tag = true
 tag_name = "v{new_version}"
 message = "chore(release): bump to {new_version}"
-pre_commit_hooks = ["uv run pytest"]
+pre_commit_hooks = ["uv run pytest --cov=buvis.pybase --cov-report=term-missing"]
 
 [tool.bumpversion.parts.pre_l]
 values = [".dev", "rc", "final"]
