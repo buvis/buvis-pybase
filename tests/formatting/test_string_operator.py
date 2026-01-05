@@ -144,3 +144,46 @@ class TestSingularize:
 
     def test_minutes_exception(self) -> None:
         assert StringOperator.singularize("minutes") == "minutes"
+
+
+class TestReplaceAbbreviationsDelegation:
+    """Test replace_abbreviations delegates to Abbr."""
+
+    @patch(
+        "buvis.pybase.formatting.string_operator.string_operator.Abbr.replace_abbreviations"
+    )
+    def test_delegates_to_abbr(self, mock_replace) -> None:
+        mock_replace.return_value = "Expanded"
+        result = StringOperator.replace_abbreviations("API", [{"API": "Test"}], 2)
+        assert result == "Expanded"
+        mock_replace.assert_called_once_with("API", [{"API": "Test"}], 2)
+
+
+class TestSuggestTags:
+    """Test suggest_tags method."""
+
+    @patch("buvis.pybase.formatting.string_operator.string_operator.TagSuggester")
+    def test_limits_results(self, mock_suggester_cls) -> None:
+        """Lines 258-260: suggest_tags slices result to limit_count."""
+        mock_suggester = mock_suggester_cls.return_value
+        mock_suggester.suggest.return_value = ["tag1", "tag2", "tag3", "tag4", "tag5"]
+
+        result = StringOperator.suggest_tags("some text", limit_count=2)
+        assert len(result) == 2
+        assert result == ["tag1", "tag2"]
+
+    @patch("buvis.pybase.formatting.string_operator.string_operator.TagSuggester")
+    def test_default_limit(self, mock_suggester_cls) -> None:
+        mock_suggester = mock_suggester_cls.return_value
+        mock_suggester.suggest.return_value = ["t" + str(i) for i in range(15)]
+
+        result = StringOperator.suggest_tags("text")
+        assert len(result) == 10  # Default limit
+
+    @patch("buvis.pybase.formatting.string_operator.string_operator.TagSuggester")
+    def test_fewer_than_limit(self, mock_suggester_cls) -> None:
+        mock_suggester = mock_suggester_cls.return_value
+        mock_suggester.suggest.return_value = ["only", "two"]
+
+        result = StringOperator.suggest_tags("text", limit_count=10)
+        assert len(result) == 2
