@@ -79,6 +79,21 @@ class TestUvToolManager:
 
         mock_install.assert_not_called()
 
+    def test_defaults_to_cwd(self, mock_ensure_uv, mock_console, tmp_path, monkeypatch):
+        """Should use cwd when no path arg."""
+        src_dir = tmp_path / "src"
+        src_dir.mkdir()
+        project = src_dir / "my_pkg"
+        project.mkdir()
+        (project / "pyproject.toml").write_text("[project]")
+
+        monkeypatch.chdir(tmp_path)
+
+        with patch.object(UvToolManager, "install_tool") as mock_install:
+            UvToolManager.install_all()
+
+        mock_install.assert_called_once()
+
 
 class TestInstallTool:
     """Tests for UvToolManager.install_tool()."""
