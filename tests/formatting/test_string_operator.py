@@ -120,3 +120,25 @@ class TestHumanize:
 
     def test_single_word(self) -> None:
         assert StringOperator.humanize("name") == "Name"
+
+
+class TestPluralize:
+    def test_regular_word(self) -> None:
+        assert StringOperator.pluralize("cat") == "cats"
+
+    def test_irregular_word(self) -> None:
+        assert StringOperator.pluralize("mouse") == "mice"
+
+    def test_minutes_exception(self) -> None:
+        assert StringOperator.pluralize("minutes") == "minutes"
+
+
+class TestSingularize:
+    def test_regular_word(self) -> None:
+        assert StringOperator.singularize("cats") == "cat"
+
+    def test_irregular_word(self) -> None:
+        assert StringOperator.singularize("mice") == "mouse"
+
+    def test_minutes_exception(self) -> None:
+        assert StringOperator.singularize("minutes") == "minutes"
