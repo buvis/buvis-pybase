@@ -12,6 +12,7 @@ from buvis.pybase.configuration import (
     validate_json_env_size,
     validate_nesting_depth,
 )
+from buvis.pybase.configuration.validators import _iter_model_types
 
 
 class Level0Valid(BaseModel):
@@ -236,6 +237,74 @@ class TestSafeLoggingMixin:
         assert "username='bob'" in result
         assert "email='bob@example.com'" in result
         assert "count=42" in result
+
+
+class TestIterModelTypes:
+    """Tests for _iter_model_types helper function."""
+
+    def test_handles_union_type_with_nested_models(self) -> None:
+        """Lines 47-51: Process Union types containing BaseModel."""
+
+        class Inner(BaseModel):
+            value: str
+
+        class Outer(BaseModel):
+            child: Inner | None
+
+        models = list(_iter_model_types(Outer.model_fields["child"].annotation))
+        assert Inner in models
+
+    def test_handles_list_of_models(self) -> None:
+        """Extracts models from list[Model] annotations."""
+
+        class Item(BaseModel):
+            name: str
+
+        class Container(BaseModel):
+            items: list[Item]
+
+        models = list(_iter_model_types(Container.model_fields["items"].annotation))
+        assert Item in models
+
+    def test_handles_dict_with_model_values(self) -> None:
+        """Extracts models from dict[str, Model] annotations."""
+
+        class Value(BaseModel):
+            data: int
+
+        class Registry(BaseModel):
+            entries: dict[str, Value]
+
+        models = list(_iter_model_types(Registry.model_fields["entries"].annotation))
+        assert Value in models
+
+    def test_deduplicates_seen_models(self) -> None:
+        """Same model appearing multiple times is only yielded once per call."""
+
+        class Shared(BaseModel):
+            x: int
+
+        class Wrapper(BaseModel):
+            child: Shared
+
+        class Multi(BaseModel):
+            a: Wrapper
+            b: Wrapper | None
+
+        # Within a single Union, models are deduplicated
+        models = list(_iter_model_types(Multi.model_fields["b"].annotation))
+        # Wrapper appears once even though it's in the Union
+        assert models.count(Wrapper) == 1
+
+    def test_non_generic_non_model_type_skipped(self) -> None:
+        """Plain types like str, int are skipped (lines 47-48)."""
+        models = list(_iter_model_types(str))
+        assert models == []
+
+    def test_none_origin_skips_processing(self) -> None:
+        """Non-generic types without origin are skipped."""
+        models = list(_iter_model_types(int))
+        assert models == []
 
 
 class TestIsSensitiveField:
