@@ -116,41 +116,43 @@ class TestInstallTool:
         assert str(project) in call_args
         mock_console.success.assert_called_once()
 
-    def test_cleans_cache_and_retries_on_failure(self, mock_console, tmp_path):
+    def test_cleans_cache_and_retries_on_failure(
+        self, mock_console, mock_subprocess_run, tmp_path
+    ):
         """Should clean cache and retry when install fails."""
         project = tmp_path / "my_pkg"
         project.mkdir()
         (project / "pyproject.toml").write_text("[project]")
 
-        with patch("subprocess.run") as mock_run:
-            mock_run.side_effect = [
-                subprocess.CalledProcessError(1, "uv"),  # First install fails
-                subprocess.CompletedProcess(args=[], returncode=0),  # Cache clean
-                subprocess.CompletedProcess(args=[], returncode=0),  # Retry succeeds
-            ]
+        mock_subprocess_run.side_effect = [
+            subprocess.CalledProcessError(1, "uv"),  # First install fails
+            subprocess.CompletedProcess(args=[], returncode=0),  # Cache clean
+            subprocess.CompletedProcess(args=[], returncode=0),  # Retry succeeds
+        ]
 
-            UvToolManager.install_tool(project)
+        UvToolManager.install_tool(project)
 
-        assert mock_run.call_count == 3
-        cache_clean_call = mock_run.call_args_list[1][0][0]
+        assert mock_subprocess_run.call_count == 3
+        cache_clean_call = mock_subprocess_run.call_args_list[1][0][0]
         assert cache_clean_call[:3] == ["uv", "cache", "clean"]
         assert "my_pkg" in cache_clean_call
         mock_console.success.assert_called_once()
 
-    def test_reports_failure_when_retry_fails(self, mock_console, tmp_path):
+    def test_reports_failure_when_retry_fails(
+        self, mock_console, mock_subprocess_run, tmp_path
+    ):
         """Should report failure when both attempts fail."""
         project = tmp_path / "my_pkg"
         project.mkdir()
         (project / "pyproject.toml").write_text("[project]")
 
-        with patch("subprocess.run") as mock_run:
-            mock_run.side_effect = [
-                subprocess.CalledProcessError(1, "uv"),  # First fails
-                subprocess.CompletedProcess(args=[], returncode=0),  # cache clean
-                subprocess.CalledProcessError(1, "uv"),  # retry fails
-            ]
+        mock_subprocess_run.side_effect = [
+            subprocess.CalledProcessError(1, "uv"),  # First fails
+            subprocess.CompletedProcess(args=[], returncode=0),  # cache clean
+            subprocess.CalledProcessError(1, "uv"),  # retry fails
+        ]
 
-            UvToolManager.install_tool(project)
+        UvToolManager.install_tool(project)
 
         mock_console.failure.assert_called_once()
         mock_console.success.assert_not_called()
@@ -176,7 +178,7 @@ class TestRun:
         assert "arg1" in call_args
         assert "arg2" in call_args
 
-    def test_uses_venv_in_dev_mode(self, mock_ensure_uv, tmp_path):
+    def test_uses_venv_in_dev_mode(self, mock_ensure_uv, mock_subprocess_run, tmp_path):
         """Should use venv python in dev mode when venv exists."""
         script = tmp_path / "bin" / "my-tool"
         script.parent.mkdir(parents=True)
@@ -189,18 +191,16 @@ class TestRun:
         venv_bin.write_text("#!/usr/bin/env python")
 
         with patch.dict(os.environ, {"BUVIS_DEV_MODE": "1"}):
-            with patch("subprocess.run") as mock_run:
-                mock_run.return_value = subprocess.CompletedProcess(
-                    args=[], returncode=0
-                )
-                with pytest.raises(SystemExit) as exc_info:
-                    UvToolManager.run(str(script), ["arg1"])
+            with pytest.raises(SystemExit) as exc_info:
+                UvToolManager.run(str(script), ["arg1"])
 
         assert exc_info.value.code == 0
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_subprocess_run.call_args[0][0]
         assert str(venv_bin) == call_args[0]
 
-    def test_uses_uv_run_project_in_dev_mode(self, mock_ensure_uv, tmp_path):
+    def test_uses_uv_run_project_in_dev_mode(
+        self, mock_ensure_uv, mock_subprocess_run, tmp_path
+    ):
         """Should use uv run --project when no venv but project exists."""
         script = tmp_path / "bin" / "my-tool"
         script.parent.mkdir(parents=True)
@@ -212,15 +212,11 @@ class TestRun:
         (src_dir / "pyproject.toml").write_text("[project]")
 
         with patch.dict(os.environ, {"BUVIS_DEV_MODE": "1"}):
-            with patch("subprocess.run") as mock_run:
-                mock_run.return_value = subprocess.CompletedProcess(
-                    args=[], returncode=0
-                )
-                with pytest.raises(SystemExit) as exc_info:
-                    UvToolManager.run(str(script), ["arg1"])
+            with pytest.raises(SystemExit) as exc_info:
+                UvToolManager.run(str(script), ["arg1"])
 
         assert exc_info.value.code == 0
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_subprocess_run.call_args[0][0]
         assert call_args[:3] == ["uv", "run", "--project"]
         assert str(src_dir) in call_args
         assert "-m" in call_args
@@ -228,7 +224,7 @@ class TestRun:
         assert "arg1" in call_args
 
     def test_auto_installs_when_tool_not_found(
-        self, mock_ensure_uv, mock_console, tmp_path
+        self, mock_ensure_uv, mock_console, mock_subprocess_run, tmp_path
     ):
         """Should auto-install and retry when tool not found."""
         script = tmp_path / "bin" / "my-tool"
@@ -239,23 +235,19 @@ class TestRun:
         project.mkdir(parents=True)
         (project / "pyproject.toml").write_text("[project]")
 
+        mock_subprocess_run.side_effect = [
+            subprocess.CompletedProcess(args=[], returncode=1),
+            subprocess.CompletedProcess(args=[], returncode=0),
+            subprocess.CompletedProcess(args=[], returncode=0),
+        ]
+
         with patch.dict(os.environ, {}, clear=True):
-            with patch("subprocess.run") as mock_run:
-                # First run fails, install succeeds, second run succeeds
-                mock_run.side_effect = [
-                    subprocess.CompletedProcess(
-                        args=[], returncode=1
-                    ),  # tool not found
-                    subprocess.CompletedProcess(args=[], returncode=0),  # install
-                    subprocess.CompletedProcess(args=[], returncode=0),  # retry run
-                ]
-                with pytest.raises(SystemExit) as exc_info:
-                    UvToolManager.run(str(script), [])
+            with pytest.raises(SystemExit) as exc_info:
+                UvToolManager.run(str(script), [])
 
         assert exc_info.value.code == 0
-        assert mock_run.call_count == 3
-        # Verify install was called
-        install_call = mock_run.call_args_list[1][0][0]
+        assert mock_subprocess_run.call_count == 3
+        install_call = mock_subprocess_run.call_args_list[1][0][0]
         assert install_call[:3] == ["uv", "tool", "install"]
 
     def test_exits_with_error_when_no_project_in_dev_mode(
@@ -275,20 +267,20 @@ class TestRun:
         assert "No venv or project found" in captured.err
 
     def test_exits_with_error_when_tool_not_found_and_no_source(
-        self, mock_ensure_uv, tmp_path, capsys
+        self, mock_ensure_uv, mock_subprocess_run, tmp_path, capsys
     ):
         """Should exit with error when tool not found and no install source."""
         script = tmp_path / "bin" / "my-tool"
         script.parent.mkdir(parents=True)
         script.write_text("#!/usr/bin/env python")
 
+        mock_subprocess_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=1
+        )
+
         with patch.dict(os.environ, {}, clear=True):
-            with patch("subprocess.run") as mock_run:
-                mock_run.return_value = subprocess.CompletedProcess(
-                    args=[], returncode=1
-                )
-                with pytest.raises(SystemExit) as exc_info:
-                    UvToolManager.run(str(script), [])
+            with pytest.raises(SystemExit) as exc_info:
+                UvToolManager.run(str(script), [])
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
@@ -310,7 +302,7 @@ class TestRun:
         assert "-v" in call_args
 
     def test_exits_with_error_when_auto_install_retry_fails(
-        self, mock_ensure_uv, mock_console, tmp_path
+        self, mock_ensure_uv, mock_console, mock_subprocess_run, tmp_path
     ):
         """Should exit with non-zero when retry after auto-install fails."""
         script = tmp_path / "bin" / "my-tool"
@@ -321,19 +313,15 @@ class TestRun:
         project.mkdir(parents=True)
         (project / "pyproject.toml").write_text("[project]")
 
+        mock_subprocess_run.side_effect = [
+            subprocess.CompletedProcess(args=[], returncode=1),
+            subprocess.CompletedProcess(args=[], returncode=0),
+            subprocess.CompletedProcess(args=[], returncode=1),
+        ]
+
         with patch.dict(os.environ, {}, clear=True):
-            with patch("subprocess.run") as mock_run:
-                mock_run.side_effect = [
-                    subprocess.CompletedProcess(
-                        args=[], returncode=1
-                    ),  # tool not found
-                    subprocess.CompletedProcess(
-                        args=[], returncode=0
-                    ),  # install succeeds
-                    subprocess.CompletedProcess(args=[], returncode=1),  # retry fails
-                ]
-                with pytest.raises(SystemExit) as exc_info:
-                    UvToolManager.run(str(script), [])
+            with pytest.raises(SystemExit) as exc_info:
+                UvToolManager.run(str(script), [])
 
         assert exc_info.value.code == 1
-        assert mock_run.call_count == 3
+        assert mock_subprocess_run.call_count == 3
