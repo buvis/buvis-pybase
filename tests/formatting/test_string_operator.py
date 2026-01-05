@@ -40,3 +40,27 @@ class TestShorten:
         result = StringOperator.shorten("abcdefghij", 7, 3)
         assert result.endswith("hij")
         assert result == "abcd...hij"
+
+
+class TestSlugify:
+    def test_lowercases(self) -> None:
+        assert StringOperator.slugify("Hello") == "hello"
+
+    def test_replaces_spaces_with_hyphens(self) -> None:
+        assert StringOperator.slugify("hello world") == "hello-world"
+
+    def test_removes_unsafe_chars(self) -> None:
+        # @ is in unsafe list, replaced with -
+        assert StringOperator.slugify("hello@world") == "hello-world"
+
+    def test_collapses_multiple_hyphens(self) -> None:
+        assert StringOperator.slugify("hello---world") == "hello-world"
+
+    def test_handles_multiple_spaces(self) -> None:
+        assert StringOperator.slugify("hello   world") == "hello-world"
+
+    def test_replaces_underscores(self) -> None:
+        assert StringOperator.slugify("hello_world") == "hello-world"
+
+    def test_complex_input(self) -> None:
+        assert StringOperator.slugify("Foo Bar") == "foo-bar"
