@@ -36,4 +36,21 @@ def mock_subprocess_run():
 class TestUvToolManager:
     """Tests for UvToolManager."""
 
-    pass
+    def test_installs_projects_with_pyproject_toml(
+        self, mock_ensure_uv, mock_console, mock_subprocess_run, tmp_path
+    ):
+        """Should call install_tool for each dir with pyproject.toml."""
+        src_dir = tmp_path / "src"
+        src_dir.mkdir()
+
+        # Create two projects with pyproject.toml
+        for name in ["pkg_a", "pkg_b"]:
+            project = src_dir / name
+            project.mkdir()
+            (project / "pyproject.toml").write_text("[project]")
+
+        with patch.object(UvToolManager, "install_tool") as mock_install:
+            UvToolManager.install_all(tmp_path)
+
+        assert mock_install.call_count == 2
+        mock_ensure_uv.assert_called_once()
