@@ -257,3 +257,39 @@ class TestRun:
         # Verify install was called
         install_call = mock_run.call_args_list[1][0][0]
         assert install_call[:3] == ["uv", "tool", "install"]
+
+    def test_exits_with_error_when_no_project_in_dev_mode(
+        self, mock_ensure_uv, tmp_path, capsys
+    ):
+        """Should exit with error when no venv or project in dev mode."""
+        script = tmp_path / "bin" / "my-tool"
+        script.parent.mkdir(parents=True)
+        script.write_text("#!/usr/bin/env python")
+
+        with patch.dict(os.environ, {"BUVIS_DEV_MODE": "1"}):
+            with pytest.raises(SystemExit) as exc_info:
+                UvToolManager.run(str(script), [])
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "No venv or project found" in captured.err
+
+    def test_exits_with_error_when_tool_not_found_and_no_source(
+        self, mock_ensure_uv, tmp_path, capsys
+    ):
+        """Should exit with error when tool not found and no install source."""
+        script = tmp_path / "bin" / "my-tool"
+        script.parent.mkdir(parents=True)
+        script.write_text("#!/usr/bin/env python")
+
+        with patch.dict(os.environ, {}, clear=True):
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = subprocess.CompletedProcess(
+                    args=[], returncode=1
+                )
+                with pytest.raises(SystemExit) as exc_info:
+                    UvToolManager.run(str(script), [])
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "not found" in captured.err
