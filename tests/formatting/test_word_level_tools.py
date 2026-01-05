@@ -4,7 +4,17 @@ from buvis.pybase.formatting.string_operator.word_level_tools import WordLevelTo
 
 
 class TestSingularize:
-    pass
+    def test_singularizes_regular_plural(self) -> None:
+        assert WordLevelTools.singularize("cats") == "cat"
+        assert WordLevelTools.singularize("dogs") == "dog"
+        assert WordLevelTools.singularize("users") == "user"
+
+    def test_preserves_exception_word_minutes(self) -> None:
+        assert WordLevelTools.singularize("minutes") == "minutes"
+
+    def test_handles_irregular_plural(self) -> None:
+        assert WordLevelTools.singularize("children") == "child"
+        assert WordLevelTools.singularize("people") == "person"
 
 
 class TestPluralize:
