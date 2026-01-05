@@ -88,3 +88,33 @@ class TestDeleteByExtension:
         protected.touch()
         DirTree.delete_by_extension(tmp_path, [".txt"])
         assert protected.exists()
+
+
+class TestNormalizeFileExtensions:
+    def test_lowercases_extensions(self, tmp_path: Path) -> None:
+        upper = tmp_path / "file.TXT"
+        upper.touch()
+        DirTree.normalize_file_extensions(tmp_path)
+        # On case-insensitive filesystems, both paths point to same file
+        assert (tmp_path / "file.txt").exists()
+
+    def test_renames_jpeg_to_jpg(self, tmp_path: Path) -> None:
+        jpeg = tmp_path / "photo.jpeg"
+        jpeg.touch()
+        DirTree.normalize_file_extensions(tmp_path)
+        assert (tmp_path / "photo.jpg").exists()
+        assert not jpeg.exists()
+
+    def test_renames_mp2_to_mp3(self, tmp_path: Path) -> None:
+        mp2 = tmp_path / "song.mp2"
+        mp2.touch()
+        DirTree.normalize_file_extensions(tmp_path)
+        assert (tmp_path / "song.mp3").exists()
+        assert not mp2.exists()
+
+    def test_renames_fla_to_flac(self, tmp_path: Path) -> None:
+        fla = tmp_path / "audio.fla"
+        fla.touch()
+        DirTree.normalize_file_extensions(tmp_path)
+        assert (tmp_path / "audio.flac").exists()
+        assert not fla.exists()
