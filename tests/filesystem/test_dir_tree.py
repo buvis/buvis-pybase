@@ -60,3 +60,31 @@ class TestGetMaxDepth:
         deep.mkdir(parents=True)
         (deep / "file.txt").touch()
         assert DirTree.get_max_depth(tmp_path) == 4  # a/b/c/file.txt
+
+
+class TestDeleteByExtension:
+    def test_deletes_matching_extensions(self, tmp_path: Path) -> None:
+        txt = tmp_path / "delete.txt"
+        txt.touch()
+        DirTree.delete_by_extension(tmp_path, [".txt"])
+        assert not txt.exists()
+
+    def test_keeps_non_matching_files(self, tmp_path: Path) -> None:
+        keep = tmp_path / "keep.log"
+        keep.touch()
+        DirTree.delete_by_extension(tmp_path, [".txt"])
+        assert keep.exists()
+
+    def test_handles_case_insensitive_extensions(self, tmp_path: Path) -> None:
+        upper = tmp_path / "file.TXT"
+        upper.touch()
+        DirTree.delete_by_extension(tmp_path, [".txt"])
+        assert not upper.exists()
+
+    def test_preserves_stfolder_contents(self, tmp_path: Path) -> None:
+        stfolder = tmp_path / ".stfolder"
+        stfolder.mkdir()
+        protected = stfolder / "marker.txt"
+        protected.touch()
+        DirTree.delete_by_extension(tmp_path, [".txt"])
+        assert protected.exists()
