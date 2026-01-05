@@ -293,3 +293,18 @@ class TestRun:
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
         assert "not found" in captured.err
+
+    def test_defaults_to_sys_argv(self, mock_ensure_uv, mock_subprocess_run, tmp_path):
+        """Should use sys.argv[1:] when args is None."""
+        script = tmp_path / "bin" / "my-tool"
+        script.parent.mkdir(parents=True)
+        script.write_text("#!/usr/bin/env python")
+
+        with patch.dict(os.environ, {}, clear=True):
+            with patch.object(sys, "argv", ["my-tool", "--help", "-v"]):
+                with pytest.raises(SystemExit):
+                    UvToolManager.run(str(script))
+
+        call_args = mock_subprocess_run.call_args[0][0]
+        assert "--help" in call_args
+        assert "-v" in call_args
