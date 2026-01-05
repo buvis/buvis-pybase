@@ -70,3 +70,21 @@ class TestAsGraphqlFieldName:
     def test_handles_already_pascal_case(self) -> None:
         result = StringCaseTools.as_graphql_field_name("SomeValue")
         assert result == "SomeValue"
+
+
+class TestCamelize:
+    def test_handles_underscores(self) -> None:
+        result = StringCaseTools.camelize("user_name")
+        assert result == "UserName"
+
+    def test_handles_hyphens(self) -> None:
+        result = StringCaseTools.camelize("some-name")
+        assert result == "SomeName"
+
+    def test_handles_mixed_separators(self) -> None:
+        result = StringCaseTools.camelize("first-name_last")
+        assert result == "FirstNameLast"
+
+    def test_handles_single_word(self) -> None:
+        result = StringCaseTools.camelize("name")
+        assert result == "Name"
