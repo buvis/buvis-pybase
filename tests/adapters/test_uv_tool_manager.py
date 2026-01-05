@@ -54,3 +54,25 @@ class TestUvToolManager:
 
         assert mock_install.call_count == 2
         mock_ensure_uv.assert_called_once()
+
+
+class TestInstallTool:
+    """Tests for UvToolManager.install_tool()."""
+
+    def test_installs_tool_successfully(
+        self, mock_console, mock_subprocess_run, tmp_path
+    ):
+        """Should run uv tool install with correct args."""
+        project = tmp_path / "my_pkg"
+        project.mkdir()
+        (project / "pyproject.toml").write_text("[project]")
+
+        UvToolManager.install_tool(project)
+
+        mock_subprocess_run.assert_called_once()
+        call_args = mock_subprocess_run.call_args[0][0]
+        assert call_args[:3] == ["uv", "tool", "install"]
+        assert "--force" in call_args
+        assert "--upgrade" in call_args
+        assert str(project) in call_args
+        mock_console.success.assert_called_once()
