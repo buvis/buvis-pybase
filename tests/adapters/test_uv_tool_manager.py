@@ -77,6 +77,45 @@ class TestInstallTool:
         assert str(project) in call_args
         mock_console.success.assert_called_once()
 
+    def test_cleans_cache_and_retries_on_failure(self, mock_console, tmp_path):
+        """Should clean cache and retry when install fails."""
+        project = tmp_path / "my_pkg"
+        project.mkdir()
+        (project / "pyproject.toml").write_text("[project]")
+
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = [
+                subprocess.CalledProcessError(1, "uv"),  # First install fails
+                subprocess.CompletedProcess(args=[], returncode=0),  # Cache clean
+                subprocess.CompletedProcess(args=[], returncode=0),  # Retry succeeds
+            ]
+
+            UvToolManager.install_tool(project)
+
+        assert mock_run.call_count == 3
+        cache_clean_call = mock_run.call_args_list[1][0][0]
+        assert cache_clean_call[:3] == ["uv", "cache", "clean"]
+        assert "my_pkg" in cache_clean_call
+        mock_console.success.assert_called_once()
+
+    def test_reports_failure_when_retry_fails(self, mock_console, tmp_path):
+        """Should report failure when both attempts fail."""
+        project = tmp_path / "my_pkg"
+        project.mkdir()
+        (project / "pyproject.toml").write_text("[project]")
+
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = [
+                subprocess.CalledProcessError(1, "uv"),  # First fails
+                subprocess.CompletedProcess(args=[], returncode=0),  # cache clean
+                subprocess.CalledProcessError(1, "uv"),  # retry fails
+            ]
+
+            UvToolManager.install_tool(project)
+
+        mock_console.failure.assert_called_once()
+        mock_console.success.assert_not_called()
+
 
 class TestRun:
     """Tests for UvToolManager.run()."""
