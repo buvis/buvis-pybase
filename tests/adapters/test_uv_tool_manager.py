@@ -294,8 +294,10 @@ class TestRun:
 
         with patch.dict(os.environ, {}, clear=True):
             with patch.object(sys, "argv", ["my-tool", "--help", "-v"]):
-                with pytest.raises(SystemExit):
+                with pytest.raises(SystemExit) as exc_info:
                     UvToolManager.run(str(script))
+
+        assert exc_info.value.code == 0
 
         call_args = mock_subprocess_run.call_args[0][0]
         assert "--help" in call_args
