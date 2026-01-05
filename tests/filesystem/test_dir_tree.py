@@ -140,3 +140,29 @@ class TestRemoveEmptyDirectories:
         DirTree.remove_empty_directories(tmp_path)
         assert nonempty.exists()
         assert (nonempty / "file.txt").exists()
+
+
+@pytest.mark.skipif(
+    platform.system() != "Darwin",
+    reason="merge_mac_metadata requires macOS xattr support",
+)
+class TestMergeMacMetadata:
+    def test_removes_orphan_underscore_files(self, tmp_path: Path) -> None:
+        orphan = tmp_path / "._orphan.txt"
+        orphan.write_bytes(b"data")
+        DirTree.merge_mac_metadata(tmp_path)
+        assert not orphan.exists()
+
+    def test_merges_xattr_from_underscore_files(self, tmp_path: Path) -> None:
+        import xattr
+
+        data_file = tmp_path / "file.txt"
+        data_file.write_text("content")
+        apple_double = tmp_path / "._file.txt"
+        apple_double.write_bytes(b"resource fork data")
+
+        DirTree.merge_mac_metadata(tmp_path)
+
+        assert not apple_double.exists()
+        attrs = xattr.listxattr(str(data_file))
+        assert "com.apple.ResourceFork" in attrs
