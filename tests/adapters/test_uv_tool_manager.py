@@ -76,3 +76,24 @@ class TestInstallTool:
         assert "--upgrade" in call_args
         assert str(project) in call_args
         mock_console.success.assert_called_once()
+
+
+class TestRun:
+    """Tests for UvToolManager.run()."""
+
+    def test_runs_via_uv_tool_run(self, mock_ensure_uv, mock_subprocess_run, tmp_path):
+        """Should use uv tool run in normal mode."""
+        script = tmp_path / "bin" / "my-tool"
+        script.parent.mkdir(parents=True)
+        script.write_text("#!/usr/bin/env python")
+
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(SystemExit) as exc_info:
+                UvToolManager.run(str(script), ["arg1", "arg2"])
+
+        assert exc_info.value.code == 0
+        call_args = mock_subprocess_run.call_args[0][0]
+        assert call_args[:3] == ["uv", "tool", "run"]
+        assert "my-tool" in call_args
+        assert "arg1" in call_args
+        assert "arg2" in call_args
