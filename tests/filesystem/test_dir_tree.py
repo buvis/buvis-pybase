@@ -118,3 +118,25 @@ class TestNormalizeFileExtensions:
         DirTree.normalize_file_extensions(tmp_path)
         assert (tmp_path / "audio.flac").exists()
         assert not fla.exists()
+
+
+class TestRemoveEmptyDirectories:
+    def test_removes_empty_leaf_directory(self, tmp_path: Path) -> None:
+        empty = tmp_path / "empty"
+        empty.mkdir()
+        DirTree.remove_empty_directories(tmp_path)
+        assert not empty.exists()
+
+    def test_removes_nested_empty_directories(self, tmp_path: Path) -> None:
+        nested = tmp_path / "a" / "b" / "c"
+        nested.mkdir(parents=True)
+        DirTree.remove_empty_directories(tmp_path)
+        assert not (tmp_path / "a").exists()
+
+    def test_preserves_directories_with_files(self, tmp_path: Path) -> None:
+        nonempty = tmp_path / "keep"
+        nonempty.mkdir()
+        (nonempty / "file.txt").touch()
+        DirTree.remove_empty_directories(tmp_path)
+        assert nonempty.exists()
+        assert (nonempty / "file.txt").exists()
