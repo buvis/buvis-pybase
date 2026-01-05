@@ -8,6 +8,9 @@
   "rangeStrategy": "auto",
   "automergeType": "pr",
   "automergeStrategy": "rebase-merge",
+  "baseBranchPatterns": [
+    "develop"
+  ],
   "packageRules": [
     {
       "description": "uv: update lockfile for in-range updates",
