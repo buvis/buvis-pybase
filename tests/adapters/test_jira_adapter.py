@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -96,6 +97,27 @@ class TestJiraAdapterInit:
             server="https://jira.example.com",
             token_auth="test-token",
         )
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.dict(os.environ, {"https_proxy": "old", "http_proxy": "old"}, clear=False)
+    def test_sets_proxy_when_configured(self, mock_jira: MagicMock) -> None:
+        """Proxy config sets https_proxy env var and clears existing."""
+        config = MagicMock()
+        config.get_configuration_item_or_default.side_effect = lambda key, default: {
+            "server": "https://jira.example.com",
+            "token": "test-token",
+            "proxy": "http://proxy.example.com:8080",
+        }.get(key, default)
+        config.get_configuration_item.side_effect = lambda key: {
+            "server": "https://jira.example.com",
+            "token": "test-token",
+            "proxy": "http://proxy.example.com:8080",
+        }[key]
+
+        JiraAdapter(config)
+
+        assert os.environ.get("https_proxy") == "http://proxy.example.com:8080"
+        assert "http_proxy" not in os.environ
 
 
 class TestJiraAdapterCreate:
