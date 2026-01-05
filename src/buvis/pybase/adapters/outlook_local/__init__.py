@@ -1,4 +1,4 @@
-from .exceptions import OutlookLocalAdapterError
+from .exceptions import OutlookAppointmentCreationFailedError
 from .outlook_local import OutlookLocalAdapter
 
-__all__ = ["OutlookLocalAdapter", "OutlookLocalAdapterError"]
+__all__ = ["OutlookLocalAdapter", "OutlookAppointmentCreationFailedError"]
