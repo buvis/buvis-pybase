@@ -18,4 +18,14 @@ class TestSingularize:
 
 
 class TestPluralize:
-    pass
+    def test_pluralizes_regular_singular(self) -> None:
+        assert WordLevelTools.pluralize("cat") == "cats"
+        assert WordLevelTools.pluralize("dog") == "dogs"
+        assert WordLevelTools.pluralize("user") == "users"
+
+    def test_preserves_exception_word_minutes(self) -> None:
+        assert WordLevelTools.pluralize("minutes") == "minutes"
+
+    def test_handles_irregular_singular(self) -> None:
+        assert WordLevelTools.pluralize("child") == "children"
+        assert WordLevelTools.pluralize("person") == "people"
