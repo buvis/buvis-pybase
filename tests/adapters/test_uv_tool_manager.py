@@ -199,3 +199,30 @@ class TestRun:
         assert exc_info.value.code == 0
         call_args = mock_run.call_args[0][0]
         assert str(venv_bin) == call_args[0]
+
+    def test_uses_uv_run_project_in_dev_mode(self, mock_ensure_uv, tmp_path):
+        """Should use uv run --project when no venv but project exists."""
+        script = tmp_path / "bin" / "my-tool"
+        script.parent.mkdir(parents=True)
+        script.write_text("#!/usr/bin/env python")
+
+        # Create project dir with pyproject.toml but NO venv
+        src_dir = tmp_path / "src" / "my_tool"
+        src_dir.mkdir(parents=True)
+        (src_dir / "pyproject.toml").write_text("[project]")
+
+        with patch.dict(os.environ, {"BUVIS_DEV_MODE": "1"}):
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = subprocess.CompletedProcess(
+                    args=[], returncode=0
+                )
+                with pytest.raises(SystemExit) as exc_info:
+                    UvToolManager.run(str(script), ["arg1"])
+
+        assert exc_info.value.code == 0
+        call_args = mock_run.call_args[0][0]
+        assert call_args[:3] == ["uv", "run", "--project"]
+        assert str(src_dir) in call_args
+        assert "-m" in call_args
+        assert "my_tool" in call_args
+        assert "arg1" in call_args
