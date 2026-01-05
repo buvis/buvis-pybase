@@ -48,4 +48,15 @@ class TestCountFiles:
 
 
 class TestGetMaxDepth:
-    pass
+    def test_returns_zero_for_empty_directory(self, tmp_path: Path) -> None:
+        assert DirTree.get_max_depth(tmp_path) == 0
+
+    def test_returns_one_for_flat_directory(self, tmp_path: Path) -> None:
+        (tmp_path / "file.txt").touch()
+        assert DirTree.get_max_depth(tmp_path) == 1
+
+    def test_returns_correct_depth_for_nested(self, tmp_path: Path) -> None:
+        deep = tmp_path / "a" / "b" / "c"
+        deep.mkdir(parents=True)
+        (deep / "file.txt").touch()
+        assert DirTree.get_max_depth(tmp_path) == 4  # a/b/c/file.txt
