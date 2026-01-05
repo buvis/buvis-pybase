@@ -1,13 +1,11 @@
-"""Tests for OutlookLocalAdapter (Windows-only).
-
-These tests are skipped on non-Windows platforms since the module
-uses win32com which is Windows-specific.
-"""
+"""Tests for OutlookLocalAdapter."""
 
 from __future__ import annotations
 
+import importlib
 import sys
 from datetime import datetime
+from types import ModuleType
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -16,43 +14,69 @@ import pytest
 if TYPE_CHECKING:
     from buvis.pybase.adapters.outlook_local.outlook_local import OutlookLocalAdapter
 
-pytestmark = pytest.mark.skipif(
-    sys.platform != "win32",
-    reason="OutlookLocalAdapter requires Windows",
-)
+
+@pytest.fixture
+def win32com_dispatch() -> MagicMock:
+    """Provide a fake win32com.client.Dispatch before module import."""
+    client_module = ModuleType("win32com.client")
+    dispatch_mock = MagicMock()
+    client_module.Dispatch = dispatch_mock
+
+    win32com_module = ModuleType("win32com")
+    win32com_module.__path__ = []
+    win32com_module.client = client_module
+
+    with patch.dict(
+        sys.modules,
+        {"win32com": win32com_module, "win32com.client": client_module},
+    ):
+        yield dispatch_mock
 
 
 @pytest.fixture
-def mock_win32com() -> MagicMock:
+def outlook_local_module(
+    monkeypatch: pytest.MonkeyPatch, win32com_dispatch: MagicMock
+) -> ModuleType:
+    """Import outlook_local with Windows defaults for tests."""
+    sys.modules.pop("buvis.pybase.adapters.outlook_local.outlook_local", None)
+    module = importlib.import_module(
+        "buvis.pybase.adapters.outlook_local.outlook_local"
+    )
+    monkeypatch.setattr(module.os, "name", "nt")
+    monkeypatch.setattr(module, "_win32com_available", True)
+    return module
+
+
+@pytest.fixture
+def mock_win32com(
+    win32com_dispatch: MagicMock, outlook_local_module: ModuleType
+) -> MagicMock:
     """Mock win32com.client.Dispatch for COM automation."""
-    with patch("win32com.client.Dispatch") as mock_dispatch:
-        mock_app = MagicMock()
-        mock_namespace = MagicMock()
-        mock_calendar = MagicMock()
-        mock_app.GetNamespace.return_value = mock_namespace
-        mock_namespace.GetDefaultFolder.return_value = mock_calendar
-        mock_dispatch.return_value = mock_app
-        yield mock_dispatch
+    mock_app = MagicMock()
+    mock_namespace = MagicMock()
+    mock_calendar = MagicMock()
+    mock_app.GetNamespace.return_value = mock_namespace
+    mock_namespace.GetDefaultFolder.return_value = mock_calendar
+    win32com_dispatch.return_value = mock_app
+    return win32com_dispatch
 
 
 @pytest.fixture
-def outlook_adapter(mock_win32com: MagicMock) -> OutlookLocalAdapter:
+def outlook_adapter(
+    mock_win32com: MagicMock, outlook_local_module: ModuleType
+) -> OutlookLocalAdapter:
     """Create an OutlookLocalAdapter instance with mocked COM objects."""
-    from buvis.pybase.adapters.outlook_local.outlook_local import OutlookLocalAdapter
-
-    return OutlookLocalAdapter()
+    return outlook_local_module.OutlookLocalAdapter()
 
 
 class TestOutlookLocalAdapterInit:
     """Tests for OutlookLocalAdapter initialization."""
 
-    def test_connects_to_outlook(self, mock_win32com: MagicMock) -> None:
+    def test_connects_to_outlook(
+        self, mock_win32com: MagicMock, outlook_local_module: ModuleType
+    ) -> None:
         """Init connects to Outlook via COM and gets MAPI namespace."""
-        from buvis.pybase.adapters.outlook_local.outlook_local import (
-            OutlookLocalAdapter,
-        )
-
-        _adapter = OutlookLocalAdapter()
+        _adapter = outlook_local_module.OutlookLocalAdapter()
 
         mock_win32com.assert_called_once_with("Outlook.Application")
         mock_app = mock_win32com.return_value
@@ -60,19 +84,37 @@ class TestOutlookLocalAdapterInit:
         mock_namespace = mock_app.GetNamespace.return_value
         mock_namespace.GetDefaultFolder.assert_called_once_with(9)
 
-    def test_panics_when_dispatch_fails(self) -> None:
+    def test_panics_when_dispatch_fails(
+        self, outlook_local_module: ModuleType, win32com_dispatch: MagicMock
+    ) -> None:
         """Init calls console.panic when COM connection fails."""
-        from buvis.pybase.adapters.outlook_local import outlook_local
-
+        win32com_dispatch.side_effect = Exception("boom")
         with (
-            patch("win32com.client.Dispatch", side_effect=Exception("boom")),
             patch.object(
-                outlook_local.console, "panic", side_effect=SystemExit
+                outlook_local_module.console, "panic", side_effect=SystemExit
             ) as mock_panic,
         ):
             with pytest.raises(SystemExit):
-                outlook_local.OutlookLocalAdapter()
+                outlook_local_module.OutlookLocalAdapter()
             mock_panic.assert_called_once()
+
+    def test_raises_on_non_windows(
+        self, outlook_local_module: ModuleType, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Init raises when running on non-Windows platforms."""
+        monkeypatch.setattr(outlook_local_module.os, "name", "posix")
+
+        with pytest.raises(OSError):
+            outlook_local_module.OutlookLocalAdapter()
+
+    def test_raises_when_win32com_unavailable(
+        self, outlook_local_module: ModuleType, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Init raises when win32com is unavailable."""
+        monkeypatch.setattr(outlook_local_module, "_win32com_available", False)
+
+        with pytest.raises(OSError):
+            outlook_local_module.OutlookLocalAdapter()
 
 
 class TestCreateTimeblock:
@@ -107,12 +149,13 @@ class TestCreateTimeblock:
         appointment.Save.assert_called_once()
 
     def test_uses_current_time_when_start_missing(
-        self, outlook_adapter: OutlookLocalAdapter, mock_win32com: MagicMock
+        self,
+        outlook_adapter: OutlookLocalAdapter,
+        mock_win32com: MagicMock,
+        outlook_local_module: ModuleType,
     ) -> None:
         """Uses current hour when start time not provided."""
         from datetime import timezone
-
-        from buvis.pybase.adapters.outlook_local import outlook_local
 
         mock_app = mock_win32com.return_value
         appointment = MagicMock()
@@ -123,10 +166,13 @@ class TestCreateTimeblock:
 
         with (
             patch.object(
-                outlook_local.tzlocal, "get_localzone", return_value=timezone.utc
+                outlook_local_module.tzlocal,
+                "get_localzone",
+                return_value=timezone.utc,
             ),
-            patch.object(outlook_local.datetime, "now", return_value=fake_now),
+            patch.object(outlook_local_module, "datetime") as mock_datetime,
         ):
+            mock_datetime.now.return_value = fake_now
             outlook_adapter.create_timeblock(
                 {
                     "subject": "Sync",
@@ -211,11 +257,9 @@ class TestGetConflictingAppointment:
     """Tests for conflict detection."""
 
     def test_returns_conflicting_appointment(
-        self, outlook_adapter: OutlookLocalAdapter
+        self, outlook_adapter: OutlookLocalAdapter, outlook_local_module: ModuleType
     ) -> None:
         """Returns appointment that conflicts with desired time slot."""
-        from buvis.pybase.adapters.outlook_local import outlook_local
-
         appointment = MagicMock()
         appointment.Start = datetime(2024, 3, 15, 9, 30)
         appointment.End = datetime(2024, 3, 15, 10, 30)
@@ -230,7 +274,7 @@ class TestGetConflictingAppointment:
             patch.object(
                 outlook_adapter, "get_day_appointments", return_value=[appointment]
             ),
-            patch.object(outlook_local.console, "print"),
+            patch.object(outlook_local_module.console, "print"),
         ):
             result = outlook_adapter.get_conflicting_appointment(
                 desired_start, 60, debug_level=1
@@ -262,22 +306,18 @@ class TestGetConflictingAppointment:
 class TestIsColliding:
     """Tests for _is_colliding helper function."""
 
-    def test_detects_overlap(self) -> None:
+    def test_detects_overlap(self, outlook_local_module: ModuleType) -> None:
         """Returns True when time ranges overlap."""
-        from buvis.pybase.adapters.outlook_local.outlook_local import _is_colliding
-
-        assert _is_colliding(
+        assert outlook_local_module._is_colliding(
             datetime(2024, 3, 15, 9, 0),
             datetime(2024, 3, 15, 10, 0),
             datetime(2024, 3, 15, 9, 30),
             datetime(2024, 3, 15, 9, 45),
         )
 
-    def test_detects_no_overlap(self) -> None:
+    def test_detects_no_overlap(self, outlook_local_module: ModuleType) -> None:
         """Returns False when time ranges don't overlap."""
-        from buvis.pybase.adapters.outlook_local.outlook_local import _is_colliding
-
-        assert not _is_colliding(
+        assert not outlook_local_module._is_colliding(
             datetime(2024, 3, 15, 9, 0),
             datetime(2024, 3, 15, 10, 0),
             datetime(2024, 3, 15, 10, 0),
