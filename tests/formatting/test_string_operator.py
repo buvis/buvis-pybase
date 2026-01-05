@@ -18,3 +18,25 @@ class TestCollapse:
 
     def test_only_whitespace(self) -> None:
         assert StringOperator.collapse("   \t\n  ") == ""
+
+
+class TestShorten:
+    def test_unchanged_under_limit(self) -> None:
+        assert StringOperator.shorten("short", 10, 2) == "short"
+
+    def test_truncates_with_ellipsis(self) -> None:
+        # prefix = text[:limit - suffix_length], ellipsis, suffix = text[-suffix_length:]
+        assert StringOperator.shorten("hello world", 8, 2) == "hello ...ld"
+
+    def test_exactly_at_limit(self) -> None:
+        assert StringOperator.shorten("12345", 5, 1) == "12345"
+
+    def test_one_over_limit(self) -> None:
+        # prefix = text[:5-1] = text[:4] = "1234", suffix = text[-1] = "6"
+        assert StringOperator.shorten("123456", 5, 1) == "1234...6"
+
+    def test_preserves_suffix_length(self) -> None:
+        # prefix = text[:7-3] = text[:4] = "abcd", suffix = text[-3:] = "hij"
+        result = StringOperator.shorten("abcdefghij", 7, 3)
+        assert result.endswith("hij")
+        assert result == "abcd...hij"
