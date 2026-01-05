@@ -122,6 +122,32 @@ class TestHumanize:
         assert StringOperator.humanize("name") == "Name"
 
 
+class TestAsNoteFieldName:
+    def test_pascal_to_kebab(self) -> None:
+        assert StringOperator.as_note_field_name("SomeValue") == "some-value"
+
+    def test_spaces_preserved(self) -> None:
+        # underscore() doesn't convert spaces; they're preserved lowercased
+        assert StringOperator.as_note_field_name("Note Title") == "note title"
+
+    def test_camel_case_to_kebab(self) -> None:
+        assert StringOperator.as_note_field_name("someValue") == "some-value"
+
+    def test_already_kebab_case(self) -> None:
+        assert StringOperator.as_note_field_name("some-value") == "some-value"
+
+
+class TestAsGraphqlFieldName:
+    def test_snake_to_pascal(self) -> None:
+        assert StringOperator.as_graphql_field_name("first_name") == "FirstName"
+
+    def test_kebab_to_pascal(self) -> None:
+        assert StringOperator.as_graphql_field_name("first-name") == "FirstName"
+
+    def test_already_pascal_case(self) -> None:
+        assert StringOperator.as_graphql_field_name("FirstName") == "FirstName"
+
+
 class TestPluralize:
     def test_regular_word(self) -> None:
         assert StringOperator.pluralize("cat") == "cats"
