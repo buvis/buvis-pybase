@@ -92,3 +92,20 @@ class TestCamelize:
 
     def test_preserves_pascal_case(self) -> None:
         assert StringOperator.camelize("FirstName") == "FirstName"
+
+
+class TestUnderscore:
+    def test_pascal_to_snake(self) -> None:
+        assert StringOperator.underscore("FirstName") == "first_name"
+
+    def test_camel_to_snake(self) -> None:
+        assert StringOperator.underscore("firstName") == "first_name"
+
+    def test_single_word(self) -> None:
+        assert StringOperator.underscore("Name") == "name"
+
+    def test_already_snake(self) -> None:
+        assert StringOperator.underscore("first_name") == "first_name"
+
+    def test_acronym(self) -> None:
+        assert StringOperator.underscore("HTMLParser") == "html_parser"
