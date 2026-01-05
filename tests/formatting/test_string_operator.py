@@ -64,3 +64,17 @@ class TestSlugify:
 
     def test_complex_input(self) -> None:
         assert StringOperator.slugify("Foo Bar") == "foo-bar"
+
+
+class TestPrepend:
+    def test_adds_prefix_when_missing(self) -> None:
+        assert StringOperator.prepend("bar", "pre-") == "pre-bar"
+
+    def test_skips_existing_prefix(self) -> None:
+        assert StringOperator.prepend("pre-bar", "pre-") == "pre-bar"
+
+    def test_empty_text(self) -> None:
+        assert StringOperator.prepend("", "pre-") == "pre-"
+
+    def test_empty_prefix(self) -> None:
+        assert StringOperator.prepend("bar", "") == "bar"
