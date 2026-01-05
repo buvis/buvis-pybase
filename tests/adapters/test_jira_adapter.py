@@ -99,9 +99,12 @@ class TestJiraAdapterInit:
         )
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    @patch.dict(os.environ, {"https_proxy": "old", "http_proxy": "old"}, clear=False)
-    def test_sets_proxy_when_configured(self, mock_jira: MagicMock) -> None:
+    def test_sets_proxy_when_configured(
+        self, mock_jira: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Proxy config sets https_proxy env var and clears existing."""
+        monkeypatch.setenv("https_proxy", "old")
+        monkeypatch.setenv("http_proxy", "old")
         config = MagicMock()
         config.get_configuration_item_or_default.side_effect = lambda key, default: {
             "server": "https://jira.example.com",
