@@ -55,6 +55,30 @@ class TestUvToolManager:
         assert mock_install.call_count == 2
         mock_ensure_uv.assert_called_once()
 
+    def test_skips_directories_without_pyproject(
+        self, mock_ensure_uv, mock_console, tmp_path
+    ):
+        """Should not call install_tool for dirs without pyproject.toml."""
+        src_dir = tmp_path / "src"
+        src_dir.mkdir()
+
+        # Create dir without pyproject.toml
+        (src_dir / "empty_dir").mkdir()
+
+        with patch.object(UvToolManager, "install_tool") as mock_install:
+            UvToolManager.install_all(tmp_path)
+
+        mock_install.assert_not_called()
+
+    def test_handles_nonexistent_src_directory(
+        self, mock_ensure_uv, mock_console, tmp_path
+    ):
+        """Should handle missing src/ gracefully."""
+        with patch.object(UvToolManager, "install_tool") as mock_install:
+            UvToolManager.install_all(tmp_path)
+
+        mock_install.assert_not_called()
+
 
 class TestInstallTool:
     """Tests for UvToolManager.install_tool()."""
