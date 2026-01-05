@@ -226,3 +226,34 @@ class TestRun:
         assert "-m" in call_args
         assert "my_tool" in call_args
         assert "arg1" in call_args
+
+    def test_auto_installs_when_tool_not_found(
+        self, mock_ensure_uv, mock_console, tmp_path
+    ):
+        """Should auto-install and retry when tool not found."""
+        script = tmp_path / "bin" / "my-tool"
+        script.parent.mkdir(parents=True)
+        script.write_text("#!/usr/bin/env python")
+
+        project = tmp_path / "src" / "my_tool"
+        project.mkdir(parents=True)
+        (project / "pyproject.toml").write_text("[project]")
+
+        with patch.dict(os.environ, {}, clear=True):
+            with patch("subprocess.run") as mock_run:
+                # First run fails, install succeeds, second run succeeds
+                mock_run.side_effect = [
+                    subprocess.CompletedProcess(
+                        args=[], returncode=1
+                    ),  # tool not found
+                    subprocess.CompletedProcess(args=[], returncode=0),  # install
+                    subprocess.CompletedProcess(args=[], returncode=0),  # retry run
+                ]
+                with pytest.raises(SystemExit) as exc_info:
+                    UvToolManager.run(str(script), [])
+
+        assert exc_info.value.code == 0
+        assert mock_run.call_count == 3
+        # Verify install was called
+        install_call = mock_run.call_args_list[1][0][0]
+        assert install_call[:3] == ["uv", "tool", "install"]
