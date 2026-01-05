@@ -56,3 +56,17 @@ class TestAsNoteFieldName:
     def test_lowercases_result(self) -> None:
         result = StringCaseTools.as_note_field_name("SOME_VALUE")
         assert result == "some-value"
+
+
+class TestAsGraphqlFieldName:
+    def test_converts_underscore_to_pascal_case(self) -> None:
+        result = StringCaseTools.as_graphql_field_name("some_value")
+        assert result == "SomeValue"
+
+    def test_converts_kebab_to_pascal_case(self) -> None:
+        result = StringCaseTools.as_graphql_field_name("some-value")
+        assert result == "SomeValue"
+
+    def test_handles_already_pascal_case(self) -> None:
+        result = StringCaseTools.as_graphql_field_name("SomeValue")
+        assert result == "SomeValue"
