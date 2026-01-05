@@ -193,3 +193,42 @@ class TestJiraAdapterCreate:
         assert result.id == "PROJ-999"
         assert result.link == "https://jira.example.com/browse/PROJ-999"
         assert isinstance(result, JiraIssueDTO)
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_updates_custom_fields_after_creation(
+        self,
+        mock_jira_cls: MagicMock,
+        mock_config: MagicMock,
+        sample_issue_dto: JiraIssueDTO,
+    ) -> None:
+        """create() updates custom fields that require post-creation update."""
+        mock_jira = mock_jira_cls.return_value
+        mock_created_issue = MagicMock()
+        mock_created_issue.key = "PROJ-123"
+        mock_fetched_issue = MagicMock()
+        mock_fetched_issue.key = "PROJ-123"
+        mock_fetched_issue.permalink.return_value = (
+            "https://jira.example.com/browse/PROJ-123"
+        )
+        mock_fetched_issue.fields.project.key = "PROJ"
+        mock_fetched_issue.fields.summary = "Test Issue"
+        mock_fetched_issue.fields.description = "Test description"
+        mock_fetched_issue.fields.issuetype.name = "Task"
+        mock_fetched_issue.fields.labels = ["test", "automated"]
+        mock_fetched_issue.fields.priority.name = "Medium"
+        mock_fetched_issue.fields.customfield_11502 = "PARENT-123"
+        mock_fetched_issue.fields.customfield_10001 = "EPIC-456"
+        mock_fetched_issue.fields.assignee.key = "testuser"
+        mock_fetched_issue.fields.reporter.key = "reporter"
+        mock_fetched_issue.fields.customfield_10501.value = "DevTeam"
+        mock_fetched_issue.fields.customfield_12900.value = "US"
+        mock_jira.create_issue.return_value = mock_created_issue
+        mock_jira.issue.return_value = mock_fetched_issue
+
+        adapter = JiraAdapter(mock_config)
+        adapter.create(sample_issue_dto)
+
+        mock_jira.issue.assert_called_once_with("PROJ-123")
+        assert mock_fetched_issue.update.call_count == 2
+        mock_fetched_issue.update.assert_any_call(customfield_10001="EPIC-456")
+        mock_fetched_issue.update.assert_any_call(customfield_12900={"value": "US"})
