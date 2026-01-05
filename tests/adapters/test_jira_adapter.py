@@ -55,7 +55,20 @@ def mock_jira_client():
 class TestJiraAdapterInit:
     """Test JiraAdapter initialization."""
 
-    pass
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_raises_when_server_missing(self, mock_jira: MagicMock) -> None:
+        """Missing server raises ValueError."""
+        config = MagicMock()
+        config.get_configuration_item_or_default.side_effect = lambda key, default: {
+            "server": None,
+            "token": "test-token",
+            "proxy": None,
+        }.get(key, default)
+
+        with pytest.raises(ValueError, match="Server and token must be provided"):
+            JiraAdapter(config)
+
+        mock_jira.assert_not_called()
 
 
 class TestJiraAdapterCreate:
