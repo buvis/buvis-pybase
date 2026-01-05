@@ -17,7 +17,7 @@ jobs:
     name: Check if commit is on master
     runs-on: ubuntu-latest
     outputs:
-      is_production: ${{ steps.check_master.outputs.is_production }}
+      is_production: ${{ steps.check_master.outputs.is_production == 'true' || steps.check_dispatch.outputs.is_production == 'true' }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -38,6 +38,7 @@ jobs:
           fi
 
       - name: Set production flag for workflow_dispatch
+        id: check_dispatch
         if: github.event_name == 'workflow_dispatch'
         run: echo "is_production=true" >> $GITHUB_OUTPUT
 
