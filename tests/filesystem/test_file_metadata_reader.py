@@ -3,59 +3,78 @@ from __future__ import annotations
 import subprocess  # noqa: F401
 from datetime import datetime, timezone  # noqa: F401
 from pathlib import Path  # noqa: F401
-from unittest.mock import Mock, patch  # noqa: F401
+from unittest.mock import MagicMock, Mock, patch  # noqa: F401
 
 import pytest  # noqa: F401
 
 from buvis.pybase.filesystem import FileMetadataReader  # noqa: F401
 
+PLATFORM_SYSTEM_PATH = (
+    "buvis.pybase.filesystem.file_metadata.file_metadata_reader.platform.system"
+)
+TZLOCAL_GET_LOCALZONE_PATH = (
+    "buvis.pybase.filesystem.file_metadata.file_metadata_reader.tzlocal.get_localzone"
+)
+
+
+def _make_stat_result(**attrs: float) -> MagicMock:
+    stat = MagicMock(spec_set=tuple(attrs.keys()))
+    for name, value in attrs.items():
+        setattr(stat, name, value)
+    return stat
+
 
 class TestGetCreationDatetime:
     """Tests for FileMetadataReader.get_creation_datetime."""
 
-    @patch("buvis.pybase.filesystem.file_metadata.file_metadata_reader.platform.system")
-    def test_uses_st_ctime_on_windows(self, mock_system: Mock, tmp_path: Path) -> None:
-        mock_system.return_value = "Windows"
+    def test_uses_st_ctime_on_windows(self, tmp_path: Path) -> None:
         file = tmp_path / "test.txt"
         file.touch()
-        result = FileMetadataReader.get_creation_datetime(file)
-        assert isinstance(result, datetime)
-        assert result.tzinfo is not None
+        creation_timestamp = 1_700_000_000.0
+        stat_result = _make_stat_result(st_ctime=creation_timestamp)
 
-    @patch("buvis.pybase.filesystem.file_metadata.file_metadata_reader.platform.system")
-    def test_uses_st_birthtime_on_macos(
-        self, mock_system: Mock, tmp_path: Path
-    ) -> None:
-        mock_system.return_value = "Darwin"
-        file = tmp_path / "test.txt"
-        file.touch()
-        result = FileMetadataReader.get_creation_datetime(file)
-        assert isinstance(result, datetime)
-        assert result.tzinfo is not None
-
-    @patch("buvis.pybase.filesystem.file_metadata.file_metadata_reader.platform.system")
-    def test_falls_back_to_st_mtime_when_no_birthtime(
-        self, mock_system: Mock, tmp_path: Path
-    ) -> None:
-        """Linux doesn't have st_birthtime, falls back to st_mtime."""
-        mock_system.return_value = "Linux"
-        file = tmp_path / "test.txt"
-        file.touch()
-
-        original_stat = file.stat
-
-        def mock_stat(self):
-            stat_result = original_stat()
-            mock_result = Mock(spec=[])
-            mock_result.st_mtime = stat_result.st_mtime
-            mock_result.st_ctime = stat_result.st_ctime
-            return mock_result
-
-        with patch.object(type(file), "stat", mock_stat):
+        with (
+            patch(PLATFORM_SYSTEM_PATH, return_value="Windows"),
+            patch(TZLOCAL_GET_LOCALZONE_PATH, return_value=timezone.utc),
+            patch.object(type(file), "stat", return_value=stat_result) as mock_stat,
+        ):
             result = FileMetadataReader.get_creation_datetime(file)
 
-        assert isinstance(result, datetime)
-        assert result.tzinfo is not None
+        mock_stat.assert_called_once_with()
+        assert result == datetime.fromtimestamp(creation_timestamp, tz=timezone.utc)
+
+    def test_uses_st_birthtime_on_macos(self, tmp_path: Path) -> None:
+        file = tmp_path / "test.txt"
+        file.touch()
+        birth_timestamp = 1_600_000_000.0
+        stat_result = _make_stat_result(st_birthtime=birth_timestamp)
+
+        with (
+            patch(PLATFORM_SYSTEM_PATH, return_value="Darwin"),
+            patch(TZLOCAL_GET_LOCALZONE_PATH, return_value=timezone.utc),
+            patch.object(type(file), "stat", return_value=stat_result) as mock_stat,
+        ):
+            result = FileMetadataReader.get_creation_datetime(file)
+
+        mock_stat.assert_called_once_with()
+        assert result == datetime.fromtimestamp(birth_timestamp, tz=timezone.utc)
+
+    def test_falls_back_to_st_mtime_when_no_birthtime(self, tmp_path: Path) -> None:
+        """Linux doesn't have st_birthtime, falls back to st_mtime."""
+        file = tmp_path / "test.txt"
+        file.touch()
+        fallback_timestamp = 1_500_000_000.0
+        stat_result = _make_stat_result(st_mtime=fallback_timestamp)
+
+        with (
+            patch(PLATFORM_SYSTEM_PATH, return_value="Linux"),
+            patch(TZLOCAL_GET_LOCALZONE_PATH, return_value=timezone.utc),
+            patch.object(type(file), "stat", return_value=stat_result) as mock_stat,
+        ):
+            result = FileMetadataReader.get_creation_datetime(file)
+
+        mock_stat.assert_called_once_with()
+        assert result == datetime.fromtimestamp(fallback_timestamp, tz=timezone.utc)
 
 
 class TestGetFirstCommitDatetime:
@@ -70,6 +89,22 @@ class TestGetFirstCommitDatetime:
         mock_check_output.return_value = "2024-01-15T10:30:00+0000\n"
         result = FileMetadataReader.get_first_commit_datetime(tmp_path / "file.txt")
         assert result == datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+
+    @pytest.mark.parametrize("offset", ["+0530", "-0800"])
+    @patch(
+        "buvis.pybase.filesystem.file_metadata.file_metadata_reader.subprocess.check_output"
+    )
+    def test_parses_git_log_output_with_timezone_offsets(
+        self, mock_check_output: Mock, tmp_path: Path, offset: str
+    ) -> None:
+        date_line = f"2024-01-15T10:30:00{offset}\n"
+        mock_check_output.return_value = date_line
+        expected = datetime.fromisoformat(date_line.strip())
+
+        result = FileMetadataReader.get_first_commit_datetime(tmp_path / "file.txt")
+
+        assert result == expected
+        assert result.tzinfo == expected.tzinfo
 
     @patch(
         "buvis.pybase.filesystem.file_metadata.file_metadata_reader.subprocess.check_output"
