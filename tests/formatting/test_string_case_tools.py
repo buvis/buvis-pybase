@@ -38,3 +38,21 @@ class TestUnderscore:
     def test_handles_consecutive_caps(self) -> None:
         result = StringCaseTools.underscore("HTMLParser")
         assert result == "html_parser"
+
+
+class TestAsNoteFieldName:
+    def test_converts_pascal_case_to_kebab(self) -> None:
+        result = StringCaseTools.as_note_field_name("SomeValue")
+        assert result == "some-value"
+
+    def test_converts_camel_case_to_kebab(self) -> None:
+        result = StringCaseTools.as_note_field_name("someValue")
+        assert result == "some-value"
+
+    def test_handles_already_kebab_case(self) -> None:
+        result = StringCaseTools.as_note_field_name("some-value")
+        assert result == "some-value"
+
+    def test_lowercases_result(self) -> None:
+        result = StringCaseTools.as_note_field_name("SOME_VALUE")
+        assert result == "some-value"
