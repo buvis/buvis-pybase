@@ -20,3 +20,21 @@ class TestHumanize:
         # inflection removes trailing _id
         result = StringCaseTools.humanize("user_id")
         assert result == "User"
+
+
+class TestUnderscore:
+    def test_converts_pascal_case(self) -> None:
+        result = StringCaseTools.underscore("SomeValue")
+        assert result == "some_value"
+
+    def test_converts_camel_case(self) -> None:
+        result = StringCaseTools.underscore("someValue")
+        assert result == "some_value"
+
+    def test_handles_already_underscored(self) -> None:
+        result = StringCaseTools.underscore("some_value")
+        assert result == "some_value"
+
+    def test_handles_consecutive_caps(self) -> None:
+        result = StringCaseTools.underscore("HTMLParser")
+        assert result == "html_parser"
