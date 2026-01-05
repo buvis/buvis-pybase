@@ -61,4 +61,42 @@ class TestGetCreationDatetime:
 class TestGetFirstCommitDatetime:
     """Tests for FileMetadataReader.get_first_commit_datetime."""
 
-    pass
+    @patch(
+        "buvis.pybase.filesystem.file_metadata.file_metadata_reader.subprocess.check_output"
+    )
+    def test_parses_git_log_output(
+        self, mock_check_output: Mock, tmp_path: Path
+    ) -> None:
+        mock_check_output.return_value = "2024-01-15T10:30:00+0000\n"
+        result = FileMetadataReader.get_first_commit_datetime(tmp_path / "file.txt")
+        assert result == datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+
+    @patch(
+        "buvis.pybase.filesystem.file_metadata.file_metadata_reader.subprocess.check_output"
+    )
+    def test_returns_none_when_not_in_git_repo(
+        self, mock_check_output: Mock, tmp_path: Path
+    ) -> None:
+        mock_check_output.side_effect = subprocess.CalledProcessError(128, "git")
+        result = FileMetadataReader.get_first_commit_datetime(tmp_path / "file.txt")
+        assert result is None
+
+    @patch(
+        "buvis.pybase.filesystem.file_metadata.file_metadata_reader.subprocess.check_output"
+    )
+    def test_returns_none_for_uncommitted_file(
+        self, mock_check_output: Mock, tmp_path: Path
+    ) -> None:
+        mock_check_output.return_value = ""
+        result = FileMetadataReader.get_first_commit_datetime(tmp_path / "file.txt")
+        assert result is None
+
+    @patch(
+        "buvis.pybase.filesystem.file_metadata.file_metadata_reader.subprocess.check_output"
+    )
+    def test_returns_none_for_malformed_date(
+        self, mock_check_output: Mock, tmp_path: Path
+    ) -> None:
+        mock_check_output.return_value = "not-a-date\n"
+        result = FileMetadataReader.get_first_commit_datetime(tmp_path / "file.txt")
+        assert result is None
