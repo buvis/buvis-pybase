@@ -109,3 +109,14 @@ class TestUnderscore:
 
     def test_acronym(self) -> None:
         assert StringOperator.underscore("HTMLParser") == "html_parser"
+
+
+class TestHumanize:
+    def test_snake_to_human(self) -> None:
+        assert StringOperator.humanize("first_name") == "First name"
+
+    def test_removes_id_suffix(self) -> None:
+        assert StringOperator.humanize("user_id") == "User"
+
+    def test_single_word(self) -> None:
+        assert StringOperator.humanize("name") == "Name"
