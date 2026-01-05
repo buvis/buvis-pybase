@@ -76,7 +76,7 @@ class TestOutlookLocalAdapterInit:
         self, mock_win32com: MagicMock, outlook_local_module: ModuleType
     ) -> None:
         """Init connects to Outlook via COM and gets MAPI namespace."""
-        _adapter = outlook_local_module.OutlookLocalAdapter()
+        outlook_local_module.OutlookLocalAdapter()
 
         mock_win32com.assert_called_once_with("Outlook.Application")
         mock_app = mock_win32com.return_value

@@ -38,7 +38,7 @@ def _create_dummy_command_subclass() -> type[BuvisCommand]:
 def test_init_subclass_warns() -> None:
     with pytest.warns(DeprecationWarning, match="deprecated"):
 
-        class Command(BuvisCommand):
+        class _Command(BuvisCommand):  # noqa: F841
             pass
 
 
