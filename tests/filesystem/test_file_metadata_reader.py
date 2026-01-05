@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import subprocess  # noqa: F401
-from datetime import datetime, timezone  # noqa: F401
-from pathlib import Path  # noqa: F401
-from unittest.mock import MagicMock, Mock, patch  # noqa: F401
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
 
-import pytest  # noqa: F401
+import pytest
 
-from buvis.pybase.filesystem import FileMetadataReader  # noqa: F401
+from buvis.pybase.filesystem import FileMetadataReader
 
 PLATFORM_SYSTEM_PATH = (
     "buvis.pybase.filesystem.file_metadata.file_metadata_reader.platform.system"

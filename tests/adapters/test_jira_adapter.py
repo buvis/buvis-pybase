@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
-from buvis.pybase.adapters.jira.jira import JiraAdapter  # noqa: F401
+from buvis.pybase.adapters.jira.jira import JiraAdapter
 
 
 @pytest.fixture

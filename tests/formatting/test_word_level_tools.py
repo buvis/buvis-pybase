@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from buvis.pybase.formatting.string_operator.word_level_tools import WordLevelTools  # noqa: F401
+from buvis.pybase.formatting.string_operator.word_level_tools import WordLevelTools
 
 
 class TestSingularize:
