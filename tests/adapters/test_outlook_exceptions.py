@@ -1,31 +1,12 @@
-"""Tests for OutlookLocal exceptions (platform-independent).
-
-Note: These tests exec the exceptions.py file directly to avoid triggering
-the OS check in the outlook_local __init__.py which imports the adapter.
-"""
+"""Tests for OutlookLocal exceptions (platform-independent)."""
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
-
-# Execute the exceptions module directly without going through the package __init__.py
-_exceptions_path = (
-    Path(__file__).parent.parent.parent
-    / "src"
-    / "buvis"
-    / "pybase"
-    / "adapters"
-    / "outlook_local"
-    / "exceptions.py"
+from buvis.pybase.adapters.outlook_local.exceptions import (
+    OutlookAppointmentCreationFailedError,
 )
-_namespace: dict = {}
-exec(_exceptions_path.read_text(), _namespace)
-OutlookAppointmentCreationFailedError = _namespace[
-    "OutlookAppointmentCreationFailedError"
-]
 
 
 class TestOutlookExceptions:
