@@ -78,3 +78,17 @@ class TestPrepend:
 
     def test_empty_prefix(self) -> None:
         assert StringOperator.prepend("bar", "") == "bar"
+
+
+class TestCamelize:
+    def test_underscore_to_pascal(self) -> None:
+        assert StringOperator.camelize("first_name") == "FirstName"
+
+    def test_hyphen_to_pascal(self) -> None:
+        assert StringOperator.camelize("first-name") == "FirstName"
+
+    def test_single_word(self) -> None:
+        assert StringOperator.camelize("name") == "Name"
+
+    def test_preserves_pascal_case(self) -> None:
+        assert StringOperator.camelize("FirstName") == "FirstName"
