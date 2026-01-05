@@ -175,3 +175,27 @@ class TestRun:
         assert "my-tool" in call_args
         assert "arg1" in call_args
         assert "arg2" in call_args
+
+    def test_uses_venv_in_dev_mode(self, mock_ensure_uv, tmp_path):
+        """Should use venv python in dev mode when venv exists."""
+        script = tmp_path / "bin" / "my-tool"
+        script.parent.mkdir(parents=True)
+        script.write_text("#!/usr/bin/env python")
+
+        src_dir = tmp_path / "src" / "my_tool"
+        src_dir.mkdir(parents=True)
+        venv_bin = src_dir / ".venv" / "bin" / "my-tool"
+        venv_bin.parent.mkdir(parents=True)
+        venv_bin.write_text("#!/usr/bin/env python")
+
+        with patch.dict(os.environ, {"BUVIS_DEV_MODE": "1"}):
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = subprocess.CompletedProcess(
+                    args=[], returncode=0
+                )
+                with pytest.raises(SystemExit) as exc_info:
+                    UvToolManager.run(str(script), ["arg1"])
+
+        assert exc_info.value.code == 0
+        call_args = mock_run.call_args[0][0]
+        assert str(venv_bin) == call_args[0]
