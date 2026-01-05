@@ -85,6 +85,18 @@ class TestJiraAdapterInit:
 
         mock_jira.assert_not_called()
 
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_creates_client_with_server_and_token(
+        self, mock_jira: MagicMock, mock_config: MagicMock
+    ) -> None:
+        """Valid config creates JIRA client."""
+        JiraAdapter(mock_config)
+
+        mock_jira.assert_called_once_with(
+            server="https://jira.example.com",
+            token_auth="test-token",
+        )
+
 
 class TestJiraAdapterCreate:
     """Test JiraAdapter.create() method."""
