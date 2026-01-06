@@ -1,9 +1,22 @@
+import io
+import logging
+import sys
 from typing import Any
+from unittest.mock import Mock, patch
 
 import pytest
+from rich.columns import Columns
+from rich.console import Group, Text
+from rich.markdown import Markdown
 from rich.status import Status
 
-from buvis.pybase.adapters.console.console import ConsoleAdapter, console
+from buvis.pybase.adapters.console.capturing_rich_handler import CapturingRichHandler
+from buvis.pybase.adapters.console.console import (
+    ConsoleAdapter,
+    console,
+    _stylize_text,
+    logging_to_console,
+)
 
 
 @pytest.fixture
@@ -89,3 +102,119 @@ def test_nl(capsys: Any, console_adapter: ConsoleAdapter) -> None:
 
 def test_console_instance() -> None:
     assert isinstance(console, ConsoleAdapter)
+
+
+def test_windows_stdout_wrapping() -> None:
+    """Test Windows platform wraps stdout with UTF-8 TextIOWrapper."""
+    import importlib
+
+    console_module = importlib.import_module("buvis.pybase.adapters.console.console")
+
+    class DummyStdout:
+        def __init__(self) -> None:
+            self.buffer = io.BytesIO()
+
+    class DummyConsole:
+        def __init__(
+            self, file: io.TextIOWrapper | None = None, log_path: bool = True
+        ) -> None:
+            self.file = file
+            self.log_path = log_path
+
+    with (
+        patch.object(sys, "platform", "win32"),
+        patch.object(sys, "stdout", DummyStdout()),
+        patch.object(console_module, "Console", DummyConsole),
+    ):
+        adapter = ConsoleAdapter()
+
+        assert isinstance(adapter.console, DummyConsole)
+        assert isinstance(adapter.console.file, io.TextIOWrapper)
+        assert adapter.console.log_path is False
+
+
+def test_capture_returns_context_manager(console_adapter: ConsoleAdapter) -> None:
+    with console_adapter.capture() as capture:
+        console_adapter.print("captured output")
+
+    assert "captured output" in capture.get()
+
+
+def test_confirm_returns_mocked_answer(console_adapter: ConsoleAdapter) -> None:
+    """Test confirm method returns mocked answers."""
+    import importlib
+
+    console_module = importlib.import_module("buvis.pybase.adapters.console.console")
+    answers = iter([True, False])
+
+    with patch.object(
+        console_module.Confirm, "ask", side_effect=lambda _: next(answers)
+    ):
+        assert console_adapter.confirm("Proceed?")
+        assert not console_adapter.confirm("Proceed?")
+
+
+def test_print_side_by_side_renders_columns(
+    console_adapter: ConsoleAdapter, monkeypatch
+) -> None:
+    mock_print = Mock()
+    monkeypatch.setattr(console_adapter.console, "print", mock_print)
+
+    console_adapter.print_side_by_side(
+        title_left="Left",
+        text_left="left text",
+        title_right="Right",
+        text_right="right text",
+    )
+
+    mock_print.assert_called_once()
+    printed_columns = mock_print.call_args[0][0]
+    assert isinstance(printed_columns, Columns)
+    assert len(printed_columns.renderables) == 2
+
+
+def test_stylize_text_raw_returns_text() -> None:
+    result = _stylize_text("raw text", "raw")
+    assert isinstance(result, Text)
+    assert result.plain == "raw text"
+
+
+def test_stylize_text_markdown_with_frontmatter_returns_group() -> None:
+    markdown_input = "key: value\n---\n# Title\nBody text"
+
+    result = _stylize_text(markdown_input, "markdown_with_frontmatter")
+
+    assert isinstance(result, Group)
+    assert isinstance(result.renderables[0], Text)
+    assert isinstance(result.renderables[-1], Markdown)
+
+
+def test_logging_to_console_manages_handler_and_level(monkeypatch) -> None:
+    logger = logging.getLogger()
+    previous_level = logger.level
+    logger.setLevel(logging.WARNING)
+
+    initial_handler_ids = {id(handler) for handler in logger.handlers}
+    mock_console_print = Mock()
+    monkeypatch.setattr(console, "print", mock_console_print)
+
+    capturing_handler: CapturingRichHandler | None = None
+
+    with logging_to_console():
+        logging.getLogger().info("test log")
+        assert logger.level == logging.INFO
+        capturing_handler = next(
+            (
+                handler
+                for handler in logger.handlers
+                if isinstance(handler, CapturingRichHandler)
+                and id(handler) not in initial_handler_ids
+            ),
+            None,
+        )
+        assert capturing_handler is not None
+
+    assert logger.level == logging.WARNING
+    assert capturing_handler not in logger.handlers
+
+    logger.setLevel(previous_level)

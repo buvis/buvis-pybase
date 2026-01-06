@@ -573,3 +573,74 @@ class TestMissingEnvVarError:
     def test_is_exception_subclass(self) -> None:
         """MissingEnvVarError is Exception subclass."""
         assert issubclass(MissingEnvVarError, Exception)
+
+
+class TestIsWorldWritable:
+    """Tests for _is_world_writable error handling."""
+
+    def test_oserror_returns_false(self, tmp_path: Path) -> None:
+        """Lines 141-142: OSError in _is_world_writable returns False."""
+        from unittest.mock import MagicMock
+
+        mock_path = MagicMock(spec=Path)
+        mock_path.stat.side_effect = OSError("Permission denied")
+
+        result = ConfigurationLoader._is_world_writable(mock_path)
+        assert result is False
+
+
+class TestFindConfigFilesLogging:
+    """Tests for find_config_files logging behavior."""
+
+    def test_unsafe_path_logged_and_skipped(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Unsafe symlink path is logged as warning and skipped."""
+        from unittest.mock import patch
+        import logging
+
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
+        config_file = tmp_path / "buvis.yaml"
+        config_file.write_text("key: value")
+
+        with patch.object(
+            ConfigurationLoader,
+            "_is_safe_path",
+            return_value=False,
+        ):
+            with caplog.at_level(logging.WARNING):
+                result = ConfigurationLoader.find_config_files()
+
+            assert result == []
+            assert "unsafe" in caplog.text.lower()
+
+    def test_permission_denied_logged_debug(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Permission error is logged at debug level."""
+        import logging
+
+        monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
+        config = tmp_path / "buvis.yaml"
+        config.write_text("key: value")
+
+        original_is_file = Path.is_file
+
+        def mock_is_file(self):
+            if self == config:
+                raise PermissionError("Access denied")
+            return original_is_file(self)
+
+        monkeypatch.setattr(Path, "is_file", mock_is_file)
+
+        with caplog.at_level(logging.DEBUG):
+            result = ConfigurationLoader.find_config_files()
+
+        assert result == []
+        assert "Permission denied" in caplog.text
