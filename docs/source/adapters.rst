@@ -12,11 +12,11 @@ Overview
 
 - Wrap subprocess calls, COM automation, or REST APIs.
 - `ShellAdapter.exe()` returns (stderr, stdout) tuples for standard shell operations.
-- `UvToolManager.run()` and `PoetryAdapter.run_script()` exit the process directly after execution.
+- `UvToolManager.run()` exits the process directly after execution.
 - Handle platform-specific differences internally.
 - Log operations via the standard logging module.
 
-Adapters differ in how they return results: shell wrappers yield `(stderr, stdout)` for post-processing, while uv/poetry runners terminate the process as part of their flow.
+Adapters differ in how they return results: shell wrappers yield `(stderr, stdout)` for post-processing, while `UvToolManager` terminates the process as part of its flow.
 
 Return Convention
 ~~~~~~~~~~~~~~~~~
@@ -44,9 +44,6 @@ Choosing the Right Adapter
    * - New projects, fast installs
      - UvAdapter / UvToolManager
      - uv is faster than Poetry, better for CI/CD
-   * - Existing Poetry projects
-     - PoetryAdapter
-     - Maintains compatibility with poetry.lock
    * - Running arbitrary shell commands
      - ShellAdapter
      - Handles aliases, env vars, logging
@@ -59,22 +56,6 @@ Choosing the Right Adapter
    * - Styled terminal output
      - ConsoleAdapter
      - Rich formatting, spinners, confirmations
-
-UvAdapter vs PoetryAdapter
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. list-table::
-   :header-rows: 1
-   :widths: 50 50
-
-   * - UvAdapter
-     - PoetryAdapter
-   * - New projects
-     - Existing Poetry projects
-   * - Speed-critical CI/CD pipelines
-     - Need Poetry plugin system
-   * - Simpler dependency resolution
-     - Team standardized on Poetry
 
 ShellAdapter vs Specific Adapters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,15 +112,6 @@ UvToolManager
 Manage and run CLI tools installed via uv.
 
 .. autoclass:: buvis.pybase.adapters.UvToolManager
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-PoetryAdapter
-~~~~~~~~~~~~~
-Poetry project management for legacy projects.
-
-.. autoclass:: buvis.pybase.adapters.PoetryAdapter
    :members:
    :undoc-members:
    :show-inheritance:
@@ -295,21 +267,3 @@ UvToolManager Example
     UvToolManager.install_tool(project_root / "src" / "my_tool")
     UvToolManager.run(project_root / "bin" / "my-tool", ["--help"])  # exits on completion
 
-PoetryAdapter Example
-^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: python
-
-    from pathlib import Path
-
-    from buvis.pybase.adapters import PoetryAdapter
-
-    # Expected directory structure:
-    # scripts_root/
-    # ├── bin/
-    # │   └── my-tool
-    # └── src/
-    #     └── my_tool/
-    #         └── pyproject.toml
-    PoetryAdapter.update_all_scripts(Path("/project"))
-    PoetryAdapter.run_script("/project/bin/my-tool", ["--config", "dev"])  # exits on completion
