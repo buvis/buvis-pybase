@@ -49,6 +49,8 @@ def foo(path: Path | None = None) -> list[str]: ...
 - Tests in `tests/` mirror `src/` structure
 - Mock subprocess calls heavily
 - Class-based test organization
+- **No unused imports/variables**: don't add `noqa: F401` or `noqa: F841` - either use the import/variable or remove it
+- If a test creates an object just for side effects (e.g., testing `__init__`), add an assertion to use it: `assert issubclass(Foo, Base)`
 
 ```python
 @pytest.fixture
