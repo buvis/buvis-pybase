@@ -10,11 +10,13 @@ from buvis.pybase.adapters.outlook_local.exceptions import (
     OutlookAppointmentCreationFailedError,
 )
 
-if os.name == "nt":
+try:
     import win32com.client
-else:
-    msg = f"OS {os.name} not supported by OutlookLocalAdapter"
-    raise OSError(msg)
+
+    _win32com_available = True
+except ImportError:  # pragma: no cover - not importable on CI when not on Windows
+    win32com = None  # type: ignore[assignment]
+    _win32com_available = False
 
 from buvis.pybase.adapters import console
 
@@ -22,7 +24,7 @@ from buvis.pybase.adapters import console
 class OutlookLocalAdapter:
     """Local Outlook COM automation for calendar operations.
 
-    .. warning:: Windows-only. Importing on non-Windows raises OSError.
+    .. warning:: Windows-only. Instantiating on non-Windows raises OSError.
 
     Requires Microsoft Outlook installed with a default calendar.
 
@@ -40,6 +42,12 @@ class OutlookLocalAdapter:
         Raises:
             SystemExit: Outlook connection failed (console.panic).
         """
+        if os.name != "nt":
+            msg = f"OS {os.name} not supported by OutlookLocalAdapter"
+            raise OSError(msg)
+        if not _win32com_available:
+            raise OSError("win32com.client is not available on this platform")
+
         try:
             self.app = win32com.client.Dispatch("Outlook.Application")
             self.api = self.app.GetNamespace("MAPI")

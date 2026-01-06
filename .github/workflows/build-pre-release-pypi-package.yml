@@ -47,10 +47,23 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+  run-tests:
+    name: Run tests with coverage
+    runs-on: ubuntu-latest
+    needs: check-version
+    if: needs.check-version.outputs.version_changed == 'true'
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: astral-sh/setup-uv@v5
+      - name: Install dependencies
+        run: uv sync --group test
+      - name: Run pytest with coverage
+        run: uv run pytest --cov=buvis.pybase --cov-report=term-missing
+
   build-package:
     name: Build & verify package
     runs-on: ubuntu-latest
-    needs: check-version
+    needs: [check-version, run-tests]
     if: needs.check-version.outputs.version_changed == 'true'
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
