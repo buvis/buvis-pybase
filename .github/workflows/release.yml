@@ -11,6 +11,17 @@ on:
         options:
           - prerelease
           - release
+      bump_level:
+        description: "Bump level (auto for commit-based)"
+        type: choice
+        required: false
+        default: "auto"
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+          - prerelease
 
 permissions:
   contents: write
@@ -56,14 +67,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          bump_flag=""
+          case "${{ inputs.bump_level }}" in
+            "patch"|"minor"|"major"|"prerelease")
+              bump_flag="--${{ inputs.bump_level }}"
+              ;;
+            *) ;;  # auto: commit-based
+          esac
+
           if [ "${{ inputs.release_type }}" = "prerelease" ]; then
-            # Get next version that would be released
-            next=$(uv run semantic-release version --print --noop 2>/dev/null || echo "")
-            if [ -z "$next" ]; then
-              echo "::error::No releasable commits found (need feat: or fix: commits)"
+            # Prerelease: next base + .devN
+            next=$(uv run semantic-release version $bump_flag --print --noop 2>/dev/null || echo "")
+            if [ -z "$next" ] && [ "${{ inputs.bump_level }}" = "auto" ]; then
+              echo "::error::No releasable commits found (need feat: or fix: commits, or force bump_level)"
               exit 1
             fi
-            # Count commits since last tag for dev number
             last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
             if [ -n "$last_tag" ]; then
               count=$(git rev-list --count "${last_tag}..HEAD")
@@ -77,10 +95,14 @@ jobs:
             echo "Pre-release version: $version"
           else
             # Full release
-            uv run semantic-release version --no-push --no-vcs-release
+            old_version=$(sed -n 's/^version = "\([^"]*\)".*/\1/p' pyproject.toml)
+            echo "Old version: $old_version"
+            
+            uv run semantic-release version $bump_flag --no-push --no-vcs-release
+            
             version=$(sed -n 's/^version = "\([^"]*\)".*/\1/p' pyproject.toml)
-            if [ -z "$version" ]; then
-              echo "::error::Failed to determine version"
+            if [ "$version" = "$old_version" ] && [ "${{ inputs.bump_level }}" = "auto" ]; then
+              echo "::error::No version bump (add feat/fix commits or force bump_level)"
               exit 1
             fi
             echo "version=$version" >> $GITHUB_OUTPUT
@@ -96,7 +118,7 @@ jobs:
       - name: Build package
         run: |
           if [ "${{ inputs.release_type }}" = "prerelease" ]; then
-            # Temporarily set dev version for build only
+            # Set dev version temporarily for build
             sed -i 's/^version = "[^"]*"/version = "${{ steps.version.outputs.version }}"/' pyproject.toml
           fi
           uv build
