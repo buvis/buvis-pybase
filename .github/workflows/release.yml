@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: 'Release type'
+        description: "Release type"
         type: choice
         required: true
         options:
@@ -43,6 +43,10 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --group dev --group test
+
+      - name: Download NLTK data
+        run: |
+          python -m nltk.downloader stopwords
 
       - name: Run tests
         run: uv run pytest
