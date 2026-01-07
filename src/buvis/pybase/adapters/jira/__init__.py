@@ -1,3 +1,4 @@
 from .jira import JiraAdapter
+from .settings import JiraFieldMappings, JiraSettings
 
-__all__ = ["JiraAdapter"]
+__all__ = ["JiraAdapter", "JiraFieldMappings", "JiraSettings"]
