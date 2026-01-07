@@ -7,7 +7,9 @@ import pytest
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.jira import JiraAdapter
-from buvis.pybase.adapters.jira.settings import JiraSettings
+from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
+from buvis.pybase.adapters.jira.settings import JiraFieldMappings, JiraSettings
+from jira.exceptions import JIRAError
 
 
 @pytest.fixture
@@ -187,3 +189,117 @@ class TestJiraAdapterCreate:
         mock_fetched_issue.update.assert_any_call(
             **{field_mappings.region: {"value": "US"}}
         )
+
+
+class TestJiraAdapterGet:
+    """Test JiraAdapter.get() method."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_returns_dto_for_valid_key(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """get() returns a populated DTO when Jira returns an issue."""
+        mock_jira = mock_jira_cls.return_value
+        mock_issue = MagicMock()
+        mock_issue.key = "PROJ-1"
+        mock_issue.permalink.return_value = "https://jira.example.com/browse/PROJ-1"
+        mock_issue.fields.project.key = "PROJ"
+        mock_issue.fields.summary = "Loaded issue"
+        mock_issue.fields.description = "Loaded description"
+        mock_issue.fields.issuetype.name = "Task"
+        mock_issue.fields.labels = ["loaded"]
+        priority_field = MagicMock()
+        priority_field.name = "High"
+        mock_issue.fields.priority = priority_field
+        mock_issue.fields.customfield_11502 = "PARENT-123"
+        mock_issue.fields.customfield_10001 = "EPIC-456"
+        mock_issue.fields.assignee.key = "testuser"
+        mock_issue.fields.reporter.key = "reporter"
+        mock_issue.fields.customfield_10501.value = "DevTeam"
+        mock_issue.fields.customfield_12900.value = "US"
+        mock_jira.issue.return_value = mock_issue
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.get("PROJ-1")
+
+        assert isinstance(result, JiraIssueDTO)
+        assert result.id == "PROJ-1"
+        assert result.link == "https://jira.example.com/browse/PROJ-1"
+        assert result.ticket == "PARENT-123"
+        assert result.feature == "EPIC-456"
+        assert result.team == "DevTeam"
+        assert result.region == "US"
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_raises_not_found_for_404(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """A 404 from Jira is wrapped in JiraNotFoundError."""
+        mock_jira = mock_jira_cls.return_value
+        error = JIRAError("not found")
+        error.status_code = 404
+        mock_jira.issue.side_effect = error
+
+        adapter = JiraAdapter(jira_settings)
+        with pytest.raises(JiraNotFoundError):
+            adapter.get("PROJ-404")
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_propagates_other_jira_errors(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """Non-404 errors bubble up unchanged."""
+        mock_jira = mock_jira_cls.return_value
+        error = JIRAError("server error")
+        error.status_code = 500
+        mock_jira.issue.side_effect = error
+
+        adapter = JiraAdapter(jira_settings)
+        with pytest.raises(JIRAError):
+            adapter.get("PROJ-500")
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_uses_field_mappings_from_settings(self, mock_jira_cls: MagicMock) -> None:
+        """Custom field mappings are respected when reading Jira fields."""
+        mock_jira = mock_jira_cls.return_value
+        custom_field_mappings = JiraFieldMappings(
+            ticket="custom_ticket",
+            feature="custom_feature",
+            team="custom_team",
+            region="custom_region",
+        )
+        settings = JiraSettings(
+            server="https://jira.example.com",
+            token="test-token",
+            field_mappings=custom_field_mappings,
+        )
+        mock_issue = MagicMock()
+        mock_issue.key = "PROJ-2"
+        mock_issue.permalink.return_value = "https://jira.example.com/browse/PROJ-2"
+        mock_issue.fields.project.key = "PROJ"
+        mock_issue.fields.summary = "Custom mapping issue"
+        mock_issue.fields.description = "Custom description"
+        mock_issue.fields.issuetype.name = "Bug"
+        mock_issue.fields.labels = []
+        priority_field = MagicMock()
+        priority_field.name = "Medium"
+        mock_issue.fields.priority = priority_field
+        setattr(mock_issue.fields, "custom_ticket", "CUSTOM-123")
+        setattr(mock_issue.fields, "custom_feature", "FEATURE-123")
+        team_field = MagicMock()
+        team_field.value = "CustomTeam"
+        setattr(mock_issue.fields, "custom_team", team_field)
+        region_field = MagicMock()
+        region_field.value = "CustomRegion"
+        setattr(mock_issue.fields, "custom_region", region_field)
+        mock_issue.fields.assignee.key = "assignee"
+        mock_issue.fields.reporter.key = "reporter"
+        mock_jira.issue.return_value = mock_issue
+
+        adapter = JiraAdapter(settings)
+        result = adapter.get("PROJ-2")
+
+        assert result.ticket == "CUSTOM-123"
+        assert result.feature == "FEATURE-123"
+        assert result.team == "CustomTeam"
+        assert result.region == "CustomRegion"

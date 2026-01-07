@@ -7,8 +7,10 @@ import logging
 import os
 
 from jira import JIRA
+from jira.exceptions import JIRAError
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
+from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
 from buvis.pybase.adapters.jira.settings import JiraSettings
 
 
@@ -108,4 +110,37 @@ class JiraAdapter:
             region=getattr(region_field_value, "value", None),
             id=new_issue.key,
             link=new_issue.permalink(),
+        )
+
+    def get(self, issue_key: str) -> JiraIssueDTO:
+        """Retrieve issue by key.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+        """
+        try:
+            issue = self._jira.issue(issue_key)
+        except JIRAError as error:
+            if getattr(error, "status_code", None) == 404:
+                raise JiraNotFoundError(issue_key) from error
+            raise
+
+        fm = self._settings.field_mappings
+        team_val = getattr(issue.fields, fm.team, None)
+        region_val = getattr(issue.fields, fm.region, None)
+        return JiraIssueDTO(
+            project=issue.fields.project.key,
+            title=issue.fields.summary,
+            description=issue.fields.description or "",
+            issue_type=issue.fields.issuetype.name,
+            labels=issue.fields.labels or [],
+            priority=issue.fields.priority.name if issue.fields.priority else "Medium",
+            ticket=getattr(issue.fields, fm.ticket, "") or "",
+            feature=getattr(issue.fields, fm.feature, "") or "",
+            assignee=issue.fields.assignee.key if issue.fields.assignee else "",
+            reporter=issue.fields.reporter.key if issue.fields.reporter else "",
+            team=getattr(team_val, "value", None) if team_val else None,
+            region=getattr(region_val, "value", None) if region_val else None,
+            id=issue.key,
+            link=issue.permalink(),
         )
