@@ -9,7 +9,7 @@ uv sync --all-groups                        # install deps
 pre-commit install --hook-type pre-commit --hook-type post-commit  # setup hooks
 uv run pytest                               # run tests
 ./dev/bin/refresh-docs                      # rebuild docs (strict)
-./dev/bin/bmv bump patch                    # release (tests run automatically)
+# release: trigger via GitHub Actions → Release workflow
 ```
 
 ## Architecture
@@ -100,10 +100,15 @@ Rules: imperative present tense, no capital, no period, `!` before `:` for break
 
 ## Release
 
-Tags trigger PyPI publish via GitHub Actions:
+Releases via GitHub Actions (manual trigger):
+1. Go to Actions → Release workflow → Run workflow
+2. Choose `prerelease` (test.pypi only) or `release` (both pypis + GitHub release)
+
+Version determined from conventional commits (`feat:` → minor, `fix:` → patch).
+
+Local preview:
 ```bash
-./dev/bin/bmv bump patch      # 0.7.3 → 0.7.4
-./dev/bin/bmv bump pre_patch  # → 0.7.4.dev0 (Test PyPI only)
+uv run semantic-release version --print --noop  # see next version
 ```
 
-Pre-commit runs pytest before version bump. CI verifies tag is on master.
+See `dev/docs/versioning.md` for details.
