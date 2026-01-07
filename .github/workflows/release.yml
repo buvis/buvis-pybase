@@ -76,8 +76,8 @@ jobs:
           esac
 
           if [ "${{ inputs.release_type }}" = "prerelease" ]; then
-            # Prerelease: next base + .devN
-            next=$(uv run semantic-release version $bump_flag --print --noop 2>/dev/null || echo "")
+            # Prerelease: preview next base + .devN
+            next=$(uv run semantic-release --noop version $bump_flag --print 2>/dev/null || echo "")
             if [ -z "$next" ] && [ "${{ inputs.bump_level }}" = "auto" ]; then
               echo "::error::No releasable commits found (need feat: or fix: commits, or force bump_level)"
               exit 1
@@ -94,7 +94,7 @@ jobs:
             echo "released=true" >> $GITHUB_OUTPUT
             echo "Pre-release version: $version"
           else
-            # Full release
+            # Full release: stamp + optional push
             old_version=$(sed -n 's/^version = "\([^"]*\)".*/\1/p' pyproject.toml)
             echo "Old version: $old_version"
             
