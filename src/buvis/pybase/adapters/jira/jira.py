@@ -10,6 +10,7 @@ from jira import JIRA
 from jira.exceptions import JIRAError
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
+from buvis.pybase.adapters.jira.domain import JiraSearchResult
 from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
 from buvis.pybase.adapters.jira.settings import JiraSettings
 
@@ -112,19 +113,8 @@ class JiraAdapter:
             link=new_issue.permalink(),
         )
 
-    def get(self, issue_key: str) -> JiraIssueDTO:
-        """Retrieve issue by key.
-
-        Raises:
-            JiraNotFoundError: Issue does not exist.
-        """
-        try:
-            issue = self._jira.issue(issue_key)
-        except JIRAError as error:
-            if getattr(error, "status_code", None) == 404:
-                raise JiraNotFoundError(issue_key) from error
-            raise
-
+    def _issue_to_dto(self, issue) -> JiraIssueDTO:
+        """Convert JIRA issue object to DTO."""
         fm = self._settings.field_mappings
         team_val = getattr(issue.fields, fm.team, None)
         region_val = getattr(issue.fields, fm.region, None)
@@ -143,4 +133,41 @@ class JiraAdapter:
             region=getattr(region_val, "value", None) if region_val else None,
             id=issue.key,
             link=issue.permalink(),
+        )
+
+    def get(self, issue_key: str) -> JiraIssueDTO:
+        """Retrieve issue by key.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+        """
+        try:
+            issue = self._jira.issue(issue_key)
+        except JIRAError as error:
+            if getattr(error, "status_code", None) == 404:
+                raise JiraNotFoundError(issue_key) from error
+            raise
+
+        return self._issue_to_dto(issue)
+
+    def search(
+        self,
+        jql: str,
+        start_at: int = 0,
+        max_results: int = 50,
+        fields: str | None = None,
+    ) -> JiraSearchResult:
+        """Execute JQL query with pagination."""
+        results = self._jira.search_issues(
+            jql,
+            startAt=start_at,
+            maxResults=max_results,
+            fields=fields,
+        )
+        issues = [self._issue_to_dto(issue) for issue in results]
+        return JiraSearchResult(
+            issues=issues,
+            total=results.total,
+            start_at=start_at,
+            max_results=max_results,
         )

@@ -303,3 +303,108 @@ class TestJiraAdapterGet:
         assert result.feature == "FEATURE-123"
         assert result.team == "CustomTeam"
         assert result.region == "CustomRegion"
+
+
+class TestJiraAdapterSearch:
+    """Test JiraAdapter.search() pagination helper."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_returns_search_result_with_issues(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """Search returns DTOs for each matching issue."""
+        mock_jira = mock_jira_cls.return_value
+        mock_issue = MagicMock()
+        mock_issue.key = "PROJ-1"
+        mock_issue.permalink.return_value = "https://jira.example.com/browse/PROJ-1"
+        mock_issue.fields.project.key = "PROJ"
+        mock_issue.fields.summary = "Search result"
+        mock_issue.fields.description = "Search description"
+        mock_issue.fields.issuetype.name = "Task"
+        mock_issue.fields.labels = ["search"]
+        priority_field = MagicMock()
+        priority_field.name = "High"
+        mock_issue.fields.priority = priority_field
+        mock_issue.fields.assignee.key = "searcher"
+        mock_issue.fields.reporter.key = "reporter"
+        field_mappings = jira_settings.field_mappings
+        setattr(mock_issue.fields, field_mappings.ticket, "PARENT-123")
+        setattr(mock_issue.fields, field_mappings.feature, "EPIC-456")
+        team_field = MagicMock()
+        team_field.value = "SearchTeam"
+        setattr(mock_issue.fields, field_mappings.team, team_field)
+        region_field = MagicMock()
+        region_field.value = "EU"
+        setattr(mock_issue.fields, field_mappings.region, region_field)
+
+        results = MagicMock()
+        results.__iter__.return_value = iter([mock_issue])
+        results.total = 1
+        mock_jira.search_issues.return_value = results
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.search("project = PROJ")
+
+        assert result.total == 1
+        assert result.start_at == 0
+        assert result.max_results == 50
+        assert len(result.issues) == 1
+        issue_dto = result.issues[0]
+        assert issue_dto.id == "PROJ-1"
+        assert issue_dto.team == "SearchTeam"
+        assert issue_dto.region == "EU"
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_returns_empty_results(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """Empty search results still return a JiraSearchResult instance."""
+        mock_jira = mock_jira_cls.return_value
+        results = MagicMock()
+        results.__iter__.return_value = iter([])
+        results.total = 0
+        mock_jira.search_issues.return_value = results
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.search("project = PROJ")
+
+        assert result.total == 0
+        assert result.issues == []
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_passes_pagination_params(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """start_at/max_results propagate to the underlying adapter."""
+        mock_jira = mock_jira_cls.return_value
+        results = MagicMock()
+        results.__iter__.return_value = iter([])
+        results.total = 0
+        mock_jira.search_issues.return_value = results
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.search("project = PROJ", start_at=5, max_results=25)
+
+        mock_jira.search_issues.assert_called_once_with(
+            "project = PROJ", startAt=5, maxResults=25, fields=None
+        )
+        assert result.start_at == 5
+        assert result.max_results == 25
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_passes_fields_filter(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """fields argument is forwarded to JIRA."""
+        mock_jira = mock_jira_cls.return_value
+        results = MagicMock()
+        results.__iter__.return_value = iter([])
+        results.total = 0
+        mock_jira.search_issues.return_value = results
+
+        adapter = JiraAdapter(jira_settings)
+        adapter.search("project = PROJ", fields="summary,labels")
+
+        mock_jira.search_issues.assert_called_once_with(
+            "project = PROJ", startAt=0, maxResults=50, fields="summary,labels"
+        )
