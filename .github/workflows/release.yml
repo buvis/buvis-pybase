@@ -46,7 +46,7 @@ jobs:
 
       - name: Download NLTK data
         run: |
-          python -m nltk.downloader stopwords
+          uv run python -m nltk.downloader stopwords
 
       - name: Run tests
         run: uv run pytest
