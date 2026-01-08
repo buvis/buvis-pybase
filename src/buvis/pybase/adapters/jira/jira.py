@@ -1,6 +1,13 @@
-"""JIRA REST API adapter for issue creation.
+"""JIRA REST API adapter for issue operations.
 
-Provides JiraAdapter for creating JIRA issues with custom field support.
+Provides JiraAdapter for CRUD operations on JIRA issues including:
+- Issue creation, retrieval, update
+- JQL search with pagination
+- Workflow transitions
+- Comments (add/retrieve)
+- Issue linking
+
+Configuration via JiraSettings pydantic model with env vars.
 """
 
 import logging
@@ -23,7 +30,7 @@ from buvis.pybase.adapters.jira.settings import JiraSettings
 
 
 class JiraAdapter:
-    """JIRA REST API adapter for issue creation.
+    """JIRA REST API adapter for issue operations.
 
     Requirements:
         Provide a populated `JiraSettings` instance with `server` and `token`.
@@ -37,6 +44,9 @@ class JiraAdapter:
         >>> issue = JiraIssueDTO(...)
         >>> created = jira.create(issue)
         >>> print(created.link)
+        >>> jira.get(created.id)
+        >>> results = jira.search("project = PROJ ORDER BY created DESC", max_results=5)
+        >>> jira.transition(created.id, "Start Progress")
     """
 
     def __init__(self: "JiraAdapter", settings: JiraSettings) -> None:
