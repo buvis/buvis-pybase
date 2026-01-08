@@ -656,6 +656,46 @@ class TestJiraAdapterTransitions:
         )
 
 
+class TestJiraAdapterLinks:
+    """Test JiraAdapter link type helpers."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_get_link_types_returns_list(
+        self,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """get_link_types() always returns a list."""
+        mock_jira = mock_jira_cls.return_value
+        mock_jira.issue_link_types.return_value = []
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.get_link_types()
+
+        mock_jira.issue_link_types.assert_called_once()
+        assert isinstance(result, list)
+        assert result == []
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_get_link_types_returns_names(
+        self,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """get_link_types() maps objects to their names."""
+        mock_jira = mock_jira_cls.return_value
+        first = MagicMock()
+        first.name = "Blocks"
+        second = MagicMock()
+        second.name = "Duplicates"
+        mock_jira.issue_link_types.return_value = [first, second]
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.get_link_types()
+
+        assert result == ["Blocks", "Duplicates"]
+
+
 class TestJiraAdapterComments:
     """Test JiraAdapter.add_comment() helpers."""
 

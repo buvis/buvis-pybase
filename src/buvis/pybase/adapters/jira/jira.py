@@ -178,6 +178,15 @@ class JiraAdapter:
             max_results=max_results,
         )
 
+    def get_link_types(self) -> list[str]:
+        """Get available issue link types.
+
+        Returns:
+            List of link type names (e.g., "Blocks", "Duplicates").
+        """
+        link_types = self._jira.issue_link_types()
+        return [lt.name for lt in link_types]
+
     def update(self, issue_key: str, fields: dict[str, Any]) -> JiraIssueDTO:
         """Update issue fields.
 
