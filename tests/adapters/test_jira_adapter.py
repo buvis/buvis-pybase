@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 
@@ -9,6 +9,7 @@ from buvis.pybase.adapters.jira.domain import JiraCommentDTO
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.exceptions import (
+    JiraLinkError,
     JiraNotFoundError,
     JiraTransitionError,
 )
@@ -694,6 +695,87 @@ class TestJiraAdapterLinks:
         result = adapter.get_link_types()
 
         assert result == ["Blocks", "Duplicates"]
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_link_issues_calls_api(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """link_issues() validates issues and creates link."""
+        mock_jira = mock_jira_cls.return_value
+        mock_get.return_value = MagicMock()
+
+        adapter = JiraAdapter(jira_settings)
+        adapter.link_issues("PROJ-1", "PROJ-2", "Blocks")
+
+        mock_get.assert_has_calls([call("PROJ-1"), call("PROJ-2")])
+        mock_jira.create_issue_link.assert_called_once_with(
+            type="Blocks",
+            inwardIssue="PROJ-2",
+            outwardIssue="PROJ-1",
+        )
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_link_issues_raises_not_found_for_from_key(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """Missing from_key raises JiraNotFoundError and aborts linking."""
+        mock_jira = mock_jira_cls.return_value
+        mock_get.side_effect = JiraNotFoundError("PROJ-1")
+
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraNotFoundError):
+            adapter.link_issues("PROJ-1", "PROJ-2", "Depends On")
+
+        mock_jira.create_issue_link.assert_not_called()
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_link_issues_raises_not_found_for_to_key(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """Missing to_key raises JiraNotFoundError and aborts linking."""
+        mock_jira = mock_jira_cls.return_value
+        mock_get.side_effect = [
+            MagicMock(),
+            JiraNotFoundError("PROJ-2"),
+        ]
+
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraNotFoundError):
+            adapter.link_issues("PROJ-1", "PROJ-2", "Depends On")
+
+        mock_jira.create_issue_link.assert_not_called()
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_link_issues_raises_link_error_on_failure(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """JIRAError during link raises JiraLinkError."""
+        mock_jira = mock_jira_cls.return_value
+        mock_get.return_value = MagicMock()
+        mock_jira.create_issue_link.side_effect = JIRAError("boom")
+
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraLinkError):
+            adapter.link_issues("PROJ-1", "PROJ-2", "Blocks")
 
 
 class TestJiraAdapterComments:

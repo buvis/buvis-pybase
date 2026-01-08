@@ -15,6 +15,7 @@ from buvis.pybase.adapters.jira.domain import JiraCommentDTO
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain import JiraSearchResult
 from buvis.pybase.adapters.jira.exceptions import (
+    JiraLinkError,
     JiraNotFoundError,
     JiraTransitionError,
 )
@@ -186,6 +187,30 @@ class JiraAdapter:
         """
         link_types = self._jira.issue_link_types()
         return [lt.name for lt in link_types]
+
+    def link_issues(
+        self,
+        from_key: str,
+        to_key: str,
+        link_type: str,
+    ) -> None:
+        """Create link between issues.
+
+        Raises:
+            JiraNotFoundError: Either issue does not exist.
+            JiraLinkError: Link creation failed.
+        """
+        self.get(from_key)  # validate exists
+        self.get(to_key)  # validate exists
+
+        try:
+            self._jira.create_issue_link(
+                type=link_type,
+                inwardIssue=to_key,
+                outwardIssue=from_key,
+            )
+        except JIRAError as e:
+            raise JiraLinkError(from_key, to_key, link_type) from e
 
     def update(self, issue_key: str, fields: dict[str, Any]) -> JiraIssueDTO:
         """Update issue fields.
