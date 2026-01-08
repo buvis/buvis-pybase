@@ -12,7 +12,10 @@ from jira.exceptions import JIRAError
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain import JiraSearchResult
-from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
+from buvis.pybase.adapters.jira.exceptions import (
+    JiraNotFoundError,
+    JiraTransitionError,
+)
 from buvis.pybase.adapters.jira.settings import JiraSettings
 
 
@@ -193,3 +196,41 @@ class JiraAdapter:
         issue.update(fields=fields)
 
         return self.get(issue_key)
+
+    def get_transitions(self, issue_key: str) -> list[dict[str, str]]:
+        """List available transitions for issue.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+        """
+        self.get(issue_key)  # validate exists
+        transitions = self._jira.transitions(issue_key)
+        return [{"id": t["id"], "name": t["name"]} for t in transitions]
+
+    def transition(
+        self,
+        issue_key: str,
+        transition: str,
+        fields: dict[str, Any] | None = None,
+        comment: str | None = None,
+    ) -> None:
+        """Execute workflow transition.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+            JiraTransitionError: Transition unavailable.
+        """
+        available = self.get_transitions(issue_key)
+        match = next(
+            (t for t in available if t["id"] == transition or t["name"] == transition),
+            None,
+        )
+        if not match:
+            raise JiraTransitionError(issue_key, transition)
+
+        self._jira.transition_issue(
+            issue_key,
+            match["id"],
+            fields=fields,
+            comment=comment,
+        )
