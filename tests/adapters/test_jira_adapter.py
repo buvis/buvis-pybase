@@ -766,3 +766,109 @@ class TestJiraAdapterComments:
         result = adapter.add_comment("PROJ-3", "Timestamp test")
 
         assert result.created.isoformat() == "2023-01-02T03:04:05.678000+00:00"
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_get_comments_returns_dto_list(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """get_comments() returns JiraCommentDTO list."""
+        mock_get.return_value = MagicMock()
+        mock_jira = mock_jira_cls.return_value
+        mock_comment = MagicMock()
+        mock_comment.id = "C-4"
+        mock_comment.body = "First comment"
+        author_mock = MagicMock()
+        author_mock.key = "reporter"
+        mock_comment.author = author_mock
+        mock_comment.created = "2023-02-02T03:04:05.678Z"
+        mock_comment.visibility = None
+        mock_jira.comments.return_value = [mock_comment]
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.get_comments("PROJ-4")
+
+        mock_jira.comments.assert_called_once_with("PROJ-4")
+        assert isinstance(result, list)
+        assert result and result[0].id == "C-4"
+        assert result[0].author == "reporter"
+        assert result[0].body == "First comment"
+        assert result[0].is_internal is False
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_get_comments_returns_empty_for_no_comments(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """get_comments() returns empty list when no comments exist."""
+        mock_get.return_value = MagicMock()
+        mock_jira = mock_jira_cls.return_value
+        mock_jira.comments.return_value = []
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.get_comments("PROJ-5")
+
+        assert result == []
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(
+        JiraAdapter,
+        "get",
+        side_effect=JiraNotFoundError("PROJ-404"),
+    )
+    def test_get_comments_raises_not_found(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """get_comments() surfaces JiraNotFoundError when issue missing."""
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraNotFoundError):
+            adapter.get_comments("PROJ-404")
+
+        mock_jira_cls.return_value.comments.assert_not_called()
+        mock_get.assert_called_once_with("PROJ-404")
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_get_comments_preserves_order(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """Comments are returned in the order JIRA provides."""
+        mock_get.return_value = MagicMock()
+        mock_jira = mock_jira_cls.return_value
+        first_comment = MagicMock()
+        first_comment.id = "C-1"
+        first_comment.body = "First"
+        author_first = MagicMock()
+        author_first.key = "first-user"
+        first_comment.author = author_first
+        first_comment.created = "2023-02-02T03:00:00.000Z"
+        first_comment.visibility = None
+        second_comment = MagicMock()
+        second_comment.id = "C-2"
+        second_comment.body = "Second"
+        author_second = MagicMock()
+        author_second.key = "second-user"
+        second_comment.author = author_second
+        second_comment.created = "2023-02-02T03:01:00.000Z"
+        second_comment.visibility = MagicMock()
+        mock_jira.comments.return_value = [first_comment, second_comment]
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.get_comments("PROJ-6")
+
+        assert [c.id for c in result] == ["C-1", "C-2"]
+        assert result[0].is_internal is False
+        assert result[1].is_internal is True

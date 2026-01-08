@@ -226,6 +226,30 @@ class JiraAdapter:
             is_internal=is_internal,
         )
 
+    def get_comments(self, issue_key: str) -> list[JiraCommentDTO]:
+        """Get all comments on issue.
+
+        Returns:
+            List of JiraCommentDTO, chronologically ordered.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+        """
+        self.get(issue_key)  # validate exists
+
+        comments = self._jira.comments(issue_key)
+
+        return [
+            JiraCommentDTO(
+                id=c.id,
+                author=c.author.key,
+                body=c.body,
+                created=datetime.fromisoformat(c.created.replace("Z", "+00:00")),
+                is_internal=bool(getattr(c, "visibility", None)),
+            )
+            for c in comments
+        ]
+
     def get_transitions(self, issue_key: str) -> list[dict[str, str]]:
         """List available transitions for issue.
 
