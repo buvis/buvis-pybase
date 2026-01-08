@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from buvis.pybase.adapters.jira.domain import JiraCommentDTO
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.exceptions import (
@@ -653,3 +654,115 @@ class TestJiraAdapterTransitions:
             fields=fields,
             comment=comment,
         )
+
+
+class TestJiraAdapterComments:
+    """Test JiraAdapter.add_comment() helpers."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_add_comment_creates_and_returns_dto(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """add_comment() returns populated JiraCommentDTO."""
+        mock_get.return_value = MagicMock()
+        mock_jira = mock_jira_cls.return_value
+        mock_comment = MagicMock()
+        mock_comment.id = "C-1"
+        mock_comment.body = "Test comment"
+        author_mock = MagicMock()
+        author_mock.key = "reporter"
+        mock_comment.author = author_mock
+        mock_comment.created = "2023-01-02T03:04:05.678Z"
+        mock_jira.add_comment.return_value = mock_comment
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.add_comment("PROJ-1", "Test comment")
+
+        mock_jira.add_comment.assert_called_once_with(
+            "PROJ-1", "Test comment", visibility=None
+        )
+        assert isinstance(result, JiraCommentDTO)
+        assert result.id == "C-1"
+        assert result.author == "reporter"
+        assert result.body == "Test comment"
+        assert result.is_internal is False
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_add_comment_with_internal_sets_visibility(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """Internal comments request admin visibility."""
+        mock_get.return_value = MagicMock()
+        mock_jira = mock_jira_cls.return_value
+        mock_comment = MagicMock()
+        mock_comment.id = "C-2"
+        mock_comment.body = "Internal note"
+        author_mock = MagicMock()
+        author_mock.key = "internal-user"
+        mock_comment.author = author_mock
+        mock_comment.created = "2023-01-02T00:00:00.000Z"
+        mock_jira.add_comment.return_value = mock_comment
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.add_comment("PROJ-2", "Internal note", is_internal=True)
+
+        mock_jira.add_comment.assert_called_once_with(
+            "PROJ-2",
+            "Internal note",
+            visibility={"type": "role", "value": "Administrators"},
+        )
+        assert result.is_internal is True
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(
+        JiraAdapter,
+        "get",
+        side_effect=JiraNotFoundError("PROJ-404"),
+    )
+    def test_add_comment_raises_not_found(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """add_comment() surfaces JiraNotFoundError when issue missing."""
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraNotFoundError):
+            adapter.add_comment("PROJ-404", "Missing")
+
+        mock_jira_cls.return_value.add_comment.assert_not_called()
+        mock_get.assert_called_once_with("PROJ-404")
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    @patch.object(JiraAdapter, "get")
+    def test_datetime_parsing_handles_jira_format(
+        self,
+        mock_get: MagicMock,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+    ) -> None:
+        """Timestamps containing Z parse successfully."""
+        mock_get.return_value = MagicMock()
+        mock_jira = mock_jira_cls.return_value
+        mock_comment = MagicMock()
+        mock_comment.id = "C-3"
+        mock_comment.body = "Timestamp test"
+        author_mock = MagicMock()
+        author_mock.key = "tester"
+        mock_comment.author = author_mock
+        mock_comment.created = "2023-01-02T03:04:05.678Z"
+        mock_jira.add_comment.return_value = mock_comment
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.add_comment("PROJ-3", "Timestamp test")
+
+        assert result.created.isoformat() == "2023-01-02T03:04:05.678000+00:00"

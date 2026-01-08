@@ -5,11 +5,13 @@ Provides JiraAdapter for creating JIRA issues with custom field support.
 
 import logging
 import os
+from datetime import datetime
 from typing import Any
 
 from jira import JIRA
 from jira.exceptions import JIRAError
 
+from buvis.pybase.adapters.jira.domain import JiraCommentDTO
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain import JiraSearchResult
 from buvis.pybase.adapters.jira.exceptions import (
@@ -196,6 +198,33 @@ class JiraAdapter:
         issue.update(fields=fields)
 
         return self.get(issue_key)
+
+    def add_comment(
+        self,
+        issue_key: str,
+        body: str,
+        is_internal: bool = False,
+    ) -> JiraCommentDTO:
+        """Add comment to issue.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+        """
+        self.get(issue_key)  # validate exists
+
+        visibility = None
+        if is_internal:
+            visibility = {"type": "role", "value": "Administrators"}
+
+        comment = self._jira.add_comment(issue_key, body, visibility=visibility)
+
+        return JiraCommentDTO(
+            id=comment.id,
+            author=comment.author.key,
+            body=comment.body,
+            created=datetime.fromisoformat(comment.created.replace("Z", "+00:00")),
+            is_internal=is_internal,
+        )
 
     def get_transitions(self, issue_key: str) -> list[dict[str, str]]:
         """List available transitions for issue.
