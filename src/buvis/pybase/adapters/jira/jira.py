@@ -5,6 +5,7 @@ Provides JiraAdapter for creating JIRA issues with custom field support.
 
 import logging
 import os
+from typing import Any
 
 from jira import JIRA
 from jira.exceptions import JIRAError
@@ -171,3 +172,24 @@ class JiraAdapter:
             start_at=start_at,
             max_results=max_results,
         )
+
+    def update(self, issue_key: str, fields: dict[str, Any]) -> JiraIssueDTO:
+        """Update issue fields.
+
+        Args:
+            issue_key: Issue to update.
+            fields: Dict of field names to new values.
+
+        Returns:
+            Updated JiraIssueDTO.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+        """
+        # Verify issue exists (raises JiraNotFoundError if not)
+        self.get(issue_key)
+
+        issue = self._jira.issue(issue_key)
+        issue.update(fields=fields)
+
+        return self.get(issue_key)
