@@ -18,9 +18,11 @@ from typing import Any
 from jira import JIRA
 from jira.exceptions import JIRAError
 
-from buvis.pybase.adapters.jira.domain import JiraCommentDTO
-from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
-from buvis.pybase.adapters.jira.domain import JiraSearchResult
+from buvis.pybase.adapters.jira.domain import (
+    JiraCommentDTO,
+    JiraIssueDTO,
+    JiraSearchResult,
+)
 from buvis.pybase.adapters.jira.exceptions import (
     JiraLinkError,
     JiraNotFoundError,
@@ -155,6 +157,12 @@ class JiraAdapter:
     def get(self, issue_key: str) -> JiraIssueDTO:
         """Retrieve issue by key.
 
+        Args:
+            issue_key: JIRA issue key (e.g., "PROJ-123").
+
+        Returns:
+            JiraIssueDTO with issue data.
+
         Raises:
             JiraNotFoundError: Issue does not exist.
         """
@@ -174,7 +182,17 @@ class JiraAdapter:
         max_results: int = 50,
         fields: str | None = None,
     ) -> JiraSearchResult:
-        """Execute JQL query with pagination."""
+        """Execute JQL query with pagination.
+
+        Args:
+            jql: JQL query string.
+            start_at: Index of first result (for pagination).
+            max_results: Maximum results to return.
+            fields: Comma-separated field names to include, or None for all.
+
+        Returns:
+            JiraSearchResult with matching issues and pagination info.
+        """
         results = self._jira.search_issues(
             jql,
             startAt=start_at,
@@ -194,6 +212,9 @@ class JiraAdapter:
 
         Returns:
             List of link type names (e.g., "Blocks", "Duplicates").
+
+        Raises:
+            JIRAError: JIRA API call failed.
         """
         link_types = self._jira.issue_link_types()
         return [lt.name for lt in link_types]
@@ -205,6 +226,11 @@ class JiraAdapter:
         link_type: str,
     ) -> None:
         """Create link between issues.
+
+        Args:
+            from_key: Source issue key (outward side of link).
+            to_key: Target issue key (inward side of link).
+            link_type: Link type name (e.g., "Blocks", "Duplicates").
 
         Raises:
             JiraNotFoundError: Either issue does not exist.
@@ -220,7 +246,8 @@ class JiraAdapter:
                 outwardIssue=from_key,
             )
         except JIRAError as e:
-            raise JiraLinkError(from_key, to_key, link_type) from e
+            reason = str(e) if str(e) else None
+            raise JiraLinkError(from_key, to_key, link_type, reason=reason) from e
 
     def update(self, issue_key: str, fields: dict[str, Any]) -> JiraIssueDTO:
         """Update issue fields.
@@ -251,6 +278,14 @@ class JiraAdapter:
     ) -> JiraCommentDTO:
         """Add comment to issue.
 
+        Args:
+            issue_key: JIRA issue key.
+            body: Comment text content.
+            is_internal: If True, restrict visibility to Administrators.
+
+        Returns:
+            JiraCommentDTO for the created comment.
+
         Raises:
             JiraNotFoundError: Issue does not exist.
         """
@@ -264,14 +299,17 @@ class JiraAdapter:
 
         return JiraCommentDTO(
             id=comment.id,
-            author=comment.author.key,
-            body=comment.body,
+            author=comment.author.key if comment.author else "",
+            body=comment.body or "",
             created=datetime.fromisoformat(comment.created.replace("Z", "+00:00")),
             is_internal=is_internal,
         )
 
     def get_comments(self, issue_key: str) -> list[JiraCommentDTO]:
         """Get all comments on issue.
+
+        Args:
+            issue_key: JIRA issue key.
 
         Returns:
             List of JiraCommentDTO, chronologically ordered.
@@ -286,8 +324,8 @@ class JiraAdapter:
         return [
             JiraCommentDTO(
                 id=c.id,
-                author=c.author.key,
-                body=c.body,
+                author=c.author.key if c.author else "",
+                body=c.body or "",
                 created=datetime.fromisoformat(c.created.replace("Z", "+00:00")),
                 is_internal=bool(getattr(c, "visibility", None)),
             )
@@ -296,6 +334,12 @@ class JiraAdapter:
 
     def get_transitions(self, issue_key: str) -> list[dict[str, str]]:
         """List available transitions for issue.
+
+        Args:
+            issue_key: JIRA issue key.
+
+        Returns:
+            List of dicts with "id" and "name" keys.
 
         Raises:
             JiraNotFoundError: Issue does not exist.
@@ -312,6 +356,12 @@ class JiraAdapter:
         comment: str | None = None,
     ) -> None:
         """Execute workflow transition.
+
+        Args:
+            issue_key: JIRA issue key.
+            transition: Transition ID or name.
+            fields: Optional field updates during transition.
+            comment: Optional comment to add during transition.
 
         Raises:
             JiraNotFoundError: Issue does not exist.

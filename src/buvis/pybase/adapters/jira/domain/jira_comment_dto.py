@@ -1,4 +1,4 @@
-"""Data transfer objects used when interacting with JIRA."""
+"""Data transfer object for JIRA issue comments."""
 
 from __future__ import annotations
 
@@ -8,9 +8,17 @@ from datetime import datetime
 __all__ = ["JiraCommentDTO"]
 
 
-@dataclass
+@dataclass(frozen=True)
 class JiraCommentDTO:
-    """DTO for JIRA issue comments."""
+    """DTO for JIRA issue comments.
+
+    Attributes:
+        id: JIRA-assigned comment identifier.
+        author: JIRA user key of comment author, empty if user deleted.
+        body: Comment text content.
+        created: Timezone-aware datetime when comment was created.
+        is_internal: True if comment has restricted visibility.
+    """
 
     id: str
     author: str

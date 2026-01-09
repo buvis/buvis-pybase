@@ -69,6 +69,19 @@ class TestJiraLinkError:
         assert exc.from_key == from_key
         assert exc.to_key == to_key
         assert exc.link_type == link_type
+        assert exc.reason is None
+
+    def test_message_includes_reason_when_provided(self) -> None:
+        """Message appends reason when given."""
+        from_key = "ABC-123"
+        to_key = "DEF-456"
+        link_type = "Blocks"
+        reason = "Permission denied"
+        exc = JiraLinkError(from_key, to_key, link_type, reason=reason)
+        assert (
+            str(exc) == f"Failed to link {from_key} -> {to_key} ({link_type}): {reason}"
+        )
+        assert exc.reason == reason
 
     def test_is_subclass_of_jira_error(self) -> None:
         """JiraLinkError derives from JiraError."""

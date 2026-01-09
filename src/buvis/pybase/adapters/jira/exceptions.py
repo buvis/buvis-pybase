@@ -35,8 +35,18 @@ class JiraTransitionError(JiraError):
 class JiraLinkError(JiraError):
     """Raised when linking two Jira issues fails."""
 
-    def __init__(self, from_key: str, to_key: str, link_type: str) -> None:
+    def __init__(
+        self,
+        from_key: str,
+        to_key: str,
+        link_type: str,
+        reason: str | None = None,
+    ) -> None:
         self.from_key = from_key
         self.to_key = to_key
         self.link_type = link_type
-        super().__init__(f"Failed to link {from_key} -> {to_key} ({link_type})")
+        self.reason = reason
+        msg = f"Failed to link {from_key} -> {to_key} ({link_type})"
+        if reason:
+            msg = f"{msg}: {reason}"
+        super().__init__(msg)
