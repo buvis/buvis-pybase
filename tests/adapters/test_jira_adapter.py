@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -63,17 +62,44 @@ class TestJiraAdapterInit:
     def test_sets_proxy_when_configured(
         self, mock_jira: MagicMock, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Proxy config sets https_proxy env var and clears existing ones."""
-        monkeypatch.setenv("https_proxy", "old")
-        monkeypatch.setenv("http_proxy", "old")
+        """Proxy config passes proxies dict to JIRA constructor."""
         monkeypatch.setenv("BUVIS_JIRA_SERVER", "https://jira.example.com")
         monkeypatch.setenv("BUVIS_JIRA_TOKEN", "test-token")
         monkeypatch.setenv("BUVIS_JIRA_PROXY", "http://proxy.example.com:8080")
 
         JiraAdapter(JiraSettings())
 
-        assert os.environ.get("https_proxy") == "http://proxy.example.com:8080"
-        assert "http_proxy" not in os.environ
+        _, kwargs = mock_jira.call_args
+        assert kwargs["proxies"] == {"https": "http://proxy.example.com:8080"}
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_multiple_adapters_with_different_proxies(
+        self, mock_jira: MagicMock
+    ) -> None:
+        """Multiple adapters with different proxies don't conflict."""
+        proxy1 = "http://proxy-one.example.com:8080"
+        proxy2 = "http://proxy-two.example.com:8080"
+
+        JiraAdapter(
+            JiraSettings(
+                server="https://jira.example.com",
+                token="token-one",
+                proxy=proxy1,
+            )
+        )
+        JiraAdapter(
+            JiraSettings(
+                server="https://jira.example.com",
+                token="token-two",
+                proxy=proxy2,
+            )
+        )
+
+        assert mock_jira.call_count == 2
+        _, first_kwargs = mock_jira.call_args_list[0]
+        _, second_kwargs = mock_jira.call_args_list[1]
+        assert first_kwargs["proxies"] == {"https": proxy1}
+        assert second_kwargs["proxies"] == {"https": proxy2}
 
 
 class TestJiraAdapterCreate:

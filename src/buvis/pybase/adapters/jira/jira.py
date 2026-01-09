@@ -11,7 +11,6 @@ Configuration via JiraSettings pydantic model with env vars.
 """
 
 import logging
-import os
 from datetime import datetime
 from typing import Any
 
@@ -59,15 +58,18 @@ class JiraAdapter:
         """
         self.logger = logging.getLogger(__name__)
         self._settings = settings
+        proxies = None
         if self._settings.proxy:
-            os.environ.pop("https_proxy", None)
-            os.environ.pop("http_proxy", None)
-            os.environ["https_proxy"] = str(self._settings.proxy)
+            proxies = {"https": str(self._settings.proxy)}
 
-        self._jira = JIRA(
-            server=str(self._settings.server),
-            token_auth=str(self._settings.token),
-        )
+        jira_kwargs: dict[str, Any] = {
+            "server": str(self._settings.server),
+            "token_auth": str(self._settings.token),
+        }
+        if proxies:
+            jira_kwargs["proxies"] = proxies
+
+        self._jira = JIRA(**jira_kwargs)
 
     def create(self, issue: JiraIssueDTO) -> JiraIssueDTO:
         """Create a JIRA issue via the REST API.
