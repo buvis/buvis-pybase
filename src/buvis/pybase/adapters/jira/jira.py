@@ -64,7 +64,7 @@ class JiraAdapter:
 
         jira_kwargs: dict[str, Any] = {
             "server": str(self._settings.server),
-            "token_auth": str(self._settings.token),
+            "token_auth": self._settings.token.get_secret_value(),
         }
         if proxies:
             jira_kwargs["proxies"] = proxies

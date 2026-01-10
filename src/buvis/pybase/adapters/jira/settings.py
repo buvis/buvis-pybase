@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 __all__ = ["JiraFieldMappings", "JiraSettings"]
@@ -31,6 +31,6 @@ class JiraSettings(BaseSettings):
     )
 
     server: str
-    token: str
+    token: SecretStr
     proxy: str | None = None
     field_mappings: JiraFieldMappings = JiraFieldMappings()

@@ -25,8 +25,14 @@ class TestJiraSettings:
         settings = JiraSettings()
 
         assert settings.server == "https://jira.example.com"
-        assert settings.token == "test-token"
+        assert settings.token.get_secret_value() == "test-token"
         assert settings.proxy == "http://proxy.local:8080"
+
+    def test_token_masked_in_repr(self, base_env: pytest.MonkeyPatch) -> None:
+        """Token is masked in repr to prevent leakage."""
+        settings = JiraSettings()
+
+        assert "test-token" not in repr(settings)
 
     @pytest.mark.parametrize("missing_var", ["BUVIS_JIRA_SERVER", "BUVIS_JIRA_TOKEN"])
     def test_missing_required_fields_raises_validation_error(
