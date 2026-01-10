@@ -332,7 +332,7 @@ class JiraAdapter:
                 author=c.author.key if c.author else "",
                 body=c.body or "",
                 created=datetime.fromisoformat(c.created.replace("Z", "+00:00")),
-                is_internal=bool(getattr(c, "visibility", None)),
+                is_internal=getattr(c, "visibility", None) is not None,
             )
             for c in comments
         ]

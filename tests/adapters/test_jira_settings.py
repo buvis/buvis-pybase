@@ -68,3 +68,13 @@ class TestJiraSettings:
         settings = JiraSettings()
 
         assert settings.proxy is None
+
+
+class TestJiraFieldMappings:
+    """Test JiraFieldMappings model."""
+
+    def test_frozen_prevents_mutation(self) -> None:
+        """Attempting to modify a frozen field raises ValidationError."""
+        mappings = JiraFieldMappings()
+        with pytest.raises(ValidationError):
+            mappings.ticket = "new_value"
