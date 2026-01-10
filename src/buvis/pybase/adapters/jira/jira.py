@@ -124,9 +124,9 @@ class JiraAdapter:
         return JiraIssueDTO(
             project=new_issue.fields.project.key,
             title=new_issue.fields.summary,
-            description=new_issue.fields.description,
+            description=new_issue.fields.description or "",
             issue_type=new_issue.fields.issuetype.name,
-            labels=new_issue.fields.labels,
+            labels=new_issue.fields.labels or [],
             priority=new_issue.fields.priority.name,
             ticket=ticket_value,
             feature=feature_value,
@@ -252,7 +252,7 @@ class JiraAdapter:
                 outwardIssue=from_key,
             )
         except JIRAError as e:
-            reason = str(e) if str(e) else None
+            reason = str(e) or None
             raise JiraLinkError(from_key, to_key, link_type, reason=reason) from e
 
     def update(self, issue_key: str, fields: dict[str, Any]) -> JiraIssueDTO:
