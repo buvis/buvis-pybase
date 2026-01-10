@@ -90,27 +90,30 @@ class JiraAdapter:
         """
         field_mappings = self._settings.field_mappings
 
-        new_issue = self._jira.create_issue(
-            fields={
-                "assignee": {"key": issue.assignee, "name": issue.assignee},
-                field_mappings.feature: issue.feature,
-                field_mappings.team: {"value": issue.team},
-                field_mappings.region: {"value": issue.region},
-                field_mappings.ticket: issue.ticket,
-                "description": issue.description,
-                "issuetype": {"name": issue.issue_type},
-                "labels": issue.labels,
-                "priority": {"name": issue.priority},
-                "project": {"key": issue.project},
-                "reporter": {"key": issue.reporter, "name": issue.reporter},
-                "summary": issue.title,
-            },
-        )
+        fields: dict[str, Any] = {
+            "assignee": {"key": issue.assignee, "name": issue.assignee},
+            field_mappings.feature: issue.feature,
+            field_mappings.ticket: issue.ticket,
+            "description": issue.description,
+            "issuetype": {"name": issue.issue_type},
+            "labels": issue.labels,
+            "priority": {"name": issue.priority},
+            "project": {"key": issue.project},
+            "reporter": {"key": issue.reporter, "name": issue.reporter},
+            "summary": issue.title,
+        }
+        if issue.team is not None:
+            fields[field_mappings.team] = {"value": issue.team}
+        if issue.region is not None:
+            fields[field_mappings.region] = {"value": issue.region}
+
+        new_issue = self._jira.create_issue(fields=fields)
         # some custom fields aren't populated on issue creation
         # so I have to update them after issue creation
         new_issue = self._jira.issue(new_issue.key)
         new_issue.update(**{field_mappings.feature: issue.feature})
-        new_issue.update(**{field_mappings.region: {"value": issue.region}})
+        if issue.region is not None:
+            new_issue.update(**{field_mappings.region: {"value": issue.region}})
 
         ticket_value = getattr(new_issue.fields, field_mappings.ticket, None)
         feature_value = getattr(new_issue.fields, field_mappings.feature, None)

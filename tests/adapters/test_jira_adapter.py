@@ -221,6 +221,101 @@ class TestJiraAdapterCreate:
             **{field_mappings.region: {"value": "US"}}
         )
 
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_create_omits_team_field_when_none(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """create() does not send team field when issue.team is None."""
+        mock_jira = mock_jira_cls.return_value
+        mock_issue = MagicMock()
+        mock_issue.key = "PROJ-123"
+        mock_issue.permalink.return_value = "https://jira.example.com/browse/PROJ-123"
+        mock_issue.fields.project.key = "PROJ"
+        mock_issue.fields.summary = "Test Issue"
+        mock_issue.fields.description = "Test description"
+        mock_issue.fields.issuetype.name = "Task"
+        mock_issue.fields.labels = ["test"]
+        mock_issue.fields.priority.name = "Medium"
+        mock_issue.fields.customfield_11502 = "PARENT-123"
+        mock_issue.fields.customfield_10001 = "EPIC-456"
+        mock_issue.fields.assignee.key = "testuser"
+        mock_issue.fields.reporter.key = "reporter"
+        mock_issue.fields.customfield_10501 = None
+        mock_issue.fields.customfield_12900.value = "US"
+        mock_jira.create_issue.return_value = mock_issue
+        mock_jira.issue.return_value = mock_issue
+
+        issue_dto = JiraIssueDTO(
+            project="PROJ",
+            title="Test Issue",
+            description="Test description",
+            issue_type="Task",
+            labels=["test"],
+            priority="Medium",
+            ticket="PARENT-123",
+            feature="EPIC-456",
+            assignee="testuser",
+            reporter="reporter",
+            team=None,
+            region="US",
+        )
+
+        adapter = JiraAdapter(jira_settings)
+        adapter.create(issue_dto)
+
+        call_fields = mock_jira.create_issue.call_args[1]["fields"]
+        field_mappings = jira_settings.field_mappings
+        assert field_mappings.team not in call_fields
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_create_omits_region_field_when_none(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """create() does not send region field when issue.region is None."""
+        mock_jira = mock_jira_cls.return_value
+        mock_issue = MagicMock()
+        mock_issue.key = "PROJ-123"
+        mock_issue.permalink.return_value = "https://jira.example.com/browse/PROJ-123"
+        mock_issue.fields.project.key = "PROJ"
+        mock_issue.fields.summary = "Test Issue"
+        mock_issue.fields.description = "Test description"
+        mock_issue.fields.issuetype.name = "Task"
+        mock_issue.fields.labels = ["test"]
+        mock_issue.fields.priority.name = "Medium"
+        mock_issue.fields.customfield_11502 = "PARENT-123"
+        mock_issue.fields.customfield_10001 = "EPIC-456"
+        mock_issue.fields.assignee.key = "testuser"
+        mock_issue.fields.reporter.key = "reporter"
+        mock_issue.fields.customfield_10501.value = "DevTeam"
+        mock_issue.fields.customfield_12900 = None
+        mock_jira.create_issue.return_value = mock_issue
+        mock_jira.issue.return_value = mock_issue
+
+        issue_dto = JiraIssueDTO(
+            project="PROJ",
+            title="Test Issue",
+            description="Test description",
+            issue_type="Task",
+            labels=["test"],
+            priority="Medium",
+            ticket="PARENT-123",
+            feature="EPIC-456",
+            assignee="testuser",
+            reporter="reporter",
+            team="DevTeam",
+            region=None,
+        )
+
+        adapter = JiraAdapter(jira_settings)
+        adapter.create(issue_dto)
+
+        call_fields = mock_jira.create_issue.call_args[1]["fields"]
+        field_mappings = jira_settings.field_mappings
+        assert field_mappings.region not in call_fields
+        # Only feature update should happen, not region
+        assert mock_issue.update.call_count == 1
+        mock_issue.update.assert_called_with(**{field_mappings.feature: "EPIC-456"})
+
 
 class TestJiraAdapterGet:
     """Test JiraAdapter.get() method."""
