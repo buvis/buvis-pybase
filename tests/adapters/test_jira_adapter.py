@@ -4,8 +4,7 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from buvis.pybase.adapters.jira.domain import JiraCommentDTO
-from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
+from buvis.pybase.adapters.jira.domain import JiraCommentDTO, JiraIssueDTO
 from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.exceptions import (
     JiraLinkError,
@@ -443,20 +442,6 @@ class TestJiraAdapterUpdate:
         mock_issue = MagicMock()
         mock_jira.issue.return_value = mock_issue
 
-        initial_dto = JiraIssueDTO(
-            project="PROJ",
-            title="Initial",
-            description="desc",
-            issue_type="Task",
-            labels=[],
-            priority="Medium",
-            ticket="PARENT-1",
-            feature="EPIC-1",
-            assignee="user",
-            reporter="reporter",
-            team="Team",
-            region="US",
-        )
         updated_dto = JiraIssueDTO(
             project="PROJ",
             title="Updated",
@@ -473,14 +458,13 @@ class TestJiraAdapterUpdate:
         )
         fields = {"summary": "Updated"}
 
-        with patch.object(
-            JiraAdapter, "get", side_effect=[initial_dto, updated_dto]
-        ) as mock_get:
+        with patch.object(JiraAdapter, "get", return_value=updated_dto) as mock_get:
             adapter = JiraAdapter(jira_settings)
             adapter.update("PROJ-1", fields)
 
+        mock_jira.issue.assert_called_once_with("PROJ-1")
         mock_issue.update.assert_called_once_with(fields=fields)
-        assert mock_get.call_count == 2
+        mock_get.assert_called_once_with("PROJ-1")
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
     def test_returns_refreshed_dto(
@@ -491,20 +475,6 @@ class TestJiraAdapterUpdate:
         mock_issue = MagicMock()
         mock_jira.issue.return_value = mock_issue
 
-        initial_dto = JiraIssueDTO(
-            project="PROJ",
-            title="Initial",
-            description="desc",
-            issue_type="Task",
-            labels=[],
-            priority="Medium",
-            ticket="PARENT-1",
-            feature="EPIC-1",
-            assignee="user",
-            reporter="reporter",
-            team="Team",
-            region="US",
-        )
         refreshed_dto = JiraIssueDTO(
             project="PROJ",
             title="Refreshed",
@@ -520,7 +490,7 @@ class TestJiraAdapterUpdate:
             region="US",
         )
 
-        with patch.object(JiraAdapter, "get", side_effect=[initial_dto, refreshed_dto]):
+        with patch.object(JiraAdapter, "get", return_value=refreshed_dto):
             adapter = JiraAdapter(jira_settings)
             result = adapter.update("PROJ-1", {"summary": "Refreshed"})
 
@@ -531,13 +501,15 @@ class TestJiraAdapterUpdate:
         self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
     ) -> None:
         """update() surfaces JiraNotFoundError when issue can't be found."""
-        with patch.object(
-            JiraAdapter, "get", side_effect=JiraNotFoundError("PROJ-404")
-        ):
-            adapter = JiraAdapter(jira_settings)
+        mock_jira = mock_jira_cls.return_value
+        error = JIRAError("not found")
+        error.status_code = 404
+        mock_jira.issue.side_effect = error
 
-            with pytest.raises(JiraNotFoundError):
-                adapter.update("PROJ-404", {"summary": "Missing"})
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraNotFoundError):
+            adapter.update("PROJ-404", {"summary": "Missing"})
 
 
 class TestJiraAdapterSearch:

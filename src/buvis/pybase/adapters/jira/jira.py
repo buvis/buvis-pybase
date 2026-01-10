@@ -10,12 +10,14 @@ Provides JiraAdapter for CRUD operations on JIRA issues including:
 Configuration via JiraSettings pydantic model with env vars.
 """
 
-import logging
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from jira import JIRA
 from jira.exceptions import JIRAError
+
+if TYPE_CHECKING:
+    from jira.resources import Issue
 
 from buvis.pybase.adapters.jira.domain import (
     JiraCommentDTO,
@@ -56,7 +58,6 @@ class JiraAdapter:
         Args:
             settings: JiraSettings instance with server/token values.
         """
-        self.logger = logging.getLogger(__name__)
         self._settings = settings
         proxies = None
         if self._settings.proxy:
@@ -137,7 +138,7 @@ class JiraAdapter:
             link=new_issue.permalink(),
         )
 
-    def _issue_to_dto(self, issue) -> JiraIssueDTO:
+    def _issue_to_dto(self, issue: "Issue") -> JiraIssueDTO:
         """Convert JIRA issue object to DTO."""
         fm = self._settings.field_mappings
         team_val = getattr(issue.fields, fm.team, None)
@@ -267,10 +268,13 @@ class JiraAdapter:
         Raises:
             JiraNotFoundError: Issue does not exist.
         """
-        # Verify issue exists (raises JiraNotFoundError if not)
-        self.get(issue_key)
+        try:
+            issue = self._jira.issue(issue_key)
+        except JIRAError as error:
+            if getattr(error, "status_code", None) == 404:
+                raise JiraNotFoundError(issue_key) from error
+            raise
 
-        issue = self._jira.issue(issue_key)
         issue.update(fields=fields)
 
         return self.get(issue_key)
