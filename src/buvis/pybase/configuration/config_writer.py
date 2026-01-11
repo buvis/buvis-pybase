@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import types
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
+
+from pydantic import BaseModel
+from pydantic.fields import FieldInfo, PydanticUndefined
 
 if TYPE_CHECKING:
     from pydantic_settings import BaseSettings
@@ -95,6 +99,77 @@ class ConfigWriter:
             )
             return "{" + items + "}"
         return str(value)
+
+    @staticmethod
+    def _is_optional(field_info: FieldInfo) -> bool:
+        """Check if field allows None.
+
+        Args:
+            field_info: Pydantic field info.
+
+        Returns:
+            True if field has None default or type includes None.
+        """
+        if field_info.default is None:
+            return True
+        annotation = field_info.annotation
+        origin = get_origin(annotation)
+        if origin in (Union, types.UnionType):
+            return type(None) in get_args(annotation)
+        return False
+
+    @staticmethod
+    def _is_required(field_info: FieldInfo) -> bool:
+        """Check if field has no default.
+
+        Args:
+            field_info: Pydantic field info.
+
+        Returns:
+            True if field has no default value.
+        """
+        return (
+            field_info.default is PydanticUndefined
+            and field_info.default_factory is None
+        )
+
+    @staticmethod
+    def _is_nested_model(annotation: Any) -> bool:
+        """Check if annotation is a BaseModel subclass.
+
+        Args:
+            annotation: Type annotation.
+
+        Returns:
+            True if annotation is a BaseModel subclass.
+        """
+        origin = get_origin(annotation)
+        if origin in (Union, types.UnionType):
+            args = [a for a in get_args(annotation) if a is not type(None)]
+            if len(args) == 1:
+                return ConfigWriter._is_nested_model(args[0])
+        if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+            return True
+        return False
+
+    @staticmethod
+    def _extract_model_class(annotation: Any) -> type[BaseModel] | None:
+        """Extract BaseModel class from annotation.
+
+        Args:
+            annotation: Type annotation.
+
+        Returns:
+            BaseModel subclass or None.
+        """
+        origin = get_origin(annotation)
+        if origin in (Union, types.UnionType):
+            args = [a for a in get_args(annotation) if a is not type(None)]
+            if len(args) == 1:
+                return ConfigWriter._extract_model_class(args[0])
+        if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+            return annotation
+        return None
 
     @staticmethod
     def write(

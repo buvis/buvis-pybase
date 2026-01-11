@@ -133,6 +133,97 @@ class TestFormatValue:
         assert ConfigWriter._format_value(3.14) == "3.14"
 
 
+class SampleSettings(BaseModel):
+    """Sample settings for testing field analysis."""
+
+    required_field: str
+    optional_field: str | None = None
+    optional_with_default: str = "default"
+    nested: NestedModel | None = None
+    nested_required: NestedModel
+    list_field: list[str] = []
+
+
+class TestIsOptional:
+    """Tests for ConfigWriter._is_optional."""
+
+    def test_field_with_none_default(self) -> None:
+        field = SampleSettings.model_fields["optional_field"]
+        assert ConfigWriter._is_optional(field) is True
+
+    def test_field_with_string_default(self) -> None:
+        field = SampleSettings.model_fields["optional_with_default"]
+        assert ConfigWriter._is_optional(field) is False
+
+    def test_required_field(self) -> None:
+        field = SampleSettings.model_fields["required_field"]
+        assert ConfigWriter._is_optional(field) is False
+
+    def test_optional_nested_model(self) -> None:
+        field = SampleSettings.model_fields["nested"]
+        assert ConfigWriter._is_optional(field) is True
+
+
+class TestIsRequired:
+    """Tests for ConfigWriter._is_required."""
+
+    def test_required_field(self) -> None:
+        field = SampleSettings.model_fields["required_field"]
+        assert ConfigWriter._is_required(field) is True
+
+    def test_field_with_default(self) -> None:
+        field = SampleSettings.model_fields["optional_with_default"]
+        assert ConfigWriter._is_required(field) is False
+
+    def test_field_with_none_default(self) -> None:
+        field = SampleSettings.model_fields["optional_field"]
+        assert ConfigWriter._is_required(field) is False
+
+    def test_field_with_default_factory(self) -> None:
+        field = SampleSettings.model_fields["list_field"]
+        assert ConfigWriter._is_required(field) is False
+
+    def test_nested_required(self) -> None:
+        field = SampleSettings.model_fields["nested_required"]
+        assert ConfigWriter._is_required(field) is True
+
+
+class TestIsNestedModel:
+    """Tests for ConfigWriter._is_nested_model."""
+
+    def test_basemodel_subclass(self) -> None:
+        assert ConfigWriter._is_nested_model(NestedModel) is True
+
+    def test_optional_basemodel(self) -> None:
+        assert ConfigWriter._is_nested_model(NestedModel | None) is True
+
+    def test_string_type(self) -> None:
+        assert ConfigWriter._is_nested_model(str) is False
+
+    def test_list_type(self) -> None:
+        assert ConfigWriter._is_nested_model(list[str]) is False
+
+
+class TestExtractModelClass:
+    """Tests for ConfigWriter._extract_model_class."""
+
+    def test_direct_model(self) -> None:
+        result = ConfigWriter._extract_model_class(NestedModel)
+        assert result is NestedModel
+
+    def test_optional_model(self) -> None:
+        result = ConfigWriter._extract_model_class(NestedModel | None)
+        assert result is NestedModel
+
+    def test_non_model_returns_none(self) -> None:
+        result = ConfigWriter._extract_model_class(str)
+        assert result is None
+
+    def test_list_returns_none(self) -> None:
+        result = ConfigWriter._extract_model_class(list[str])
+        assert result is None
+
+
 class TestConfigWriterStubs:
     """Tests for ConfigWriter stub methods."""
 
