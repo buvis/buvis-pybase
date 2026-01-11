@@ -366,12 +366,35 @@ class TestFormatField:
         assert "#   value:" in result
 
 
-class TestConfigWriterStubs:
-    """Tests for ConfigWriter stub methods."""
+class TestWrite:
+    """Tests for ConfigWriter.write."""
 
-    def test_write_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
-            ConfigWriter.write(BaseModel, Path("test.yaml"), "test")  # type: ignore[arg-type]  # type: ignore[arg-type]
+    def test_write_to_new_file(self, tmp_path: Path) -> None:
+        output = tmp_path / "config.yaml"
+        ConfigWriter.write(GenerateTestSettings, output, "myapp")  # type: ignore[arg-type]
+        assert output.exists()
+        content = output.read_text()
+        assert "# Configuration for myapp" in content
+        assert "max_retries:" in content
+
+    def test_write_creates_parent_dirs(self, tmp_path: Path) -> None:
+        nested = tmp_path / "a" / "b" / "config.yaml"
+        ConfigWriter.write(GenerateTestSettings, nested, "myapp")  # type: ignore[arg-type]
+        assert nested.exists()
+        assert nested.parent.exists()
+
+    def test_write_existing_file_raises(self, tmp_path: Path) -> None:
+        existing = tmp_path / "config.yaml"
+        existing.write_text("old")
+        with pytest.raises(FileExistsError, match="already exists"):
+            ConfigWriter.write(GenerateTestSettings, existing, "myapp")  # type: ignore[arg-type]
+
+    def test_write_no_extension_works(self, tmp_path: Path) -> None:
+        output = tmp_path / "config"
+        ConfigWriter.write(GenerateTestSettings, output, "myapp")  # type: ignore[arg-type]
+        assert output.exists()
+        content = output.read_text()
+        assert "# Configuration for myapp" in content  # type: ignore[arg-type]  # type: ignore[arg-type]
 
 
 class GenerateTestSettings(BaseModel):
