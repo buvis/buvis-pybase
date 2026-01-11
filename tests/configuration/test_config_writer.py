@@ -288,6 +288,84 @@ class TestFormatNestedModel:
         assert "    port: 5432" in result
 
 
+class FieldTestSettings(BaseModel):
+    """Settings for testing _format_field."""
+
+    simple: str = "value"
+    with_desc: str = "test"
+    optional_field: str | None = None
+    required_field: str
+    api_key: str = "secret"
+    password: str
+    nested_model: NestedModel = NestedModel(value="test")
+    optional_nested: NestedModel | None = None
+
+    model_config = {"json_schema_extra": {"description": "Test settings"}}
+
+
+# Set description on with_desc field
+FieldTestSettings.model_fields["with_desc"].description = "A test description"
+
+
+class TestFormatField:
+    """Tests for ConfigWriter._format_field."""
+
+    def test_simple_field_has_type(self) -> None:
+        field = FieldTestSettings.model_fields["simple"]
+        result = ConfigWriter._format_field("simple", field)
+        assert "# Type: str" in result
+        assert "simple: value" in result
+
+    def test_field_with_description(self) -> None:
+        field = FieldTestSettings.model_fields["with_desc"]
+        result = ConfigWriter._format_field("with_desc", field)
+        assert "# Type: str" in result
+        assert "# Description: A test description" in result
+        assert "with_desc: test" in result
+
+    def test_optional_field_commented_out(self) -> None:
+        field = FieldTestSettings.model_fields["optional_field"]
+        result = ConfigWriter._format_field("optional_field", field)
+        # All lines should be commented
+        for line in result.split("\n"):
+            assert line.startswith("#")
+        assert "# optional_field: null" in result
+
+    def test_required_field_warning(self) -> None:
+        field = FieldTestSettings.model_fields["required_field"]
+        result = ConfigWriter._format_field("required_field", field)
+        assert "# REQUIRED - you must set this value" in result
+        # Value should be empty string
+        assert "required_field: " in result
+
+    def test_sensitive_field_warning(self) -> None:
+        field = FieldTestSettings.model_fields["api_key"]
+        result = ConfigWriter._format_field("api_key", field)
+        assert "# SENSITIVE - do not commit to version control" in result
+
+    def test_required_and_sensitive(self) -> None:
+        field = FieldTestSettings.model_fields["password"]
+        result = ConfigWriter._format_field("password", field)
+        assert "# REQUIRED - you must set this value" in result
+        assert "# SENSITIVE - do not commit to version control" in result
+
+    def test_nested_model_field(self) -> None:
+        field = FieldTestSettings.model_fields["nested_model"]
+        result = ConfigWriter._format_field("nested_model", field)
+        assert "# Type: NestedModel" in result
+        assert "nested_model:" in result
+        assert "  value: test" in result
+
+    def test_optional_nested_model_commented(self) -> None:
+        field = FieldTestSettings.model_fields["optional_nested"]
+        result = ConfigWriter._format_field("optional_nested", field)
+        # All lines should be commented
+        for line in result.split("\n"):
+            assert line.startswith("#")
+        assert "# optional_nested:" in result
+        assert "#   value:" in result
+
+
 class TestConfigWriterStubs:
     """Tests for ConfigWriter stub methods."""
 

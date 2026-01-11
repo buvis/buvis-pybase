@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo, PydanticUndefined
 
+from .validators import is_sensitive_field
+
 if TYPE_CHECKING:
     from pydantic_settings import BaseSettings
 
@@ -206,6 +208,106 @@ class ConfigWriter:
 
             formatted_value = ConfigWriter._format_value(value)
             lines.append(f"{prefix}{name}: {formatted_value}")
+
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_model_instance(instance: BaseModel, indent: int = 2) -> str:
+        """Format BaseModel instance as YAML.
+
+        Args:
+            instance: The Pydantic BaseModel instance to format.
+            indent: Current indentation level in spaces.
+
+        Returns:
+            YAML-formatted string of the instance fields.
+        """
+        lines: list[str] = []
+        prefix = " " * indent
+
+        for name in type(instance).model_fields:
+            value = getattr(instance, name)
+
+            # Check for deeper nesting
+            if isinstance(value, BaseModel):
+                lines.append(f"{prefix}{name}:")
+                lines.append(ConfigWriter._format_model_instance(value, indent + 2))
+                continue
+
+            formatted_value = ConfigWriter._format_value(value)
+            lines.append(f"{prefix}{name}: {formatted_value}")
+
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_field(name: str, field_info: FieldInfo) -> str:
+        """Format field with comments for YAML output.
+
+        Args:
+            name: Field name.
+            field_info: Pydantic field info.
+
+        Returns:
+            YAML-formatted field with type/description/warning comments.
+        """
+        lines: list[str] = []
+
+        # Type comment (always present)
+        type_str = ConfigWriter._format_type(field_info.annotation)
+        lines.append(f"# Type: {type_str}")
+
+        # Description comment (only if exists)
+        if field_info.description:
+            lines.append(f"# Description: {field_info.description}")
+
+        # Required warning
+        is_required = ConfigWriter._is_required(field_info)
+        if is_required:
+            lines.append("# REQUIRED - you must set this value")
+
+        # Sensitive warning
+        if is_sensitive_field(name):
+            lines.append("# SENSITIVE - do not commit to version control")
+
+        # Get default value
+        is_optional = ConfigWriter._is_optional(field_info)
+
+        if field_info.default is not PydanticUndefined:
+            value = field_info.default
+        elif field_info.default_factory is not None:
+            value = field_info.default_factory()
+        else:
+            value = ""  # Required fields get empty string
+
+        # Handle nested models
+        if ConfigWriter._is_nested_model(field_info.annotation):
+            nested_class = ConfigWriter._extract_model_class(field_info.annotation)
+            if nested_class:
+                if is_optional and value is None:
+                    # Comment out optional nested model
+                    lines = ["# " + line for line in lines]
+                    lines.append(f"# {name}:")
+                    nested_yaml = ConfigWriter._format_nested_model(nested_class)
+                    for nested_line in nested_yaml.split("\n"):
+                        lines.append(f"# {nested_line}")
+                elif isinstance(value, BaseModel):
+                    # Use actual instance values
+                    lines.append(f"{name}:")
+                    lines.append(ConfigWriter._format_model_instance(value))
+                else:
+                    lines.append(f"{name}:")
+                    lines.append(ConfigWriter._format_nested_model(nested_class))
+                return "\n".join(lines)
+
+        # Format value
+        formatted_value = ConfigWriter._format_value(value)
+
+        # Optional fields (None default) are commented out
+        if is_optional and value is None:
+            lines = ["# " + line for line in lines]
+            lines.append(f"# {name}: null")
+        else:
+            lines.append(f"{name}: {formatted_value}")
 
         return "\n".join(lines)
 
