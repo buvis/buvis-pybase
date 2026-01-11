@@ -81,6 +81,58 @@ class TestFormatType:
         assert result == "list[dict[str, int]]"
 
 
+class TestFormatValue:
+    """Tests for ConfigWriter._format_value."""
+
+    def test_none(self) -> None:
+        assert ConfigWriter._format_value(None) == "null"
+
+    def test_true(self) -> None:
+        assert ConfigWriter._format_value(True) == "true"
+
+    def test_false(self) -> None:
+        assert ConfigWriter._format_value(False) == "false"
+
+    def test_simple_string(self) -> None:
+        assert ConfigWriter._format_value("simple") == "simple"
+
+    def test_empty_string(self) -> None:
+        assert ConfigWriter._format_value("") == '""'
+
+    def test_string_with_colon(self) -> None:
+        assert ConfigWriter._format_value("foo:bar") == '"foo:bar"'
+
+    def test_string_with_hash(self) -> None:
+        assert ConfigWriter._format_value("has#hash") == '"has#hash"'
+
+    def test_path(self) -> None:
+        assert ConfigWriter._format_value(Path("/tmp/test")) == "/tmp/test"
+
+    def test_empty_list(self) -> None:
+        assert ConfigWriter._format_value([]) == "[]"
+
+    def test_list_strings(self) -> None:
+        assert ConfigWriter._format_value(["a", "b"]) == "[a, b]"
+
+    def test_list_with_null(self) -> None:
+        assert ConfigWriter._format_value([1, None]) == "[1, null]"
+
+    def test_empty_dict(self) -> None:
+        assert ConfigWriter._format_value({}) == "{}"
+
+    def test_dict_simple(self) -> None:
+        assert ConfigWriter._format_value({"a": 1}) == "{a: 1}"
+
+    def test_dict_with_bool(self) -> None:
+        assert ConfigWriter._format_value({"x": True}) == "{x: true}"
+
+    def test_int(self) -> None:
+        assert ConfigWriter._format_value(42) == "42"
+
+    def test_float(self) -> None:
+        assert ConfigWriter._format_value(3.14) == "3.14"
+
+
 class TestConfigWriterStubs:
     """Tests for ConfigWriter stub methods."""
 

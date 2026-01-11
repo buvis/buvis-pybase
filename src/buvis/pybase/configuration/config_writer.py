@@ -62,6 +62,41 @@ class ConfigWriter:
         return str(annotation)
 
     @staticmethod
+    def _format_value(value: Any) -> str:
+        """Format value for YAML output.
+
+        Args:
+            value: Value to format.
+
+        Returns:
+            YAML-formatted value string.
+        """
+        if value is None:
+            return "null"
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        if isinstance(value, str):
+            # Quote strings with special chars or if empty
+            if not value or any(c in value for c in ":{}[]#&*!|>'\"%@`"):
+                return f'"{value}"'
+            return value
+        if isinstance(value, Path):
+            return str(value)
+        if isinstance(value, (list, tuple)):
+            if not value:
+                return "[]"
+            items = ", ".join(ConfigWriter._format_value(v) for v in value)
+            return f"[{items}]"
+        if isinstance(value, dict):
+            if not value:
+                return "{}"
+            items = ", ".join(
+                f"{k}: {ConfigWriter._format_value(v)}" for k, v in value.items()
+            )
+            return "{" + items + "}"
+        return str(value)
+
+    @staticmethod
     def write(
         settings_class: type[BaseSettings], output_path: Path, command_name: str
     ) -> None:
