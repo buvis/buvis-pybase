@@ -224,6 +224,70 @@ class TestExtractModelClass:
         assert result is None
 
 
+class DatabaseSettings(BaseModel):
+    """Sample database settings for nesting tests."""
+
+    host: str = "localhost"
+    port: int = 5432
+
+
+class AppSettings(BaseModel):
+    """Sample app settings with nested model."""
+
+    name: str = "myapp"
+    database: DatabaseSettings = DatabaseSettings()
+
+
+class DeepSettings(BaseModel):
+    """Settings with three-level nesting."""
+
+    app: AppSettings = AppSettings()
+
+
+class TestFormatNestedModel:
+    """Tests for ConfigWriter._format_nested_model."""
+
+    def test_flat_model_basic_types(self) -> None:
+        result = ConfigWriter._format_nested_model(DatabaseSettings)
+        assert "  host: localhost" in result
+        assert "  port: 5432" in result
+
+    def test_flat_model_preserves_order(self) -> None:
+        result = ConfigWriter._format_nested_model(DatabaseSettings)
+        lines = result.strip().split("\n")
+        assert lines[0].strip().startswith("host")
+        assert lines[1].strip().startswith("port")
+
+    def test_nested_model_indentation(self) -> None:
+        result = ConfigWriter._format_nested_model(AppSettings)
+        assert "  name: myapp" in result
+        assert "  database:" in result
+        assert "    host: localhost" in result
+        assert "    port: 5432" in result
+
+    def test_required_field_empty_string(self) -> None:
+        result = ConfigWriter._format_nested_model(SampleSettings)
+        # required_field has no default, should get empty string
+        assert "  required_field: " in result
+
+    def test_default_factory_list(self) -> None:
+        result = ConfigWriter._format_nested_model(SampleSettings)
+        assert "  list_field: []" in result
+
+    def test_three_level_nesting(self) -> None:
+        result = ConfigWriter._format_nested_model(DeepSettings)
+        assert "  app:" in result
+        assert "    name: myapp" in result
+        assert "    database:" in result
+        assert "      host: localhost" in result
+        assert "      port: 5432" in result
+
+    def test_custom_indent(self) -> None:
+        result = ConfigWriter._format_nested_model(DatabaseSettings, indent=4)
+        assert "    host: localhost" in result
+        assert "    port: 5432" in result
+
+
 class TestConfigWriterStubs:
     """Tests for ConfigWriter stub methods."""
 

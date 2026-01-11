@@ -172,6 +172,44 @@ class ConfigWriter:
         return None
 
     @staticmethod
+    def _format_nested_model(model_class: type[BaseModel], indent: int = 2) -> str:
+        """Format nested BaseModel as YAML (no comments on nested fields).
+
+        Args:
+            model_class: The Pydantic BaseModel class to format.
+            indent: Current indentation level in spaces.
+
+        Returns:
+            YAML-formatted string of the model fields.
+        """
+        lines: list[str] = []
+        prefix = " " * indent
+
+        for name, field_info in model_class.model_fields.items():
+            # Get default value
+            if field_info.default is not PydanticUndefined:
+                value = field_info.default
+            elif field_info.default_factory is not None:
+                value = field_info.default_factory()
+            else:
+                value = ""  # Required field gets empty string
+
+            # Check for deeper nesting
+            if ConfigWriter._is_nested_model(field_info.annotation):
+                nested_class = ConfigWriter._extract_model_class(field_info.annotation)
+                if nested_class:
+                    lines.append(f"{prefix}{name}:")
+                    lines.append(
+                        ConfigWriter._format_nested_model(nested_class, indent + 2)
+                    )
+                    continue
+
+            formatted_value = ConfigWriter._format_value(value)
+            lines.append(f"{prefix}{name}: {formatted_value}")
+
+        return "\n".join(lines)
+
+    @staticmethod
     def write(
         settings_class: type[BaseSettings], output_path: Path, command_name: str
     ) -> None:
