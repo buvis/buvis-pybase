@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Literal, Union
 
 import pytest
+import yaml
 from pydantic import BaseModel
 
 from buvis.pybase.configuration import ConfigWriter
@@ -104,6 +105,24 @@ class TestFormatValue:
 
     def test_string_with_hash(self) -> None:
         assert ConfigWriter._format_value("has#hash") == '"has#hash"'
+
+    def test_string_with_embedded_double_quote(self) -> None:
+        value = 'foo"bar'
+        formatted = ConfigWriter._format_value(value)
+        assert formatted == '"foo\\"bar"'
+        assert yaml.safe_load(formatted) == value
+
+    def test_string_with_backslash(self) -> None:
+        value = "foo\\bar"
+        formatted = ConfigWriter._format_value(value)
+        assert formatted == '"foo\\\\bar"'
+        assert yaml.safe_load(formatted) == value
+
+    def test_string_with_backslash_and_quote(self) -> None:
+        value = 'foo\\"bar'
+        formatted = ConfigWriter._format_value(value)
+        assert formatted == '"foo\\\\\\"bar"'
+        assert yaml.safe_load(formatted) == value
 
     def test_path(self) -> None:
         assert ConfigWriter._format_value(Path("/tmp/test")) == "/tmp/test"
