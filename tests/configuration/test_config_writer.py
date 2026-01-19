@@ -244,6 +244,11 @@ class DeepSettings(BaseModel):
     app: AppSettings = AppSettings()
 
 
+class NestedWithSensitive(BaseModel):
+    host: str = "localhost"
+    password: str = "secret"
+
+
 class TestFormatNestedModel:
     """Tests for ConfigWriter._format_nested_model."""
 
@@ -286,6 +291,19 @@ class TestFormatNestedModel:
         result = ConfigWriter._format_nested_model(DatabaseSettings, indent=4)
         assert "    host: localhost" in result
         assert "    port: 5432" in result
+
+    def test_sensitive_field_comment_for_nested(self) -> None:
+        result = ConfigWriter._format_nested_model(NestedWithSensitive)
+        lines = result.splitlines()
+        for idx, line in enumerate(lines):
+            if line.strip().startswith("password:"):
+                assert (
+                    lines[idx - 1].strip()
+                    == "# SENSITIVE - do not commit to version control"
+                )
+                break
+        else:
+            pytest.fail("password field not found in nested output")
 
 
 class FieldTestSettings(BaseModel):

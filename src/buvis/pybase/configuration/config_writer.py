@@ -188,6 +188,8 @@ class ConfigWriter:
         prefix = " " * indent
 
         for name, field_info in model_class.model_fields.items():
+            if is_sensitive_field(name):
+                lines.append(f"{prefix}# SENSITIVE - do not commit to version control")
             # Get default value
             if field_info.default is not PydanticUndefined:
                 value = field_info.default
