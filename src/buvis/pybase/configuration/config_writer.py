@@ -4,15 +4,12 @@ from __future__ import annotations
 
 import types
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
+from typing import Any, Literal, Union, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo, PydanticUndefined
 
 from .validators import is_sensitive_field
-
-if TYPE_CHECKING:
-    from pydantic_settings import BaseSettings
 
 
 class ConfigWriter:
@@ -319,12 +316,12 @@ class ConfigWriter:
 
     @staticmethod
     def write(
-        settings_class: type[BaseSettings], output_path: Path, command_name: str
+        settings_class: type[BaseModel], output_path: Path, command_name: str
     ) -> None:
         """Write YAML config template to file.
 
         Args:
-            settings_class: The pydantic-settings class to introspect.
+            settings_class: The Pydantic BaseModel class to introspect.
             output_path: Destination path for the YAML file.
             command_name: Name used in YAML header comment.
 
@@ -340,11 +337,11 @@ class ConfigWriter:
         output_path.write_text(content, encoding="utf-8")
 
     @staticmethod
-    def generate(settings_class: type[BaseSettings], command_name: str) -> str:
+    def generate(settings_class: type[BaseModel], command_name: str) -> str:
         """Generate YAML config string.
 
         Args:
-            settings_class: The pydantic-settings class to introspect.
+            settings_class: The Pydantic BaseModel class to introspect.
             command_name: Name used in YAML header comment.
 
         Returns:
