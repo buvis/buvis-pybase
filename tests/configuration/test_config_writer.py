@@ -45,6 +45,10 @@ class TestFormatType:
         result = ConfigWriter._format_type(int | str)
         assert result == "int | str"
 
+    def test_three_type_union_with_none(self) -> None:
+        result = ConfigWriter._format_type(str | int | None)
+        assert result == "str | int | None"
+
     def test_list_str(self) -> None:
         result = ConfigWriter._format_type(list[str])
         assert result == "list[str]"
@@ -80,6 +84,10 @@ class TestFormatType:
     def test_nested_generic(self) -> None:
         result = ConfigWriter._format_type(list[dict[str, int]])
         assert result == "list[dict[str, int]]"
+
+    def test_nonetype_standalone(self) -> None:
+        result = ConfigWriter._format_type(type(None))
+        assert result == "None"
 
 
 class TestFormatValue:

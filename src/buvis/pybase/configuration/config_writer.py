@@ -62,6 +62,9 @@ class ConfigWriter:
                 return f"{origin.__name__}[{formatted_args}]"
             return origin.__name__
 
+        if annotation is type(None):
+            return "None"
+
         # Simple types: str, int, bool, Path, BaseModel subclass
         if hasattr(annotation, "__name__"):
             return annotation.__name__
