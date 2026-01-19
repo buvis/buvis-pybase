@@ -442,6 +442,32 @@ class TestWrite:
         assert "# Configuration for myapp" in content  # type: ignore[arg-type]  # type: ignore[arg-type]
 
 
+class BaseAppSettings(BaseModel):
+    """Settings base to verify inherited fields appear."""
+
+    app_name: str = "base"
+
+
+class ChildSettings(BaseAppSettings):
+    """Child settings that should include inherited values in output."""
+
+    extra_field: str = "child"
+
+
+class LiteralSettings(BaseModel):
+    """Settings for ensuring literal choices are described."""
+
+    log_level: Literal["DEBUG", "INFO", "WARN"] = "INFO"
+
+
+class OrderedSettings(BaseModel):
+    """Settings used to verify field order is preserved."""
+
+    first: str = "1"
+    second: str = "2"
+    third: str = "3"
+
+
 class GenerateTestSettings(BaseModel):
     """Sample settings for generate tests."""
 
@@ -481,3 +507,23 @@ class TestGenerate:
             if line.startswith("# Type:") and i > 0:
                 # Check previous line is either blank or part of previous field
                 assert lines[i - 1] == "" or lines[i - 1].startswith("#")
+
+    def test_inherited_fields_in_output(self) -> None:
+        result = ConfigWriter.generate(ChildSettings, "test")
+        assert "app_name:" in result
+        assert "extra_field:" in result
+
+    def test_literal_in_generate_output(self) -> None:
+        result = ConfigWriter.generate(LiteralSettings, "test")
+        assert "one of: 'DEBUG', 'INFO', 'WARN'" in result
+
+    def test_field_order_preserved(self) -> None:
+        result = ConfigWriter.generate(OrderedSettings, "test")
+        first_pos = result.index("first:")
+        second_pos = result.index("second:")
+        third_pos = result.index("third:")
+        assert first_pos < second_pos < third_pos
+
+    def test_optional_suffix_in_type_comment(self) -> None:
+        result = ConfigWriter.generate(GenerateTestSettings, "myapp")  # type: ignore[arg-type]
+        assert "str | None (optional)" in result

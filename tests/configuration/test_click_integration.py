@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from pydantic import BaseModel
 
 import click
 import pytest
@@ -574,3 +575,22 @@ class TestConfigCreate:
         runner.invoke(cmd, ["--config-create", str(output)])
         content = output.read_text()
         assert "Configuration for mycommand" in content
+
+    def test_config_create_with_custom_settings_class(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        class CustomAppSettings(BaseModel):
+            custom_value: str = "test"
+            api_key: str | None = None
+
+        output = tmp_path / "config.yaml"
+
+        @click.command()
+        @buvis_options(settings_class=CustomAppSettings)
+        def cmd() -> None:
+            pass
+
+        result = runner.invoke(cmd, ["--config-create", str(output)])
+        assert result.exit_code == 0
+        assert output.exists()
+        assert "custom_value:" in output.read_text()
