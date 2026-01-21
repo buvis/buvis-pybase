@@ -72,6 +72,11 @@ def _create_buvis_options(settings_class: type[T]) -> Callable[[F], F]:
             help="YAML config file path.",
         )
         @click.option(
+            "--config-create",
+            type=click.Path(dir_okay=False, resolve_path=True),
+            help="Generate YAML config template to FILE.",
+        )
+        @click.option(
             "--config-dir",
             type=click.Path(exists=True, file_okay=False, resolve_path=True),
             help="Configuration directory.",
@@ -96,10 +101,23 @@ def _create_buvis_options(settings_class: type[T]) -> Callable[[F], F]:
             debug: bool | None,
             log_level: str | None,
             config_dir: str | None,
+            config_create: str | None,
             config: str | None,
             *args: Any,
             **kwargs: Any,
         ) -> Any:
+            if config_create:
+                from .config_writer import ConfigWriter
+
+                output = Path(config_create)
+                cmd_name = ctx.info_name or "unknown"
+                try:
+                    ConfigWriter.write(settings_class, output, cmd_name)
+                    click.echo(f"Config written to {output}")
+                except FileExistsError as e:
+                    raise click.ClickException(str(e)) from e
+                ctx.exit(0)
+
             cli_overrides = {
                 k: v
                 for k, v in {"debug": debug, "log_level": log_level}.items()

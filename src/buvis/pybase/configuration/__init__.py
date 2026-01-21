@@ -24,6 +24,7 @@ from .exceptions import (
     ConfigurationKeyNotFoundError,
     MissingEnvVarError,
 )
+from .config_writer import ConfigWriter
 from .loader import ConfigurationLoader
 from .click_integration import buvis_options, get_settings
 from .resolver import ConfigResolver
@@ -43,6 +44,7 @@ from .validators import (
 __all__ = [
     "ConfigurationKeyNotFoundError",
     "ConfigurationError",
+    "ConfigWriter",
     "MissingEnvVarError",
     "ConfigurationLoader",
     "ConfigResolver",
