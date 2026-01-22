@@ -4,10 +4,12 @@ Provides JiraAdapter for creating JIRA issues with custom field support.
 """
 
 import os
+from datetime import datetime
 
 from jira import JIRA
 from jira.exceptions import JIRAError
 
+from buvis.pybase.adapters.jira.domain.jira_comment_dto import JiraCommentDTO
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
 from buvis.pybase.adapters.jira.settings import JiraSettings
@@ -201,6 +203,63 @@ class JiraAdapter:
         # Refresh to get updated values
         updated = self._jira.issue(issue_key)
         return self._issue_to_dto(updated)
+
+    def add_comment(
+        self,
+        issue_key: str,
+        body: str,
+        is_internal: bool = False,
+    ) -> JiraCommentDTO:
+        """Add comment to issue.
+
+        Args:
+            issue_key: Issue to comment on.
+            body: Comment text.
+            is_internal: If True, mark as internal (Service Desk).
+
+        Returns:
+            JiraCommentDTO with created comment.
+        """
+        comment = self._jira.add_comment(
+            issue_key,
+            body,
+            is_internal=is_internal,
+        )
+
+        return JiraCommentDTO(
+            id=comment.id,
+            body=comment.body,
+            author=comment.author.name if comment.author else None,
+            created=datetime.fromisoformat(comment.created.replace("Z", "+00:00"))
+            if comment.created
+            else None,
+            is_internal=is_internal,
+        )
+
+    def get_comments(self, issue_key: str) -> list[JiraCommentDTO]:
+        """Get all comments on issue.
+
+        Args:
+            issue_key: Issue to get comments for.
+
+        Returns:
+            List of JiraCommentDTO.
+        """
+        issue = self._jira.issue(issue_key, fields="comment")
+        comments = issue.fields.comment.comments
+
+        return [
+            JiraCommentDTO(
+                id=c.id,
+                body=c.body,
+                author=c.author.name if c.author else None,
+                created=datetime.fromisoformat(c.created.replace("Z", "+00:00"))
+                if c.created
+                else None,
+                is_internal=getattr(c, "jsdPublic", True) is False,
+            )
+            for c in comments
+        ]
 
     def get_transitions(self, issue_key: str) -> list[dict]:
         """Get available transitions for issue.
