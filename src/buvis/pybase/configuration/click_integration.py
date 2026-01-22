@@ -12,11 +12,11 @@ from .resolver import ConfigResolver
 from .settings import GlobalSettings
 
 if TYPE_CHECKING:
-    from pydantic_settings import BaseSettings
+    from pydantic import BaseModel
 
 
 F = TypeVar("F", bound=Callable[..., Any])
-T = TypeVar("T", bound="BaseSettings")
+T = TypeVar("T", bound="BaseModel")
 
 
 @overload

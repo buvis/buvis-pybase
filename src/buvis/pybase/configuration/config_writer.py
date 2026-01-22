@@ -337,13 +337,15 @@ class ConfigWriter:
         Raises:
             FileExistsError: If output_path already exists.
         """
-        if output_path.exists():
-            raise FileExistsError(f"File already exists: {output_path}")
+        resolved_path = output_path.resolve()
 
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        if resolved_path.exists():
+            raise FileExistsError(f"File already exists: {resolved_path}")
+
+        resolved_path.parent.mkdir(parents=True, exist_ok=True)
 
         content = ConfigWriter.generate(settings_class, command_name)
-        output_path.write_text(content, encoding="utf-8")
+        resolved_path.write_text(content, encoding="utf-8")
 
     @staticmethod
     def generate(settings_class: type[BaseModel], command_name: str) -> str:

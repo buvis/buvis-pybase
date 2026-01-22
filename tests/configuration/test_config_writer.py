@@ -561,6 +561,16 @@ class TestWrite:
         content = output.read_text()
         assert "# Configuration for myapp" in content
 
+    def test_write_resolves_symlink_path(self, tmp_path: Path) -> None:
+        """Verify write() resolves symlinks."""
+        subdir = tmp_path / "subdir"
+        subdir.mkdir()
+        link = tmp_path / "link"
+        link.symlink_to(subdir)
+        output = link / "config.yaml"
+        ConfigWriter.write(GenerateTestSettings, output, "test")
+        assert (subdir / "config.yaml").exists()
+
 
 class BaseAppSettings(BaseModel):
     """Settings base to verify inherited fields appear."""
@@ -647,6 +657,20 @@ class TestGenerate:
     def test_optional_suffix_in_type_comment(self) -> None:
         result = ConfigWriter.generate(GenerateTestSettings, "myapp")
         assert "str | None (optional)" in result
+
+    def test_generated_yaml_is_parseable(self) -> None:
+        """Verify full generate() output parses with yaml.safe_load()."""
+        result = ConfigWriter.generate(GenerateTestSettings, "myapp")
+        parsed = yaml.safe_load(result)
+        assert isinstance(parsed, dict)
+        assert "max_retries" in parsed
+        assert "debug" in parsed
+
+    def test_complex_yaml_is_parseable(self) -> None:
+        result = ConfigWriter.generate(AppSettings, "test")
+        parsed = yaml.safe_load(result)
+        assert "database" in parsed
+        assert parsed["database"]["host"] == "localhost"
 
 
 class TestSensitiveFieldInModelInstance:
