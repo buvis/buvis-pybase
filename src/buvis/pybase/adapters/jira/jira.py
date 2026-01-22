@@ -14,6 +14,7 @@ from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
 from buvis.pybase.adapters.jira.settings import JiraSettings
 from buvis.pybase.adapters.jira.exceptions import (
+    JiraLinkError,
     JiraNotFoundError,
     JiraTransitionError,
 )
@@ -307,3 +308,37 @@ class JiraAdapter:
         self._jira.transition_issue(
             issue, transition_id, fields=fields, comment=comment
         )
+
+    def link_issues(
+        self,
+        from_key: str,
+        to_key: str,
+        link_type: str = "Relates",
+    ) -> None:
+        """Create link between two issues.
+
+        Args:
+            from_key: Source issue key.
+            to_key: Target issue key.
+            link_type: Link type name (default 'Relates').
+
+        Raises:
+            JiraLinkError: Link creation failed.
+        """
+        try:
+            self._jira.create_issue_link(
+                type=link_type,
+                inwardIssue=to_key,
+                outwardIssue=from_key,
+            )
+        except JIRAError as e:
+            raise JiraLinkError(from_key, to_key, link_type) from e
+
+    def get_link_types(self) -> list[str]:
+        """Get available issue link type names.
+
+        Returns:
+            List of link type names (e.g., ['Blocks', 'Relates', 'Duplicates']).
+        """
+        link_types = self._jira.issue_link_types()
+        return [lt.name for lt in link_types]

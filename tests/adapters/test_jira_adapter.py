@@ -12,7 +12,11 @@ from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
 from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.settings import JiraFieldMappings, JiraSettings
-from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError, JiraTransitionError
+from buvis.pybase.adapters.jira.exceptions import (
+    JiraLinkError,
+    JiraNotFoundError,
+    JiraTransitionError,
+)
 
 
 @pytest.fixture
@@ -690,3 +694,73 @@ class TestJiraAdapterComment:
         result = adapter.get_comments("PROJ-5")
 
         assert result[0].author is None
+
+
+class TestJiraAdapterLink:
+    """Test JiraAdapter linking helpers."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_link_issues_calls_create_issue_link_with_custom_type(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """link_issues() forwards the provided type and issue keys."""
+        mock_jira = mock_jira_cls.return_value
+
+        adapter = JiraAdapter(jira_settings)
+        adapter.link_issues("FROM-1", "TO-2", link_type="Blocks")
+
+        mock_jira.create_issue_link.assert_called_once_with(
+            type="Blocks",
+            inwardIssue="TO-2",
+            outwardIssue="FROM-1",
+        )
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_link_issues_raises_jira_link_error_on_failure(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """link_issues() wraps JIRAError in JiraLinkError."""
+        mock_jira = mock_jira_cls.return_value
+        mock_jira.create_issue_link.side_effect = JIRAError("boom")
+
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraLinkError) as excinfo:
+            adapter.link_issues("FROM-1", "TO-2", link_type="Blocks")
+
+        assert excinfo.value.from_key == "FROM-1"
+        assert excinfo.value.to_key == "TO-2"
+        assert excinfo.value.link_type == "Blocks"
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_get_link_types_returns_names(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """get_link_types() returns the link type names."""
+        mock_jira = mock_jira_cls.return_value
+        link_one = MagicMock()
+        link_one.name = "Blocks"
+        link_two = MagicMock()
+        link_two.name = "Relates"
+        mock_jira.issue_link_types.return_value = [link_one, link_two]
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.get_link_types()
+
+        assert result == ["Blocks", "Relates"]
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_link_issues_defaults_to_relates(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """link_issues() defaults the link type to 'Relates'."""
+        mock_jira = mock_jira_cls.return_value
+
+        adapter = JiraAdapter(jira_settings)
+        adapter.link_issues("FROM-1", "TO-2")
+
+        mock_jira.create_issue_link.assert_called_once_with(
+            type="Relates",
+            inwardIssue="TO-2",
+            outwardIssue="FROM-1",
+        )
