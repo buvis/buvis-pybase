@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 from jira.exceptions import JIRAError
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
+from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
 from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.settings import JiraFieldMappings, JiraSettings
 from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
@@ -263,3 +264,131 @@ class TestJiraAdapterGet:
 
         with pytest.raises(JIRAError):
             adapter.get("PROJ-500")
+
+
+def _make_search_result(issues: list, total: int) -> MagicMock:
+    """Return a mock JIRA search result with the requested issues."""
+    mock_result = MagicMock()
+    mock_result.total = total
+    mock_result.__iter__.return_value = iter(issues)
+    return mock_result
+
+
+class TestJiraAdapterSearch:
+    """Test JiraAdapter.search() method."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_search_returns_jira_search_result(
+        self,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+        sample_issue_dto: JiraIssueDTO,
+    ) -> None:
+        """search() returns JiraSearchResult with pagination data."""
+        mock_jira = mock_jira_cls.return_value
+        mock_issue = MagicMock()
+        mock_jira.search_issues.return_value = _make_search_result(
+            [mock_issue], total=3
+        )
+        adapter = JiraAdapter(jira_settings)
+        adapter._issue_to_dto = MagicMock(return_value=sample_issue_dto)
+
+        result = adapter.search("project = PROJ", start_at=2, max_results=25)
+
+        assert isinstance(result, JiraSearchResult)
+        assert result.issues == [sample_issue_dto]
+        assert result.total == 3
+        assert result.start_at == 2
+        assert result.max_results == 25
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_search_passes_pagination_params(
+        self,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+        sample_issue_dto: JiraIssueDTO,
+    ) -> None:
+        """search() forwards start/max/fields to the JIRA client."""
+        mock_jira = mock_jira_cls.return_value
+        mock_jira.search_issues.return_value = _make_search_result([], total=0)
+        adapter = JiraAdapter(jira_settings)
+        adapter._issue_to_dto = MagicMock(return_value=sample_issue_dto)
+
+        adapter.search(
+            "project = PROJ", start_at=5, max_results=10, fields=["id", "summary"]
+        )
+
+        mock_jira.search_issues.assert_called_once_with(
+            "project = PROJ", startAt=5, maxResults=10, fields=["id", "summary"]
+        )
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_search_converts_issues_to_dto(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """search() converts each issue to a DTO via _issue_to_dto."""
+        mock_jira = mock_jira_cls.return_value
+        issue_one = MagicMock()
+        issue_two = MagicMock()
+        mock_jira.search_issues.return_value = _make_search_result(
+            [issue_one, issue_two], total=2
+        )
+        adapter = JiraAdapter(jira_settings)
+        adapter._issue_to_dto = MagicMock(
+            return_value=JiraIssueDTO(
+                project="PROJ",
+                title="Sample",
+                description="desc",
+                issue_type="Task",
+                labels=[],
+                priority="Low",
+                ticket="PARENT-1",
+                feature="EPIC-1",
+                assignee="user",
+                reporter="user",
+                team="Team",
+                region="Region",
+            )
+        )
+
+        adapter.search("project = PROJ")
+
+        adapter._issue_to_dto.assert_has_calls([call(issue_one), call(issue_two)])
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_search_has_more_property(
+        self,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+        sample_issue_dto: JiraIssueDTO,
+    ) -> None:
+        """JiraSearchResult.has_more reflects total vs returned count."""
+        mock_jira = mock_jira_cls.return_value
+        mock_issue = MagicMock()
+        mock_jira.search_issues.return_value = _make_search_result(
+            [mock_issue], total=5
+        )
+        adapter = JiraAdapter(jira_settings)
+        adapter._issue_to_dto = MagicMock(return_value=sample_issue_dto)
+
+        result = adapter.search("project = PROJ")
+
+        assert result.has_more
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_search_handles_empty_results(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """search() handles empty results without issues."""
+        mock_jira = mock_jira_cls.return_value
+        mock_jira.search_issues.return_value = _make_search_result([], total=0)
+        adapter = JiraAdapter(jira_settings)
+        adapter._issue_to_dto = MagicMock()
+
+        result = adapter.search("project = PROJ")
+
+        assert result.issues == []
+        assert result.total == 0
+        assert result.start_at == 0
+        assert result.max_results == 50
+        assert not result.has_more

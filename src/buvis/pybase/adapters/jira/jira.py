@@ -9,6 +9,7 @@ from jira import JIRA
 from jira.exceptions import JIRAError
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
+from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
 from buvis.pybase.adapters.jira.settings import JiraSettings
 from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
 
@@ -117,6 +118,38 @@ class JiraAdapter:
             region=_custom_field(mappings.region, "value"),
             id=issue.key,
             link=issue.permalink(),
+        )
+
+    def search(
+        self,
+        jql: str,
+        start_at: int = 0,
+        max_results: int = 50,
+        fields: list[str] | None = None,
+    ) -> JiraSearchResult:
+        """Search issues using JQL.
+
+        Args:
+            jql: JQL query string.
+            start_at: Pagination offset (0-based).
+            max_results: Max issues to return (default 50).
+            fields: Specific fields to retrieve (None = all).
+
+        Returns:
+            JiraSearchResult with matching issues and pagination info.
+        """
+        result = self._jira.search_issues(
+            jql,
+            startAt=start_at,
+            maxResults=max_results,
+            fields=fields,
+        )
+
+        return JiraSearchResult(
+            issues=[self._issue_to_dto(issue) for issue in result],
+            total=result.total,
+            start_at=start_at,
+            max_results=max_results,
         )
 
     def get(self, issue_key: str) -> JiraIssueDTO:
