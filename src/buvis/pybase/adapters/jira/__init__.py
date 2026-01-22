@@ -5,11 +5,14 @@ from .exceptions import (
     JiraTransitionError,
 )
 from .jira import JiraAdapter
+from .settings import JiraFieldMappings, JiraSettings
 
 __all__ = [
     "JiraAdapter",
     "JiraError",
+    "JiraFieldMappings",
     "JiraLinkError",
     "JiraNotFoundError",
+    "JiraSettings",
     "JiraTransitionError",
 ]
