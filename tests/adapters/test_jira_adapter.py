@@ -266,6 +266,63 @@ class TestJiraAdapterGet:
             adapter.get("PROJ-500")
 
 
+class TestJiraAdapterUpdate:
+    """Test JiraAdapter.update() method."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_calls_issue_update_with_fields(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """update() forwards the provided fields to issue.update()."""
+        mock_jira = mock_jira_cls.return_value
+        issue = MagicMock()
+        mock_jira.issue.return_value = issue
+
+        adapter = JiraAdapter(jira_settings)
+        adapter._issue_to_dto = MagicMock()
+
+        adapter.update("PROJ-123", {"summary": "Updated"})
+
+        issue.update.assert_called_once_with(fields={"summary": "Updated"})
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_returns_refreshed_issue_dto(
+        self,
+        mock_jira_cls: MagicMock,
+        jira_settings: JiraSettings,
+        sample_issue_dto: JiraIssueDTO,
+    ) -> None:
+        """update() returns DTO generated from a refreshed issue."""
+        mock_jira = mock_jira_cls.return_value
+        original_issue = MagicMock()
+        refreshed_issue = MagicMock()
+        mock_jira.issue.side_effect = [original_issue, refreshed_issue]
+        adapter = JiraAdapter(jira_settings)
+        adapter._issue_to_dto = MagicMock(return_value=sample_issue_dto)
+
+        result = adapter.update("PROJ-123", {"summary": "Updated"})
+
+        assert result is sample_issue_dto
+        adapter._issue_to_dto.assert_called_once_with(refreshed_issue)
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_raises_not_found_for_missing_issue(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """update() raises JiraNotFoundError when the issue cannot be found."""
+        mock_jira = mock_jira_cls.return_value
+        error = JIRAError("Not found")
+        error.status_code = 404
+        mock_jira.issue.side_effect = error
+
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraNotFoundError) as excinfo:
+            adapter.update("PROJ-404", {"summary": "Updated"})
+
+        assert excinfo.value.issue_key == "PROJ-404"
+
+
 def _make_search_result(issues: list, total: int) -> MagicMock:
     """Return a mock JIRA search result with the requested issues."""
     mock_result = MagicMock()

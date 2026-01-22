@@ -172,3 +172,29 @@ class JiraAdapter:
             raise
 
         return self._issue_to_dto(issue)
+
+    def update(self, issue_key: str, fields: dict) -> JiraIssueDTO:
+        """Update issue fields.
+
+        Args:
+            issue_key: Issue to update.
+            fields: Dict of field names/IDs to new values.
+
+        Returns:
+            JiraIssueDTO with updated issue data.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+        """
+        try:
+            issue = self._jira.issue(issue_key)
+        except JIRAError as e:
+            if e.status_code == 404:
+                raise JiraNotFoundError(issue_key) from e
+            raise
+
+        issue.update(fields=fields)
+
+        # Refresh to get updated values
+        updated = self._jira.issue(issue_key)
+        return self._issue_to_dto(updated)
