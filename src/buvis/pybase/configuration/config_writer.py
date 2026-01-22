@@ -83,8 +83,14 @@ class ConfigWriter:
             return "true" if value else "false"
         if isinstance(value, str):
             # Quote strings with special chars or if empty
-            if not value or any(c in value for c in ":{}[]#&*!|>'\"%@`\\"):
+            special_chars = ":{}[]#&*!|>'\"%@`\\\n\r\t"
+            if not value or any(c in value for c in special_chars):
                 escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+                escaped = (
+                    escaped.replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t")
+                )
                 return f'"{escaped}"'
             return value
         if isinstance(value, Path):

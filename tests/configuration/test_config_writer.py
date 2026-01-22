@@ -132,6 +132,30 @@ class TestFormatValue:
         assert formatted == '"foo\\\\\\"bar"'
         assert yaml.safe_load(formatted) == value
 
+    def test_string_with_newline(self) -> None:
+        value = "line1\nline2"
+        formatted = ConfigWriter._format_value(value)
+        assert formatted.startswith('"')
+        assert yaml.safe_load(formatted) == value
+
+    def test_string_with_carriage_return(self) -> None:
+        value = "line1\rline2"
+        formatted = ConfigWriter._format_value(value)
+        assert formatted.startswith('"')
+        assert yaml.safe_load(formatted) == value
+
+    def test_string_with_tab(self) -> None:
+        value = "col1\tcol2"
+        formatted = ConfigWriter._format_value(value)
+        assert formatted.startswith('"')
+        assert yaml.safe_load(formatted) == value
+
+    def test_string_with_mixed_whitespace(self) -> None:
+        value = "line1\nline2\ttab\rreturn"
+        formatted = ConfigWriter._format_value(value)
+        assert formatted.startswith('"')
+        assert yaml.safe_load(formatted) == value
+
     def test_path(self) -> None:
         assert ConfigWriter._format_value(Path("/tmp/test")) == "/tmp/test"
 
