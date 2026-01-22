@@ -235,6 +235,9 @@ class ConfigWriter:
         prefix = " " * indent
 
         for name in type(instance).model_fields:
+            if is_sensitive_field(name):
+                lines.append(f"{prefix}# SENSITIVE - do not commit to version control")
+
             value = getattr(instance, name)
 
             # Check for deeper nesting

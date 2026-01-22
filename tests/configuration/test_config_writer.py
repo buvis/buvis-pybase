@@ -195,6 +195,19 @@ class SampleSettings(BaseModel):
     list_field: list[str] = []
 
 
+class DbWithPassword(BaseModel):
+    """Nested model with sensitive field for instance formatting test."""
+
+    host: str = "localhost"
+    password: str = "secret"
+
+
+class SettingsWithDefaultInstance(BaseModel):
+    """Settings with nested model having default instance."""
+
+    db: DbWithPassword = DbWithPassword()
+
+
 class TestIsOptional:
     """Tests for ConfigWriter._is_optional."""
 
@@ -551,3 +564,21 @@ class TestGenerate:
     def test_optional_suffix_in_type_comment(self) -> None:
         result = ConfigWriter.generate(GenerateTestSettings, "myapp")
         assert "str | None (optional)" in result
+
+
+class TestSensitiveFieldInModelInstance:
+    """Tests for SENSITIVE warning in _format_model_instance."""
+
+    def test_sensitive_field_in_default_instance_via_generate(self) -> None:
+        """Nested model with default instance emits SENSITIVE for password."""
+        result = ConfigWriter.generate(SettingsWithDefaultInstance, "test")
+        lines = result.splitlines()
+        for idx, line in enumerate(lines):
+            if "password:" in line and not line.strip().startswith("#"):
+                assert (
+                    lines[idx - 1].strip()
+                    == "# SENSITIVE - do not commit to version control"
+                ), f"Expected SENSITIVE comment before password, got: {lines[idx-1]}"
+                break
+        else:
+            pytest.fail("password field not found in generate output")
