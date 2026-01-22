@@ -208,6 +208,34 @@ class SettingsWithDefaultInstance(BaseModel):
     db: DbWithPassword = DbWithPassword()
 
 
+class SimpleInstance(BaseModel):
+    """Simple model for instance formatting tests."""
+
+    name: str = "test"
+    count: int = 42
+
+
+class NestedInstanceParent(BaseModel):
+    """Parent model containing nested instance."""
+
+    label: str = "parent"
+    child: SimpleInstance = SimpleInstance()
+
+
+class InstanceWithSensitive(BaseModel):
+    """Model with sensitive field for instance formatting."""
+
+    host: str = "localhost"
+    password: str = "secret123"
+
+
+class SettingsWithInstanceDefault(BaseModel):
+    """Settings with BaseModel instance as default value."""
+
+    app_name: str = "myapp"
+    database: InstanceWithSensitive = InstanceWithSensitive()
+
+
 class TestIsOptional:
     """Tests for ConfigWriter._is_optional."""
 
@@ -368,6 +396,61 @@ class TestFormatNestedModel:
                 break
         else:
             pytest.fail("password field not found in nested output")
+
+
+class TestFormatModelInstance:
+    """Tests for ConfigWriter._format_model_instance."""
+
+    def test_basic_instance_formatting(self) -> None:
+        instance = SimpleInstance(name="hello", count=99)
+        result = ConfigWriter._format_model_instance(instance)
+        assert "  name: hello" in result
+        assert "  count: 99" in result
+
+    def test_uses_instance_values_not_defaults(self) -> None:
+        instance = SimpleInstance(name="custom", count=1)
+        result = ConfigWriter._format_model_instance(instance)
+        assert "custom" in result
+        assert "1" in result
+        assert "test" not in result  # default shouldnt appear
+
+    def test_nested_instance_indentation(self) -> None:
+        instance = NestedInstanceParent()
+        result = ConfigWriter._format_model_instance(instance)
+        assert "  label: parent" in result
+        assert "  child:" in result
+        assert "    name: test" in result
+        assert "    count: 42" in result
+
+    def test_custom_indent_level(self) -> None:
+        instance = SimpleInstance()
+        result = ConfigWriter._format_model_instance(instance, indent=4)
+        assert "    name: test" in result
+        assert "    count: 42" in result
+
+    def test_sensitive_field_via_instance_path(self) -> None:
+        """Verify SENSITIVE warning for nested model instance with password."""
+        instance = InstanceWithSensitive()
+        result = ConfigWriter._format_model_instance(instance)
+        lines = result.splitlines()
+        for idx, line in enumerate(lines):
+            if line.strip().startswith("password:"):
+                assert (
+                    lines[idx - 1].strip()
+                    == "# SENSITIVE - do not commit to version control"
+                )
+                break
+        else:
+            pytest.fail("password field not found or SENSITIVE comment missing")
+
+    def test_generate_with_model_instance_default(self) -> None:
+        """Verify generate() output includes instance values for default BaseModel."""
+        result = ConfigWriter.generate(SettingsWithInstanceDefault, "test")
+        assert "app_name: myapp" in result
+        assert "database:" in result
+        assert "  host: localhost" in result
+        assert "  password: secret123" in result
+        assert "# SENSITIVE" in result
 
 
 class FieldTestSettings(BaseModel):
