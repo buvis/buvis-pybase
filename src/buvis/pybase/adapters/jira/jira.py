@@ -6,9 +6,11 @@ Provides JiraAdapter for creating JIRA issues with custom field support.
 import os
 
 from jira import JIRA
+from jira.exceptions import JIRAError
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.settings import JiraSettings
+from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
 
 
 class JiraAdapter:
@@ -87,21 +89,53 @@ class JiraAdapter:
         new_issue.update(**{mappings.feature: issue.feature})
         new_issue.update(**{mappings.region: {"value": issue.region}})
 
+        return self._issue_to_dto(new_issue)
+
+    def _issue_to_dto(self, issue) -> JiraIssueDTO:
+        """Convert a JIRA issue response into a DTO."""
+        fields = issue.fields
+        mappings = self._fields
+
+        def _custom_field(field_name: str, attr: str | None = None):
+            value = getattr(fields, field_name, None)
+            if value is None:
+                return None
+            return getattr(value, attr, None) if attr else value
+
         return JiraIssueDTO(
-            project=new_issue.fields.project.key,
-            title=new_issue.fields.summary,
-            description=new_issue.fields.description,
-            issue_type=new_issue.fields.issuetype.name,
-            labels=new_issue.fields.labels,
-            priority=new_issue.fields.priority.name,
-            ticket=getattr(new_issue.fields, mappings.ticket, None),
-            feature=getattr(new_issue.fields, mappings.feature, None),
-            assignee=new_issue.fields.assignee.key,
-            reporter=new_issue.fields.reporter.key,
-            team=getattr(getattr(new_issue.fields, mappings.team, None), "value", None),
-            region=getattr(
-                getattr(new_issue.fields, mappings.region, None), "value", None
-            ),
-            id=new_issue.key,
-            link=new_issue.permalink(),
+            project=fields.project.key,
+            title=fields.summary,
+            description=fields.description,
+            issue_type=fields.issuetype.name,
+            labels=fields.labels,
+            priority=fields.priority.name,
+            ticket=_custom_field(mappings.ticket),
+            feature=_custom_field(mappings.feature),
+            assignee=fields.assignee.key,
+            reporter=fields.reporter.key,
+            team=_custom_field(mappings.team, "value"),
+            region=_custom_field(mappings.region, "value"),
+            id=issue.key,
+            link=issue.permalink(),
         )
+
+    def get(self, issue_key: str) -> JiraIssueDTO:
+        """Fetch issue by key.
+
+        Args:
+            issue_key: JIRA issue key (e.g., 'PROJ-123').
+
+        Returns:
+            JiraIssueDTO with issue data.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
+        """
+        try:
+            issue = self._jira.issue(issue_key)
+        except JIRAError as e:
+            if getattr(e, "status_code", None) == 404:
+                raise JiraNotFoundError(issue_key) from e
+            raise
+
+        return self._issue_to_dto(issue)

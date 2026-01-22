@@ -4,10 +4,12 @@ import os
 from unittest.mock import MagicMock, patch
 
 import pytest
+from jira.exceptions import JIRAError
 
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.settings import JiraFieldMappings, JiraSettings
+from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
 
 
 @pytest.fixture
@@ -187,3 +189,77 @@ class TestJiraAdapterCreate:
         mappings = jira_settings.field_mappings
         mock_fetched_issue.update.assert_any_call(**{mappings.feature: "EPIC-456"})
         mock_fetched_issue.update.assert_any_call(**{mappings.region: {"value": "US"}})
+
+
+class TestJiraAdapterGet:
+    """Test JiraAdapter.get() method."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_returns_issue_dto(
+        self, mock_jira_cls, jira_settings: JiraSettings
+    ) -> None:
+        """get() translates issue details into JiraIssueDTO."""
+        mock_jira = mock_jira_cls.return_value
+        mock_issue = MagicMock()
+        mock_issue.key = "PROJ-123"
+        mock_issue.permalink.return_value = "https://jira.example.com/browse/PROJ-123"
+        mock_issue.fields.project.key = "PROJ"
+        mock_issue.fields.summary = "Test Issue"
+        mock_issue.fields.description = "Test description"
+        mock_issue.fields.issuetype.name = "Task"
+        mock_issue.fields.labels = ["test", "automated"]
+        mock_issue.fields.priority.name = "Medium"
+        mock_issue.fields.assignee.key = "testuser"
+        mock_issue.fields.reporter.key = "reporter"
+        mappings = jira_settings.field_mappings
+        setattr(mock_issue.fields, mappings.ticket, "PARENT-123")
+        setattr(mock_issue.fields, mappings.feature, "EPIC-456")
+        team_field = MagicMock()
+        team_field.value = "DevTeam"
+        setattr(mock_issue.fields, mappings.team, team_field)
+        region_field = MagicMock()
+        region_field.value = "US"
+        setattr(mock_issue.fields, mappings.region, region_field)
+        mock_jira.issue.return_value = mock_issue
+
+        adapter = JiraAdapter(jira_settings)
+        result = adapter.get("PROJ-123")
+
+        assert result.project == "PROJ"
+        assert result.ticket == "PARENT-123"
+        assert result.feature == "EPIC-456"
+        assert result.team == "DevTeam"
+        assert result.region == "US"
+        assert result.id == "PROJ-123"
+        assert result.link == "https://jira.example.com/browse/PROJ-123"
+        mock_jira.issue.assert_called_once_with("PROJ-123")
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_raises_not_found(self, mock_jira_cls, jira_settings: JiraSettings) -> None:
+        """get() raises JiraNotFoundError when JIRA returns 404."""
+        mock_jira = mock_jira_cls.return_value
+        error = JIRAError("Not found")
+        error.status_code = 404
+        mock_jira.issue.side_effect = error
+
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraNotFoundError) as excinfo:
+            adapter.get("PROJ-404")
+
+        assert excinfo.value.issue_key == "PROJ-404"
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_propagates_other_errors(
+        self, mock_jira_cls, jira_settings: JiraSettings
+    ) -> None:
+        """get() re-raises JIRAError if status is not 404."""
+        mock_jira = mock_jira_cls.return_value
+        error = JIRAError("Server error")
+        error.status_code = 500
+        mock_jira.issue.side_effect = error
+
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JIRAError):
+            adapter.get("PROJ-500")
