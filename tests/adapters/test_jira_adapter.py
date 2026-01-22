@@ -10,7 +10,7 @@ from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
 from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.settings import JiraFieldMappings, JiraSettings
-from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
+from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError, JiraTransitionError
 
 
 @pytest.fixture
@@ -449,3 +449,113 @@ class TestJiraAdapterSearch:
         assert result.start_at == 0
         assert result.max_results == 50
         assert not result.has_more
+
+
+class TestJiraAdapterTransition:
+    """Test transition helpers on JiraAdapter."""
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_get_transitions_returns_id_name_pairs(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """get_transitions() converts transitions to id/name dicts."""
+        mock_jira = mock_jira_cls.return_value
+        issue = MagicMock()
+        mock_jira.issue.return_value = issue
+        mock_jira.transitions.return_value = [
+            {"id": "1", "name": "Start Progress"},
+            {"id": "2", "name": "Done"},
+        ]
+
+        adapter = JiraAdapter(jira_settings)
+
+        result = adapter.get_transitions("PROJ-123")
+
+        assert result == [
+            {"id": "1", "name": "Start Progress"},
+            {"id": "2", "name": "Done"},
+        ]
+        mock_jira.issue.assert_called_once_with("PROJ-123")
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_transition_by_name_calls_transition_issue(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """transition() finds transitions by name."""
+        mock_jira = mock_jira_cls.return_value
+        issue = MagicMock()
+        mock_jira.issue.return_value = issue
+        mock_jira.transitions.return_value = [
+            {"id": "1", "name": "Start Progress"},
+        ]
+
+        adapter = JiraAdapter(jira_settings)
+
+        adapter.transition("PROJ-123", "Start Progress")
+
+        mock_jira.transition_issue.assert_called_once_with(
+            issue, "1", fields=None, comment=None
+        )
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_transition_by_id_accepts_numeric_identifier(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """transition() accepts numeric ids directly."""
+        mock_jira = mock_jira_cls.return_value
+        issue = MagicMock()
+        mock_jira.issue.return_value = issue
+        mock_jira.transitions.return_value = [
+            {"id": "99", "name": "Approve"},
+        ]
+
+        adapter = JiraAdapter(jira_settings)
+
+        adapter.transition("PROJ-123", "99")
+
+        mock_jira.transition_issue.assert_called_once_with(
+            issue, "99", fields=None, comment=None
+        )
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_transition_raises_for_unknown_transition(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """transition() raises JiraTransitionError when not available."""
+        mock_jira = mock_jira_cls.return_value
+        issue = MagicMock()
+        mock_jira.issue.return_value = issue
+        mock_jira.transitions.return_value = [{"id": "1", "name": "Start"}]
+
+        adapter = JiraAdapter(jira_settings)
+
+        with pytest.raises(JiraTransitionError) as excinfo:
+            adapter.transition("PROJ-123", "Close")
+
+        assert excinfo.value.issue_key == "PROJ-123"
+        assert excinfo.value.transition == "Close"
+
+    @patch("buvis.pybase.adapters.jira.jira.JIRA")
+    def test_transition_passes_fields_and_comment(
+        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
+    ) -> None:
+        """transition() forwards provided fields and comment."""
+        mock_jira = mock_jira_cls.return_value
+        issue = MagicMock()
+        mock_jira.issue.return_value = issue
+        mock_jira.transitions.return_value = [
+            {"id": "1", "name": "Start Progress"},
+        ]
+
+        adapter = JiraAdapter(jira_settings)
+
+        adapter.transition(
+            "PROJ-123", "Start Progress", fields={"summary": "Updated"}, comment="note"
+        )
+
+        mock_jira.transition_issue.assert_called_once_with(
+            issue,
+            "1",
+            fields={"summary": "Updated"},
+            comment="note",
+        )

@@ -11,7 +11,10 @@ from jira.exceptions import JIRAError
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
 from buvis.pybase.adapters.jira.settings import JiraSettings
-from buvis.pybase.adapters.jira.exceptions import JiraNotFoundError
+from buvis.pybase.adapters.jira.exceptions import (
+    JiraNotFoundError,
+    JiraTransitionError,
+)
 
 
 class JiraAdapter:
@@ -198,3 +201,50 @@ class JiraAdapter:
         # Refresh to get updated values
         updated = self._jira.issue(issue_key)
         return self._issue_to_dto(updated)
+
+    def get_transitions(self, issue_key: str) -> list[dict]:
+        """Get available transitions for issue.
+
+        Args:
+            issue_key: Issue to query.
+
+        Returns:
+            List of dicts with 'id' and 'name' keys.
+        """
+        issue = self._jira.issue(issue_key)
+        transitions = self._jira.transitions(issue)
+        return [{"id": t["id"], "name": t["name"]} for t in transitions]
+
+    def transition(
+        self,
+        issue_key: str,
+        transition_name_or_id: str,
+        fields: dict | None = None,
+        comment: str | None = None,
+    ) -> None:
+        """Execute workflow transition.
+
+        Args:
+            issue_key: Issue to transition.
+            transition_name_or_id: Transition name or ID.
+            fields: Optional fields to set during transition.
+            comment: Optional comment to add.
+
+        Raises:
+            JiraTransitionError: Transition not available.
+        """
+        issue = self._jira.issue(issue_key)
+        transitions = self._jira.transitions(issue)
+
+        transition_id = None
+        for t in transitions:
+            if t["id"] == transition_name_or_id or t["name"] == transition_name_or_id:
+                transition_id = t["id"]
+                break
+
+        if not transition_id:
+            raise JiraTransitionError(issue_key, transition_name_or_id)
+
+        self._jira.transition_issue(
+            issue, transition_id, fields=fields, comment=comment
+        )
