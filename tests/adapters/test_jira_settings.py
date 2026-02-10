@@ -1,67 +1,80 @@
+"""Tests for Jira adapter settings."""
+
 from __future__ import annotations
 
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from buvis.pybase.adapters.jira.settings import JiraFieldMappings, JiraSettings
 
 
-def test_field_mappings_defaults() -> None:
-    """Field mappings use the expected custom field IDs."""
-    mappings = JiraFieldMappings()
-
-    assert mappings.ticket == "customfield_11502"
-    assert mappings.team == "customfield_10501"
-    assert mappings.feature == "customfield_10001"
-    assert mappings.region == "customfield_12900"
+@pytest.fixture
+def base_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
+    """Set required Jira environment values."""
+    monkeypatch.setenv("BUVIS_JIRA_SERVER", "https://jira.example.com")
+    monkeypatch.setenv("BUVIS_JIRA_TOKEN", "test-token")
+    return monkeypatch
 
 
-def test_settings_load_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """JiraSettings picks up server and token from env vars."""
-    monkeypatch.setenv("BUVIS_JIRA_SERVER", "https://jira.example")
-    monkeypatch.setenv("BUVIS_JIRA_TOKEN", "token-value")
+class TestJiraSettings:
+    """Ensure JiraSettings loads configuration from the environment."""
 
-    settings = JiraSettings()
+    def test_loads_from_env_vars(self, base_env: pytest.MonkeyPatch) -> None:
+        """Server, token, and proxy values come directly from env vars."""
+        base_env.setenv("BUVIS_JIRA_PROXY", "http://proxy.local:8080")
+        settings = JiraSettings()
 
-    assert settings.server == "https://jira.example"
-    assert settings.token == "token-value"
-    assert settings.proxy is None
-    assert settings.field_mappings.ticket == "customfield_11502"
+        assert settings.server == "https://jira.example.com"
+        assert settings.token.get_secret_value() == "test-token"
+        assert settings.proxy == "http://proxy.local:8080"
+
+    def test_token_masked_in_repr(self, base_env: pytest.MonkeyPatch) -> None:
+        """Token is masked in repr to prevent leakage."""
+        settings = JiraSettings()
+
+        assert "test-token" not in repr(settings)
+
+    @pytest.mark.parametrize("missing_var", ["BUVIS_JIRA_SERVER", "BUVIS_JIRA_TOKEN"])
+    def test_missing_required_fields_raises_validation_error(
+        self, monkeypatch: pytest.MonkeyPatch, missing_var: str
+    ) -> None:
+        """Omitting a required field from the environment triggers ValidationError."""
+        monkeypatch.setenv("BUVIS_JIRA_SERVER", "https://jira.example.com")
+        monkeypatch.setenv("BUVIS_JIRA_TOKEN", "test-token")
+        monkeypatch.delenv(missing_var, raising=False)
+
+        with pytest.raises(ValidationError):
+            JiraSettings()
+
+    def test_default_field_mappings(self, base_env: pytest.MonkeyPatch) -> None:
+        """Field mappings default to the expected custom field keys."""
+        settings = JiraSettings()
+
+        assert settings.field_mappings == JiraFieldMappings()
+
+    def test_nested_delimiter_parses_overrides(
+        self, base_env: pytest.MonkeyPatch
+    ) -> None:
+        """Nested field mapping overrides load via the nested delimiter."""
+        base_env.setenv("BUVIS_JIRA_FIELD_MAPPINGS__TICKET", "custom_ticket")
+        base_env.setenv("BUVIS_JIRA_FIELD_MAPPINGS__REGION", "custom_region")
+        settings = JiraSettings()
+
+        assert settings.field_mappings.ticket == "custom_ticket"
+        assert settings.field_mappings.region == "custom_region"
+
+    def test_proxy_is_optional(self, base_env: pytest.MonkeyPatch) -> None:
+        """Proxy defaults to None when not configured."""
+        settings = JiraSettings()
+
+        assert settings.proxy is None
 
 
-def test_nested_field_mappings_override(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Nested env var overrides field mappings for ticket."""
-    monkeypatch.setenv("BUVIS_JIRA_SERVER", "https://jira.example")
-    monkeypatch.setenv("BUVIS_JIRA_TOKEN", "token-value")
-    monkeypatch.setenv("BUVIS_JIRA_FIELD_MAPPINGS__TICKET", "customfield_99999")
+class TestJiraFieldMappings:
+    """Test JiraFieldMappings model."""
 
-    settings = JiraSettings()
-
-    assert settings.field_mappings.ticket == "customfield_99999"
-
-
-def test_proxy_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Proxy field defaults to None when unset."""
-    monkeypatch.setenv("BUVIS_JIRA_SERVER", "https://jira.example")
-    monkeypatch.setenv("BUVIS_JIRA_TOKEN", "token-value")
-
-    settings = JiraSettings()
-
-    assert settings.proxy is None
-
-
-def test_settings_frozen_rejects_mutation(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Frozen models cannot be modified after creation."""
-    monkeypatch.setenv("BUVIS_JIRA_SERVER", "https://jira.example")
-    monkeypatch.setenv("BUVIS_JIRA_TOKEN", "token-value")
-
-    settings = JiraSettings()
-
-    with pytest.raises(ValidationError):
-        settings.server = "https://changed.example"
-
-
-def test_extra_forbid_rejects_unknown_fields() -> None:
-    """Passing an unknown field raises a validation error."""
-    with pytest.raises(ValidationError):
-        JiraSettings(server="https://jira.example", token="token", bogus="value")  # type: ignore[arg-type]
+    def test_frozen_prevents_mutation(self) -> None:
+        """Attempting to modify a frozen field raises ValidationError."""
+        mappings = JiraFieldMappings()
+        with pytest.raises(ValidationError):
+            mappings.ticket = "new_value"

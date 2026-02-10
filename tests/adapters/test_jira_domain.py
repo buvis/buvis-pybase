@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from buvis.pybase.adapters.jira.domain.jira_comment_dto import JiraCommentDTO
 from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
 from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
@@ -25,19 +27,25 @@ def build_issue(key: str) -> JiraIssueDTO:
     )
 
 
-def test_jira_comment_dto_instantiation_defaults() -> None:
-    """Required fields set while optional fields use their defaults."""
-    comment = JiraCommentDTO(body="Example note")
+def test_jira_comment_dto_instantiation() -> None:
+    """All required fields populated, is_internal defaults to False."""
+    now = datetime.now(tz=timezone.utc)
+    comment = JiraCommentDTO(
+        id="12345",
+        author="jsmith",
+        body="Example note",
+        created=now,
+    )
 
+    assert comment.id == "12345"
+    assert comment.author == "jsmith"
     assert comment.body == "Example note"
-    assert comment.author is None
-    assert comment.created is None
+    assert comment.created == now
     assert comment.is_internal is False
-    assert comment.id is None
 
 
-def test_jira_search_result_has_more_true() -> None:
-    """has_more is True when more issues exist beyond the current page."""
+def test_jira_search_result_pagination() -> None:
+    """JiraSearchResult stores pagination info alongside issues."""
     result = JiraSearchResult(
         issues=[build_issue("PROJ-1")],
         total=5,
@@ -45,16 +53,7 @@ def test_jira_search_result_has_more_true() -> None:
         max_results=50,
     )
 
-    assert result.has_more
-
-
-def test_jira_search_result_has_more_false() -> None:
-    """has_more is False when the current page covers all matches."""
-    result = JiraSearchResult(
-        issues=[build_issue("PROJ-1")],
-        total=1,
-        start_at=0,
-        max_results=50,
-    )
-
-    assert not result.has_more
+    assert len(result.issues) == 1
+    assert result.total == 5
+    assert result.start_at == 0
+    assert result.max_results == 50

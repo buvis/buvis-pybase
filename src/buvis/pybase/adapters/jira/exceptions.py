@@ -1,42 +1,52 @@
+"""Jira adapter-specific exceptions."""
+
 from __future__ import annotations
+
 
 __all__ = [
     "JiraError",
-    "JiraLinkError",
     "JiraNotFoundError",
     "JiraTransitionError",
+    "JiraLinkError",
 ]
 
 
 class JiraError(Exception):
-    """Base exception for JIRA operations."""
-
-    def __init__(self, message: str = "JIRA operation failed.") -> None:
-        super().__init__(message)
+    """Base exception for the Jira adapter."""
 
 
 class JiraNotFoundError(JiraError):
-    """Issue not found in JIRA."""
+    """Raised when a Jira issue cannot be located."""
 
     def __init__(self, issue_key: str) -> None:
-        super().__init__(f"Issue not found: {issue_key}")
         self.issue_key = issue_key
+        super().__init__(f"Issue not found: {issue_key}")
 
 
 class JiraTransitionError(JiraError):
-    """Transition unavailable or failed."""
+    """Raised when a transition is unavailable for an issue."""
 
     def __init__(self, issue_key: str, transition: str) -> None:
-        super().__init__(f"Transition '{transition}' unavailable for {issue_key}")
         self.issue_key = issue_key
         self.transition = transition
+        super().__init__(f"Transition '{transition}' unavailable for {issue_key}")
 
 
 class JiraLinkError(JiraError):
-    """Issue link creation failed."""
+    """Raised when linking two Jira issues fails."""
 
-    def __init__(self, from_key: str, to_key: str, link_type: str) -> None:
-        super().__init__(f"Failed to link {from_key} -> {to_key} ({link_type})")
+    def __init__(
+        self,
+        from_key: str,
+        to_key: str,
+        link_type: str,
+        reason: str | None = None,
+    ) -> None:
         self.from_key = from_key
         self.to_key = to_key
         self.link_type = link_type
+        self.reason = reason
+        msg = f"Failed to link {from_key} -> {to_key} ({link_type})"
+        if reason:
+            msg = f"{msg}: {reason}"
+        super().__init__(msg)

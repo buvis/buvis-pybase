@@ -1,13 +1,15 @@
+"""Jira adapter configuration settings."""
+
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 __all__ = ["JiraFieldMappings", "JiraSettings"]
 
 
 class JiraFieldMappings(BaseModel):
-    """Custom field ID mappings for JIRA instance."""
+    """Custom field keys used by Jira settings."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -18,20 +20,17 @@ class JiraFieldMappings(BaseModel):
 
 
 class JiraSettings(BaseSettings):
-    """JIRA adapter configuration.
-
-    Loads from env vars with BUVIS_JIRA_ prefix.
-    Nested delimiter: __ (e.g., BUVIS_JIRA__FIELD_MAPPINGS__TICKET).
-    """
+    """Environment-driven Jira configuration values."""
 
     model_config = SettingsConfigDict(
         env_prefix="BUVIS_JIRA_",
         env_nested_delimiter="__",
+        case_sensitive=False,
         frozen=True,
         extra="forbid",
     )
 
     server: str
-    token: str
+    token: SecretStr
     proxy: str | None = None
     field_mappings: JiraFieldMappings = JiraFieldMappings()

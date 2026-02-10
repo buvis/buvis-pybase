@@ -1,8 +1,8 @@
+"""Tests for Jira adapter exceptions."""
+
 from __future__ import annotations
 
-import pytest
-
-from buvis.pybase.adapters.jira import (
+from buvis.pybase.adapters.jira.exceptions import (
     JiraError,
     JiraLinkError,
     JiraNotFoundError,
@@ -10,48 +10,79 @@ from buvis.pybase.adapters.jira import (
 )
 
 
-def test_jira_error_can_be_raised_and_caught() -> None:
-    message = "custom failure"
+class TestJiraError:
+    """Tests for the JiraError base class."""
 
-    with pytest.raises(JiraError, match=message):
-        raise JiraError(message)
+    def test_raises_from_exception(self) -> None:
+        """JiraError inherits from Exception."""
+        assert issubclass(JiraError, Exception)
 
-
-def test_jira_not_found_error_inherits_and_exposes_context() -> None:
-    issue_key = "PROJ-1"
-
-    with pytest.raises(JiraNotFoundError, match=issue_key) as exc_info:
-        raise JiraNotFoundError(issue_key)
-
-    error = exc_info.value
-    assert isinstance(error, JiraError)
-    assert error.issue_key == issue_key
+    def test_string_represents_message(self) -> None:
+        """JiraError forwards its message to Exception."""
+        message = "jira failure"
+        exc = JiraError(message)
+        assert str(exc) == message
 
 
-def test_jira_transition_error_message_and_attributes() -> None:
-    issue_key = "PROJ-2"
-    transition = "Done"
+class TestJiraNotFoundError:
+    """Tests for JiraNotFoundError."""
 
-    with pytest.raises(JiraTransitionError, match=transition) as exc_info:
-        raise JiraTransitionError(issue_key, transition)
+    def test_message_contains_issue_key(self) -> None:
+        """Exception message includes the missing issue key."""
+        issue_key = "ABC-123"
+        exc = JiraNotFoundError(issue_key)
+        assert str(exc) == f"Issue not found: {issue_key}"
+        assert exc.issue_key == issue_key
 
-    error = exc_info.value
-    assert issue_key in str(error)
-    assert error.issue_key == issue_key
-    assert error.transition == transition
+    def test_is_subclass_of_jira_error(self) -> None:
+        """JiraNotFoundError derives from JiraError."""
+        assert issubclass(JiraNotFoundError, JiraError)
 
 
-def test_jira_link_error_message_and_context() -> None:
-    from_key = "PROJ-3"
-    to_key = "PROJ-4"
-    link_type = "Blocks"
+class TestJiraTransitionError:
+    """Tests for JiraTransitionError."""
 
-    with pytest.raises(JiraLinkError, match=link_type) as exc_info:
-        raise JiraLinkError(from_key, to_key, link_type)
+    def test_message_includes_transition_and_issue(self) -> None:
+        """Transition name and issue key appear in the message."""
+        issue_key = "ABC-123"
+        transition = "Start Progress"
+        exc = JiraTransitionError(issue_key, transition)
+        assert str(exc) == f"Transition '{transition}' unavailable for {issue_key}"
+        assert exc.issue_key == issue_key
+        assert exc.transition == transition
 
-    error = exc_info.value
-    assert from_key in str(error)
-    assert to_key in str(error)
-    assert error.from_key == from_key
-    assert error.to_key == to_key
-    assert error.link_type == link_type
+    def test_is_subclass_of_jira_error(self) -> None:
+        """JiraTransitionError derives from JiraError."""
+        assert issubclass(JiraTransitionError, JiraError)
+
+
+class TestJiraLinkError:
+    """Tests for JiraLinkError."""
+
+    def test_message_lists_endpoints(self) -> None:
+        """Message shows the from/to keys and link type."""
+        from_key = "ABC-123"
+        to_key = "DEF-456"
+        link_type = "Depends On"
+        exc = JiraLinkError(from_key, to_key, link_type)
+        assert str(exc) == f"Failed to link {from_key} -> {to_key} ({link_type})"
+        assert exc.from_key == from_key
+        assert exc.to_key == to_key
+        assert exc.link_type == link_type
+        assert exc.reason is None
+
+    def test_message_includes_reason_when_provided(self) -> None:
+        """Message appends reason when given."""
+        from_key = "ABC-123"
+        to_key = "DEF-456"
+        link_type = "Blocks"
+        reason = "Permission denied"
+        exc = JiraLinkError(from_key, to_key, link_type, reason=reason)
+        assert (
+            str(exc) == f"Failed to link {from_key} -> {to_key} ({link_type}): {reason}"
+        )
+        assert exc.reason == reason
+
+    def test_is_subclass_of_jira_error(self) -> None:
+        """JiraLinkError derives from JiraError."""
+        assert issubclass(JiraLinkError, JiraError)

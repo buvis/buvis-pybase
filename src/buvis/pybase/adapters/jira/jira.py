@@ -1,58 +1,76 @@
-"""JIRA REST API adapter for issue creation.
+"""JIRA REST API adapter for issue operations.
 
-Provides JiraAdapter for creating JIRA issues with custom field support.
+Provides JiraAdapter for CRUD operations on JIRA issues including:
+- Issue creation, retrieval, update
+- JQL search with pagination
+- Workflow transitions
+- Comments (add/retrieve)
+- Issue linking
+
+Configuration via JiraSettings pydantic model with env vars.
 """
 
-import os
 from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 from jira import JIRA
 from jira.exceptions import JIRAError
 
-from buvis.pybase.adapters.jira.domain.jira_comment_dto import JiraCommentDTO
-from buvis.pybase.adapters.jira.domain.jira_issue_dto import JiraIssueDTO
-from buvis.pybase.adapters.jira.domain.jira_search_result import JiraSearchResult
-from buvis.pybase.adapters.jira.settings import JiraSettings
+if TYPE_CHECKING:
+    from jira.resources import Issue
+
+from buvis.pybase.adapters.jira.domain import (
+    JiraCommentDTO,
+    JiraIssueDTO,
+    JiraSearchResult,
+)
 from buvis.pybase.adapters.jira.exceptions import (
     JiraLinkError,
     JiraNotFoundError,
     JiraTransitionError,
 )
+from buvis.pybase.adapters.jira.settings import JiraSettings
 
 
 class JiraAdapter:
-    """JIRA REST API adapter for issue creation.
+    """JIRA REST API adapter for issue operations.
 
     Requirements:
-        JiraSettings must provide `server` and `token`.
+        Provide a populated `JiraSettings` instance with `server` and `token`.
 
     Optional:
-        Set `proxy` in the settings to route requests through a proxy server.
+        Configure `proxy` in the settings to route requests through a proxy server.
 
     Example:
-        >>> settings = JiraSettings()  # provides server, token
+        >>> settings = JiraSettings(server="https://jira", token="abc123")
         >>> jira = JiraAdapter(settings)
-        >>> issue = JiraIssueDTO(project='PROJ', title='Bug', ...)
+        >>> issue = JiraIssueDTO(...)
         >>> created = jira.create(issue)
         >>> print(created.link)
+        >>> jira.get(created.id)
+        >>> results = jira.search("project = PROJ ORDER BY created DESC", max_results=5)
+        >>> jira.transition(created.id, "Start Progress")
     """
 
-    def __init__(self, settings: JiraSettings) -> None:
+    def __init__(self: "JiraAdapter", settings: JiraSettings) -> None:
         """Initialize JIRA connection.
 
         Args:
-            settings: JiraSettings with server, token, optional proxy.
+            settings: JiraSettings instance with server/token values.
         """
         self._settings = settings
-        self._fields = settings.field_mappings
-        if settings.proxy:
-            os.environ.pop("https_proxy", None)
-            os.environ.pop("http_proxy", None)
-            os.environ["https_proxy"] = settings.proxy
-        self._jira = JIRA(
-            server=settings.server,
-            token_auth=settings.token,
-        )
+        proxies = None
+        if self._settings.proxy:
+            proxies = {"https": str(self._settings.proxy)}
+
+        jira_kwargs: dict[str, Any] = {
+            "server": str(self._settings.server),
+            "token_auth": self._settings.token.get_secret_value(),
+        }
+        if proxies:
+            jira_kwargs["proxies"] = proxies
+
+        self._jira = JIRA(**jira_kwargs)
 
     def create(self, issue: JiraIssueDTO) -> JiraIssueDTO:
         """Create a JIRA issue via the REST API.
@@ -64,105 +82,89 @@ class JiraAdapter:
             JiraIssueDTO: populated with server-assigned id and link.
 
         Custom Field Mappings:
-            ticket -> configured JiraFieldMappings ticket value
-            team -> configured JiraFieldMappings team value
-            feature -> configured JiraFieldMappings feature value
-            region -> configured JiraFieldMappings region value
+            Determined by `self._settings.field_mappings`. Defaults:
+            ticket -> customfield_11502, team -> customfield_10501,
+            feature -> customfield_10001, region -> customfield_12900.
 
         Note:
-            Custom fields feature and region require post-creation update due to JIRA API limitations.
+            Custom fields customfield_10001 (feature) and customfield_12900 (region) require post-creation update due to JIRA API limitations.
         """
-        mappings = self._fields
-        new_issue = self._jira.create_issue(
-            fields={
-                "assignee": {"key": issue.assignee, "name": issue.assignee},
-                mappings.feature: issue.feature,
-                mappings.team: {"value": issue.team},
-                mappings.region: {"value": issue.region},
-                mappings.ticket: issue.ticket,
-                "customfield_10108": [{"value": "Production"}],
-                "description": issue.description,
-                "issuetype": {"name": issue.issue_type},
-                "labels": issue.labels,
-                "priority": {"name": issue.priority},
-                "project": {"key": issue.project},
-                "reporter": {"key": issue.reporter, "name": issue.reporter},
-                "summary": issue.title,
-            },
-        )
+        field_mappings = self._settings.field_mappings
+
+        fields: dict[str, Any] = {
+            "assignee": {"key": issue.assignee, "name": issue.assignee},
+            field_mappings.feature: issue.feature,
+            field_mappings.ticket: issue.ticket,
+            "description": issue.description,
+            "issuetype": {"name": issue.issue_type},
+            "labels": issue.labels,
+            "priority": {"name": issue.priority},
+            "project": {"key": issue.project},
+            "reporter": {"key": issue.reporter, "name": issue.reporter},
+            "summary": issue.title,
+        }
+        if issue.team is not None:
+            fields[field_mappings.team] = {"value": issue.team}
+        if issue.region is not None:
+            fields[field_mappings.region] = {"value": issue.region}
+
+        new_issue = self._jira.create_issue(fields=fields)
         # some custom fields aren't populated on issue creation
         # so I have to update them after issue creation
         new_issue = self._jira.issue(new_issue.key)
-        new_issue.update(**{mappings.feature: issue.feature})
-        new_issue.update(**{mappings.region: {"value": issue.region}})
+        new_issue.update(**{field_mappings.feature: issue.feature})
+        if issue.region is not None:
+            new_issue.update(**{field_mappings.region: {"value": issue.region}})
 
-        return self._issue_to_dto(new_issue)
-
-    def _issue_to_dto(self, issue) -> JiraIssueDTO:
-        """Convert a JIRA issue response into a DTO."""
-        fields = issue.fields
-        mappings = self._fields
-
-        def _custom_field(field_name: str, attr: str | None = None):
-            value = getattr(fields, field_name, None)
-            if value is None:
-                return None
-            return getattr(value, attr, None) if attr else value
+        ticket_value = getattr(new_issue.fields, field_mappings.ticket, None)
+        feature_value = getattr(new_issue.fields, field_mappings.feature, None)
+        team_field_value = getattr(new_issue.fields, field_mappings.team, None)
+        region_field_value = getattr(new_issue.fields, field_mappings.region, None)
 
         return JiraIssueDTO(
-            project=fields.project.key,
-            title=fields.summary,
-            description=fields.description,
-            issue_type=fields.issuetype.name,
-            labels=fields.labels,
-            priority=fields.priority.name,
-            ticket=_custom_field(mappings.ticket),
-            feature=_custom_field(mappings.feature),
-            assignee=fields.assignee.key,
-            reporter=fields.reporter.key,
-            team=_custom_field(mappings.team, "value"),
-            region=_custom_field(mappings.region, "value"),
+            project=new_issue.fields.project.key,
+            title=new_issue.fields.summary,
+            description=new_issue.fields.description or "",
+            issue_type=new_issue.fields.issuetype.name,
+            labels=new_issue.fields.labels or [],
+            priority=new_issue.fields.priority.name,
+            ticket=ticket_value,
+            feature=feature_value,
+            assignee=new_issue.fields.assignee.key,
+            reporter=new_issue.fields.reporter.key,
+            team=getattr(team_field_value, "value", None),
+            region=getattr(region_field_value, "value", None),
+            id=new_issue.key,
+            link=new_issue.permalink(),
+        )
+
+    def _issue_to_dto(self, issue: "Issue") -> JiraIssueDTO:
+        """Convert JIRA issue object to DTO."""
+        fm = self._settings.field_mappings
+        team_val = getattr(issue.fields, fm.team, None)
+        region_val = getattr(issue.fields, fm.region, None)
+        return JiraIssueDTO(
+            project=issue.fields.project.key,
+            title=issue.fields.summary,
+            description=issue.fields.description or "",
+            issue_type=issue.fields.issuetype.name,
+            labels=issue.fields.labels or [],
+            priority=issue.fields.priority.name if issue.fields.priority else "Medium",
+            ticket=getattr(issue.fields, fm.ticket, "") or "",
+            feature=getattr(issue.fields, fm.feature, "") or "",
+            assignee=issue.fields.assignee.key if issue.fields.assignee else "",
+            reporter=issue.fields.reporter.key if issue.fields.reporter else "",
+            team=getattr(team_val, "value", None) if team_val else None,
+            region=getattr(region_val, "value", None) if region_val else None,
             id=issue.key,
             link=issue.permalink(),
         )
 
-    def search(
-        self,
-        jql: str,
-        start_at: int = 0,
-        max_results: int = 50,
-        fields: list[str] | None = None,
-    ) -> JiraSearchResult:
-        """Search issues using JQL.
-
-        Args:
-            jql: JQL query string.
-            start_at: Pagination offset (0-based).
-            max_results: Max issues to return (default 50).
-            fields: Specific fields to retrieve (None = all).
-
-        Returns:
-            JiraSearchResult with matching issues and pagination info.
-        """
-        result = self._jira.search_issues(
-            jql,
-            startAt=start_at,
-            maxResults=max_results,
-            fields=fields,
-        )
-
-        return JiraSearchResult(
-            issues=[self._issue_to_dto(issue) for issue in result],
-            total=result.total,
-            start_at=start_at,
-            max_results=max_results,
-        )
-
     def get(self, issue_key: str) -> JiraIssueDTO:
-        """Fetch issue by key.
+        """Retrieve issue by key.
 
         Args:
-            issue_key: JIRA issue key (e.g., 'PROJ-123').
+            issue_key: JIRA issue key (e.g., "PROJ-123").
 
         Returns:
             JiraIssueDTO with issue data.
@@ -172,38 +174,110 @@ class JiraAdapter:
         """
         try:
             issue = self._jira.issue(issue_key)
-        except JIRAError as e:
-            if getattr(e, "status_code", None) == 404:
-                raise JiraNotFoundError(issue_key) from e
+        except JIRAError as error:
+            if getattr(error, "status_code", None) == 404:
+                raise JiraNotFoundError(issue_key) from error
             raise
 
         return self._issue_to_dto(issue)
 
-    def update(self, issue_key: str, fields: dict) -> JiraIssueDTO:
+    def search(
+        self,
+        jql: str,
+        start_at: int = 0,
+        max_results: int = 50,
+        fields: str | None = None,
+    ) -> JiraSearchResult:
+        """Execute JQL query with pagination.
+
+        Args:
+            jql: JQL query string.
+            start_at: Index of first result (for pagination).
+            max_results: Maximum results to return.
+            fields: Comma-separated field names to include, or None for all.
+
+        Returns:
+            JiraSearchResult with matching issues and pagination info.
+        """
+        results = self._jira.search_issues(
+            jql,
+            startAt=start_at,
+            maxResults=max_results,
+            fields=fields,
+        )
+        issues = [self._issue_to_dto(issue) for issue in results]
+        return JiraSearchResult(
+            issues=issues,
+            total=results.total,
+            start_at=start_at,
+            max_results=max_results,
+        )
+
+    def get_link_types(self) -> list[str]:
+        """Get available issue link types.
+
+        Returns:
+            List of link type names (e.g., "Blocks", "Duplicates").
+
+        Raises:
+            JIRAError: JIRA API call failed.
+        """
+        link_types = self._jira.issue_link_types()
+        return [lt.name for lt in link_types]
+
+    def link_issues(
+        self,
+        from_key: str,
+        to_key: str,
+        link_type: str,
+    ) -> None:
+        """Create link between issues.
+
+        Args:
+            from_key: Source issue key (outward side of link).
+            to_key: Target issue key (inward side of link).
+            link_type: Link type name (e.g., "Blocks", "Duplicates").
+
+        Raises:
+            JiraNotFoundError: Either issue does not exist.
+            JiraLinkError: Link creation failed.
+        """
+        self.get(from_key)  # validate exists
+        self.get(to_key)  # validate exists
+
+        try:
+            self._jira.create_issue_link(
+                type=link_type,
+                inwardIssue=to_key,
+                outwardIssue=from_key,
+            )
+        except JIRAError as e:
+            reason = str(e) or None
+            raise JiraLinkError(from_key, to_key, link_type, reason=reason) from e
+
+    def update(self, issue_key: str, fields: dict[str, Any]) -> JiraIssueDTO:
         """Update issue fields.
 
         Args:
             issue_key: Issue to update.
-            fields: Dict of field names/IDs to new values.
+            fields: Dict of field names to new values.
 
         Returns:
-            JiraIssueDTO with updated issue data.
+            Updated JiraIssueDTO.
 
         Raises:
             JiraNotFoundError: Issue does not exist.
         """
         try:
             issue = self._jira.issue(issue_key)
-        except JIRAError as e:
-            if e.status_code == 404:
-                raise JiraNotFoundError(issue_key) from e
+        except JIRAError as error:
+            if getattr(error, "status_code", None) == 404:
+                raise JiraNotFoundError(issue_key) from error
             raise
 
         issue.update(fields=fields)
 
-        # Refresh to get updated values
-        updated = self._jira.issue(issue_key)
-        return self._issue_to_dto(updated)
+        return self.get(issue_key)
 
     def add_comment(
         self,
@@ -214,26 +288,29 @@ class JiraAdapter:
         """Add comment to issue.
 
         Args:
-            issue_key: Issue to comment on.
-            body: Comment text.
-            is_internal: If True, mark as internal (Service Desk).
+            issue_key: JIRA issue key.
+            body: Comment text content.
+            is_internal: If True, restrict visibility to Administrators.
 
         Returns:
-            JiraCommentDTO with created comment.
+            JiraCommentDTO for the created comment.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
         """
-        comment = self._jira.add_comment(
-            issue_key,
-            body,
-            is_internal=is_internal,
-        )
+        self.get(issue_key)  # validate exists
+
+        visibility = None
+        if is_internal:
+            visibility = {"type": "role", "value": "Administrators"}
+
+        comment = self._jira.add_comment(issue_key, body, visibility=visibility)
 
         return JiraCommentDTO(
             id=comment.id,
-            body=comment.body,
-            author=comment.author.name if comment.author else None,
-            created=datetime.fromisoformat(comment.created.replace("Z", "+00:00"))
-            if comment.created
-            else None,
+            author=comment.author.key if comment.author else "",
+            body=comment.body or "",
+            created=datetime.fromisoformat(comment.created.replace("Z", "+00:00")),
             is_internal=is_internal,
         )
 
@@ -241,104 +318,75 @@ class JiraAdapter:
         """Get all comments on issue.
 
         Args:
-            issue_key: Issue to get comments for.
+            issue_key: JIRA issue key.
 
         Returns:
-            List of JiraCommentDTO.
+            List of JiraCommentDTO, chronologically ordered.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
         """
-        issue = self._jira.issue(issue_key, fields="comment")
-        comments = issue.fields.comment.comments
+        self.get(issue_key)  # validate exists
+
+        comments = self._jira.comments(issue_key)
 
         return [
             JiraCommentDTO(
                 id=c.id,
-                body=c.body,
-                author=c.author.name if c.author else None,
-                created=datetime.fromisoformat(c.created.replace("Z", "+00:00"))
-                if c.created
-                else None,
-                is_internal=getattr(c, "jsdPublic", True) is False,
+                author=c.author.key if c.author else "",
+                body=c.body or "",
+                created=datetime.fromisoformat(c.created.replace("Z", "+00:00")),
+                is_internal=getattr(c, "visibility", None) is not None,
             )
             for c in comments
         ]
 
-    def get_transitions(self, issue_key: str) -> list[dict]:
-        """Get available transitions for issue.
+    def get_transitions(self, issue_key: str) -> list[dict[str, str]]:
+        """List available transitions for issue.
 
         Args:
-            issue_key: Issue to query.
+            issue_key: JIRA issue key.
 
         Returns:
-            List of dicts with 'id' and 'name' keys.
+            List of dicts with "id" and "name" keys.
+
+        Raises:
+            JiraNotFoundError: Issue does not exist.
         """
-        issue = self._jira.issue(issue_key)
-        transitions = self._jira.transitions(issue)
+        self.get(issue_key)  # validate exists
+        transitions = self._jira.transitions(issue_key)
         return [{"id": t["id"], "name": t["name"]} for t in transitions]
 
     def transition(
         self,
         issue_key: str,
-        transition_name_or_id: str,
-        fields: dict | None = None,
+        transition: str,
+        fields: dict[str, Any] | None = None,
         comment: str | None = None,
     ) -> None:
         """Execute workflow transition.
 
         Args:
-            issue_key: Issue to transition.
-            transition_name_or_id: Transition name or ID.
-            fields: Optional fields to set during transition.
-            comment: Optional comment to add.
+            issue_key: JIRA issue key.
+            transition: Transition ID or name.
+            fields: Optional field updates during transition.
+            comment: Optional comment to add during transition.
 
         Raises:
-            JiraTransitionError: Transition not available.
+            JiraNotFoundError: Issue does not exist.
+            JiraTransitionError: Transition unavailable.
         """
-        issue = self._jira.issue(issue_key)
-        transitions = self._jira.transitions(issue)
-
-        transition_id = None
-        for t in transitions:
-            if t["id"] == transition_name_or_id or t["name"] == transition_name_or_id:
-                transition_id = t["id"]
-                break
-
-        if not transition_id:
-            raise JiraTransitionError(issue_key, transition_name_or_id)
+        available = self.get_transitions(issue_key)
+        match = next(
+            (t for t in available if t["id"] == transition or t["name"] == transition),
+            None,
+        )
+        if not match:
+            raise JiraTransitionError(issue_key, transition)
 
         self._jira.transition_issue(
-            issue, transition_id, fields=fields, comment=comment
+            issue_key,
+            match["id"],
+            fields=fields,
+            comment=comment,
         )
-
-    def link_issues(
-        self,
-        from_key: str,
-        to_key: str,
-        link_type: str = "Relates",
-    ) -> None:
-        """Create link between two issues.
-
-        Args:
-            from_key: Source issue key.
-            to_key: Target issue key.
-            link_type: Link type name (default 'Relates').
-
-        Raises:
-            JiraLinkError: Link creation failed.
-        """
-        try:
-            self._jira.create_issue_link(
-                type=link_type,
-                inwardIssue=to_key,
-                outwardIssue=from_key,
-            )
-        except JIRAError as e:
-            raise JiraLinkError(from_key, to_key, link_type) from e
-
-    def get_link_types(self) -> list[str]:
-        """Get available issue link type names.
-
-        Returns:
-            List of link type names (e.g., ['Blocks', 'Relates', 'Duplicates']).
-        """
-        link_types = self._jira.issue_link_types()
-        return [lt.name for lt in link_types]
