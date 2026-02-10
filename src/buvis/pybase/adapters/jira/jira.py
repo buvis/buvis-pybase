@@ -47,10 +47,12 @@ class JiraAdapter:
             setting the configured proxy.
         """
         self._cfg = cfg
+
         if self._cfg.get_configuration_item_or_default("proxy", None):
             os.environ.pop("https_proxy", None)
             os.environ.pop("http_proxy", None)
             os.environ["https_proxy"] = str(self._cfg.get_configuration_item("proxy"))
+
         if not self._cfg.get_configuration_item_or_default(
             "server",
             None,
@@ -90,6 +92,7 @@ class JiraAdapter:
                 "customfield_10501": {"value": issue.team},
                 "customfield_12900": {"value": issue.region},
                 "customfield_11502": issue.ticket,
+                "customfield_10108": [{"value": "Production"}],
                 "description": issue.description,
                 "issuetype": {"name": issue.issue_type},
                 "labels": issue.labels,
