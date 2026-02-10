@@ -49,7 +49,6 @@ class JiraAdapter:
             os.environ.pop("https_proxy", None)
             os.environ.pop("http_proxy", None)
             os.environ["https_proxy"] = settings.proxy
-
         self._jira = JIRA(
             server=settings.server,
             token_auth=settings.token,
@@ -81,6 +80,7 @@ class JiraAdapter:
                 mappings.team: {"value": issue.team},
                 mappings.region: {"value": issue.region},
                 mappings.ticket: issue.ticket,
+                "customfield_10108": [{"value": "Production"}],
                 "description": issue.description,
                 "issuetype": {"name": issue.issue_type},
                 "labels": issue.labels,
