@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Trigger the GitHub Actions release workflow via TUI
+set -euo pipefail
+
+WORKFLOW="release.yml"
+
+cd "$(git rev-parse --show-toplevel)"
+
+# --- dependency check ---
+for cmd in gum gh uv; do
+  command -v "$cmd" >/dev/null || { echo "Missing: $cmd"; exit 1; }
+done
+
+# --- branch guard ---
+branch=$(git branch --show-current)
+if [ "$branch" != "master" ]; then
+  gum confirm "You're on '$branch', not master. Continue?" || exit 0
+fi
+
+# --- select release type ---
+release_type=$(gum choose --header "Release type" "prerelease" "release")
+
+# --- select bump level ---
+bump_level=$(gum choose --header "Bump level" "auto" "patch" "minor" "major" "prerelease")
+
+# --- version preview ---
+next=$(uv run semantic-release version --print --noop 2>/dev/null || echo "unknown")
+gum style --border rounded --padding "0 1" \
+  "Release type: $release_type" \
+  "Bump level:   $bump_level" \
+  "Next version: $next"
+
+# --- confirm ---
+gum confirm "Trigger release?" || exit 0
+
+# --- trigger workflow ---
+gh workflow run "$WORKFLOW" -f "release_type=$release_type" -f "bump_level=$bump_level"
+echo "Workflow dispatched."
+
+# --- offer to watch ---
+if gum confirm "Watch run?"; then
+  sleep 3
+  gh run watch
+fi

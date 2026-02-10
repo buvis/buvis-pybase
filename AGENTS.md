@@ -9,7 +9,7 @@ uv sync --all-groups                        # install deps
 pre-commit install --hook-type pre-commit --hook-type post-commit  # setup hooks
 uv run pytest                               # run tests
 ./dev/bin/refresh-docs                      # rebuild docs (strict)
-# release: trigger via GitHub Actions → Release workflow
+release                                     # trigger release workflow (TUI)
 ```
 
 ## Architecture
@@ -90,17 +90,12 @@ class TestShellAdapter:
 
 ## Release
 
-Releases via GitHub Actions (manual trigger):
+```bash
+release  # TUI: pick release type, bump level, confirm, watch
+```
 
-1. Go to Actions → Release workflow → Run workflow
-2. Choose `prerelease` (test.pypi only) or `release` (both pypis + GitHub release)
+Triggers the GitHub Actions release workflow. Alternative: Actions tab → Release → Run workflow.
 
 Version determined from conventional commits (`feat:` → minor, `fix:` → patch).
-
-Local preview:
-
-```bash
-uv run semantic-release version --print --noop  # see next version
-```
 
 See `dev/docs/versioning.md` for details.

@@ -84,26 +84,31 @@ BREAKING CHANGE: The auth token format has changed
 2. Tests passing
 3. You've reviewed the commits since last release
 
-### Step 2: Go to GitHub Actions
+### Step 2: Run the Release Script
 
-1. Go to repository → Actions tab
-2. Click "Release" workflow in the left sidebar
-3. Click "Run workflow" button (right side)
+```bash
+release
+```
 
-### Step 3: Choose Release Type
+The TUI walks you through:
 
-- **prerelease**: Creates a `.devN` version, publishes to test.pypi.org only
-  - Use this to test the package before real release
-  - Safe to run multiple times
-  - Does NOT create a git tag
+1. **Release type** — `prerelease` or `release`
+2. **Bump level** — `auto`, `patch`, `minor`, `major`, or `prerelease`
+3. **Version preview** — shows the next version based on commits
+4. **Confirmation** — triggers the GitHub Actions workflow
+5. **Watch** — optionally tail the workflow run
 
-- **release**: Creates the actual version, publishes everywhere
-  - Bumps version based on commits
-  - Creates git tag
-  - Publishes to test.pypi.org AND pypi.org
-  - Creates GitHub Release with changelog
+Release types:
 
-### Step 4: Wait and Verify
+- **prerelease**: `.devN` version, publishes to test.pypi.org only. Safe to repeat. No git tag.
+- **release**: actual version bump, publishes to both PyPIs, creates git tag + GitHub Release.
+
+### Alternative: GitHub UI
+
+1. Go to repository → Actions tab → "Release" workflow
+2. Click "Run workflow", choose release type and bump level
+
+### What Happens After Trigger
 
 The workflow will:
 1. Run tests
@@ -122,21 +127,18 @@ git commit -m "fix(parser): handle unicode correctly"
 git commit -m "feat(cli): add --verbose flag"
 
 # Day 3: Ready to release
-# Go to GitHub Actions → Release → Run workflow → "release"
+release
+# TUI: choose "release" → "auto" → confirm
 # Tool sees: 1 feat + 1 fix → bumps MINOR version
 # 0.8.1 → 0.9.0
 ```
 
-## Local Commands (Optional)
-
-You can preview what would happen without releasing:
+## Local Commands
 
 ```bash
-# See what version would be created
-uv run semantic-release version --print --noop
-
-# See the changelog that would be generated
-uv run semantic-release changelog --noop
+release                                       # TUI to trigger release workflow
+uv run semantic-release version --print --noop  # preview next version
+uv run semantic-release changelog --noop        # preview changelog
 ```
 
 ## FAQ
