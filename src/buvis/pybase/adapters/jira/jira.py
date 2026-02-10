@@ -71,6 +71,33 @@ class JiraAdapter:
             jira_kwargs["proxies"] = proxies
 
         self._jira = JIRA(**jira_kwargs)
+        Raises:
+            ValueError: If server or token not provided in cfg.
+
+        Note:
+            Proxy handling clears existing `https_proxy` and `http_proxy` before
+            setting the configured proxy.
+        """
+        self._cfg = cfg
+
+        if self._cfg.get_configuration_item_or_default("proxy", None):
+            os.environ.pop("https_proxy", None)
+            os.environ.pop("http_proxy", None)
+            os.environ["https_proxy"] = str(self._cfg.get_configuration_item("proxy"))
+
+        if not self._cfg.get_configuration_item_or_default(
+            "server",
+            None,
+        ) or not self._cfg.get_configuration_item_or_default(
+            "token",
+            None,
+        ):
+            msg = "Server and token must be provided"
+            raise ValueError(msg)
+        self._jira = JIRA(
+            server=str(self._cfg.get_configuration_item("server")),
+            token_auth=str(self._cfg.get_configuration_item("token")),
+        )
 
     def create(self, issue: JiraIssueDTO) -> JiraIssueDTO:
         """Create a JIRA issue via the REST API.

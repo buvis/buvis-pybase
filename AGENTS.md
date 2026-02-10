@@ -14,7 +14,7 @@ uv run pytest                               # run tests
 
 ## Architecture
 
-```
+```text
 src/buvis/pybase/
 ├── configuration/   # YAML config, pydantic-settings based
 ├── adapters/        # Shell, UV, Poetry, JIRA, Console wrappers
@@ -24,6 +24,7 @@ src/buvis/pybase/
 ```
 
 **Key patterns:**
+
 - **Adapters**: wrap external tools (subprocess, APIs). Return `(stderr, stdout)` tuples
 - **Static utility classes**: no instance state (DirTree, StringOperator)
 - **Configuration**: use Click decorators (`@buvis_options`) and `get_settings()` to resolve typed settings classes
@@ -31,12 +32,14 @@ src/buvis/pybase/
 ## Code Conventions
 
 **Type hints** - modern style, no `Optional`:
+
 ```python
 from __future__ import annotations
 def foo(path: Path | None = None) -> list[str]: ...
 ```
 
 **Imports**:
+
 - Explicit `__all__` in `__init__.py`
 - `TYPE_CHECKING` guards for type-only imports
 - Platform-specific conditional imports in adapters
@@ -65,6 +68,7 @@ class TestShellAdapter:
 
 1. Create `src/buvis/pybase/adapters/{name}/{name}.py`
 2. Follow existing pattern:
+
    ```python
    class FooAdapter:
        def __init__(self) -> None:
@@ -74,41 +78,27 @@ class TestShellAdapter:
            # Return (stderr, stdout) for shell ops
            ...
    ```
+
 3. Export in `adapters/__init__.py`:
+
    ```python
    from .foo.foo import FooAdapter
    __all__.append("FooAdapter")
    ```
+
 4. Add tests in `tests/adapters/test_foo_adapter.py`
-
-## Commit Messages
-
-Conventional commits format: `<type>(<scope>): <description>`
-
-| Type     | When                                        |
-|----------|---------------------------------------------|
-| fix      | Bug fix                                     |
-| feat     | New or changed feature                      |
-| perf     | Performance improvement                     |
-| refactor | Code restructuring, no behavior change      |
-| style    | Formatting only                             |
-| test     | Tests added/corrected                       |
-| docs     | Documentation only                          |
-| build    | Build tools, dependencies, versions         |
-| ops      | DevOps, infrastructure                      |
-| chore    | Anything else                               |
-
-Rules: imperative present tense, no capital, no period, `!` before `:` for breaking changes.
 
 ## Release
 
 Releases via GitHub Actions (manual trigger):
+
 1. Go to Actions → Release workflow → Run workflow
 2. Choose `prerelease` (test.pypi only) or `release` (both pypis + GitHub release)
 
 Version determined from conventional commits (`feat:` → minor, `fix:` → patch).
 
 Local preview:
+
 ```bash
 uv run semantic-release version --print --noop  # see next version
 ```
