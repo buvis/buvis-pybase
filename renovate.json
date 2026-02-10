@@ -21,6 +21,11 @@
         "action"
       ],
       "automerge": true
+    },
+    {
+      "matchPackageNames": ["python"],
+      "matchManagers": ["pep621"],
+      "enabled": false
     }
   ],
   "lockFileMaintenance": {
