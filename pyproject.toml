@@ -52,6 +52,7 @@ commit_parser = "conventional"
 tag_format = "v{version}"
 commit_message = "chore(release): {version}"
 build_command = "uv build"
+allow_zero_version = true
 
 [tool.semantic_release.branches.main]
 match = "master"
