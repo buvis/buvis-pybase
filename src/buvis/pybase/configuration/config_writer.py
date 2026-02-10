@@ -43,7 +43,7 @@ class ConfigWriter:
             return f"one of: {formatted}"
 
         # Handle Optional/Union (X | None)
-        if origin is Union:
+        if origin in (Union, types.UnionType):
             args = get_args(annotation)
             non_none = [a for a in args if a is not type(None)]
             if len(non_none) == 1 and type(None) in args:
