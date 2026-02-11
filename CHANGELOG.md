@@ -2,6 +2,54 @@
 
 <!-- version list -->
 
+## v0.10.0 (2026-02-11)
+
+### Bug Fixes
+
+- Add new obligatory field for Jira US
+  ([`436a734`](https://github.com/buvis/buvis-pybase/commit/436a7348c0d7bbe1c057bacb9f9b372f3c7ccf26))
+
+- Use uv run pytest in pre-commit instead of hardcoded .venv path
+  ([`fccc746`](https://github.com/buvis/buvis-pybase/commit/fccc7467dbdf19adad7626e2bcb7c7224caad539))
+
+- **config**: Handle types.UnionType in _format_type
+  ([`e6269f7`](https://github.com/buvis/buvis-pybase/commit/e6269f7be931097e310df564721e32d8118b0cfa))
+
+- **deps**: Update dependency transformers to v5
+  ([`d2a5a45`](https://github.com/buvis/buvis-pybase/commit/d2a5a45b0237b88671124567604d24ccc1930225))
+
+- **dev**: Drop --noop from version preview in release script
+  ([`1d48ee0`](https://github.com/buvis/buvis-pybase/commit/1d48ee08f91e8d313ce21ce44536db5c5d4356f8))
+
+- **ops**: Add --all-extras to release workflow install step
+  ([`b094523`](https://github.com/buvis/buvis-pybase/commit/b094523ad8cc887e7a1055307f8f15e27ed058fb))
+
+- **release**: Keep 0.x versions, add allow_zero_version
+  ([`e75cc4b`](https://github.com/buvis/buvis-pybase/commit/e75cc4b874fa5c3a0d17154da9b0d93bc3e0720c))
+
+### Features
+
+- Add mypy strict type checking and py.typed marker
+  ([`d52002c`](https://github.com/buvis/buvis-pybase/commit/d52002c4586e8973a424ec94d11b3f5c56ade76e))
+
+- **configuration**: Add --config-create FILE option to @buvis_options decorator
+  ([#155](https://github.com/buvis/buvis-pybase/pull/155),
+  [`820e869`](https://github.com/buvis/buvis-pybase/commit/820e8692e5bff5262217dd379046139158b0a0fa))
+
+- **deps**: Move torch/transformers/rake-nltk to optional [ml] extra
+  ([`cf7a85f`](https://github.com/buvis/buvis-pybase/commit/cf7a85fc71fa667c6073699e8d890699ccdc8661))
+
+- **dev**: Add preview-release script
+  ([`c1beaa6`](https://github.com/buvis/buvis-pybase/commit/c1beaa62347039e4b8939be91d8caeab6edd3de4))
+
+- **jira**: Expand JiraAdapter with full CRUD operations
+  ([#151](https://github.com/buvis/buvis-pybase/pull/151),
+  [`c230844`](https://github.com/buvis/buvis-pybase/commit/c2308447a1ca3b024c7b5c4b76131626aecb2c7f))
+
+- **release**: Add gum TUI script for triggering releases
+  ([`d89f631`](https://github.com/buvis/buvis-pybase/commit/d89f631761fbc0cad83276e0844b169ca3f701a8))
+
+
 ## v0.9.0 (2026-01-07)
 
 
