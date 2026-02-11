@@ -80,6 +80,18 @@ exclude_commit_patterns = [
 type = "github"
 token = { env = "GH_TOKEN" }
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+strict_markers = true
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
