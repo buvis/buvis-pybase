@@ -24,7 +24,7 @@ release_type=$(gum choose --header "Release type" "prerelease" "release")
 bump_level=$(gum choose --header "Bump level" "auto" "patch" "minor" "major" "prerelease")
 
 # --- version preview ---
-next=$(uv run semantic-release version --print --noop 2>/dev/null || echo "unknown")
+next=$(uv run semantic-release version --print 2>/dev/null || echo "unknown")
 gum style --border rounded --padding "0 1" \
   "Release type: $release_type" \
   "Bump level:   $bump_level" \
