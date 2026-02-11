@@ -14,8 +14,8 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -149,7 +149,7 @@ platform-aware fallbacks.</p>
 <h3><a class="toc-backref" href="#id4" role="doc-backlink">DirTree</a><a class="headerlink" href="#dirtree" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.DirTree">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">buvis.pybase.filesystem.</span></span><span class="sig-name descname"><span class="pre">DirTree</span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">buvis.pybase.filesystem.</span></span><span class="sig-name descname"><span class="pre">DirTree</span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Utility with static directory operations.</p>
 <p>Provides static methods for counting files, cleanup routines, and normalization
@@ -162,7 +162,7 @@ helpers. No instantiation is required.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.DirTree.count_files">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">count_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.count_files" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">count_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.count_files" title="Link to this definition"></a></dt>
 <dd><p>Count the number of files in the directory and its subdirectories.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -176,7 +176,7 @@ helpers. No instantiation is required.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.DirTree.delete_by_extension">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delete_by_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extensions_to_delete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.delete_by_extension" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">delete_by_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extensions_to_delete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.delete_by_extension" title="Link to this definition"></a></dt>
 <dd><p>Delete files with specific extensions in the given directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -193,7 +193,7 @@ helpers. No instantiation is required.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.DirTree.get_max_depth">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_max_depth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.get_max_depth" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_max_depth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.get_max_depth" title="Link to this definition"></a></dt>
 <dd><p>Determine the maximum depth of the directory tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -207,7 +207,7 @@ helpers. No instantiation is required.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.DirTree.merge_mac_metadata">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge_mac_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.merge_mac_metadata" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">merge_mac_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.merge_mac_metadata" title="Link to this definition"></a></dt>
 <dd><p>Restore macOS metadata from AppleDouble helper files.</p>
 <p>Walks the directory tree for AppleDouble files (._*) and, when not on
 Windows, applies their extended attributes back to the corresponding
@@ -222,7 +222,7 @@ a post-copy cleanup for macOS metadata files.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.DirTree.normalize_file_extensions">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalize_file_extensions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.normalize_file_extensions" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">normalize_file_extensions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.normalize_file_extensions" title="Link to this definition"></a></dt>
 <dd><p>Normalize file extensions in the given directory:
 1) lowercase the extensions
 2) replace equivalents</p>
@@ -238,7 +238,7 @@ a post-copy cleanup for macOS metadata files.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.DirTree.remove_empty_directories">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_empty_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.remove_empty_directories" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">remove_empty_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.DirTree.remove_empty_directories" title="Link to this definition"></a></dt>
 <dd><p>Recursively remove all empty directories.</p>
 <p>Traverses bottom-up to remove directories that become empty
 after their children are removed.</p>
@@ -261,7 +261,7 @@ and files are preserved.</p>
 <h3><a class="toc-backref" href="#id5" role="doc-backlink">FileMetadataReader</a><a class="headerlink" href="#filemetadatareader" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.FileMetadataReader">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">buvis.pybase.filesystem.</span></span><span class="sig-name descname"><span class="pre">FileMetadataReader</span></span><a class="headerlink" href="#buvis.pybase.filesystem.FileMetadataReader" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">buvis.pybase.filesystem.</span></span><span class="sig-name descname"><span class="pre">FileMetadataReader</span></span><a class="headerlink" href="#buvis.pybase.filesystem.FileMetadataReader" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Utility reader that exposes static helpers for file metadata.</p>
 <p>The class is not meant to be instantiated; callers just need to invoke the
@@ -276,7 +276,7 @@ platform specific (Windows uses <cite>st_ctime</cite> while Unix systems prefer
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.FileMetadataReader.get_creation_datetime">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_creation_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.FileMetadataReader.get_creation_datetime" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_creation_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.FileMetadataReader.get_creation_datetime" title="Link to this definition"></a></dt>
 <dd><p>Retrieve the creation date of a file, falling back to modification date if creation date is unavailable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -293,7 +293,7 @@ platform specific (Windows uses <cite>st_ctime</cite> while Unix systems prefer
 
 <dl class="py method">
 <dt class="sig sig-object py" id="buvis.pybase.filesystem.FileMetadataReader.get_first_commit_datetime">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_first_commit_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.FileMetadataReader.get_first_commit_datetime" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_first_commit_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#buvis.pybase.filesystem.FileMetadataReader.get_first_commit_datetime" title="Link to this definition"></a></dt>
 <dd><p>Retrieve the date a file was first added to a Git repository located at the parent directory of file_path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
