@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-
 from unittest.mock import patch
 
 import pytest
@@ -36,9 +35,7 @@ def mock_subprocess_run():
 class TestUvToolManager:
     """Tests for UvToolManager."""
 
-    def test_installs_projects_with_pyproject_toml(
-        self, mock_ensure_uv, mock_console, mock_subprocess_run, tmp_path
-    ):
+    def test_installs_projects_with_pyproject_toml(self, mock_ensure_uv, mock_console, mock_subprocess_run, tmp_path):
         """Should call install_tool for each dir with pyproject.toml."""
         src_dir = tmp_path / "src"
         src_dir.mkdir()
@@ -55,9 +52,7 @@ class TestUvToolManager:
         assert mock_install.call_count == 2
         mock_ensure_uv.assert_called_once()
 
-    def test_skips_directories_without_pyproject(
-        self, mock_ensure_uv, mock_console, tmp_path
-    ):
+    def test_skips_directories_without_pyproject(self, mock_ensure_uv, mock_console, tmp_path):
         """Should not call install_tool for dirs without pyproject.toml."""
         src_dir = tmp_path / "src"
         src_dir.mkdir()
@@ -70,9 +65,7 @@ class TestUvToolManager:
 
         mock_install.assert_not_called()
 
-    def test_handles_nonexistent_src_directory(
-        self, mock_ensure_uv, mock_console, tmp_path
-    ):
+    def test_handles_nonexistent_src_directory(self, mock_ensure_uv, mock_console, tmp_path):
         """Should handle missing src/ gracefully."""
         with patch.object(UvToolManager, "install_tool") as mock_install:
             UvToolManager.install_all(tmp_path)
@@ -98,9 +91,7 @@ class TestUvToolManager:
 class TestInstallTool:
     """Tests for UvToolManager.install_tool()."""
 
-    def test_installs_tool_successfully(
-        self, mock_console, mock_subprocess_run, tmp_path
-    ):
+    def test_installs_tool_successfully(self, mock_console, mock_subprocess_run, tmp_path):
         """Should run uv tool install with correct args."""
         project = tmp_path / "my_pkg"
         project.mkdir()
@@ -116,9 +107,7 @@ class TestInstallTool:
         assert str(project) in call_args
         mock_console.success.assert_called_once()
 
-    def test_cleans_cache_and_retries_on_failure(
-        self, mock_console, mock_subprocess_run, tmp_path
-    ):
+    def test_cleans_cache_and_retries_on_failure(self, mock_console, mock_subprocess_run, tmp_path):
         """Should clean cache and retry when install fails."""
         project = tmp_path / "my_pkg"
         project.mkdir()
@@ -138,9 +127,7 @@ class TestInstallTool:
         assert "my_pkg" in cache_clean_call
         mock_console.success.assert_called_once()
 
-    def test_reports_failure_when_retry_fails(
-        self, mock_console, mock_subprocess_run, tmp_path
-    ):
+    def test_reports_failure_when_retry_fails(self, mock_console, mock_subprocess_run, tmp_path):
         """Should report failure when both attempts fail."""
         project = tmp_path / "my_pkg"
         project.mkdir()
@@ -198,9 +185,7 @@ class TestRun:
         call_args = mock_subprocess_run.call_args[0][0]
         assert str(venv_bin) == call_args[0]
 
-    def test_uses_uv_run_project_in_dev_mode(
-        self, mock_ensure_uv, mock_subprocess_run, tmp_path
-    ):
+    def test_uses_uv_run_project_in_dev_mode(self, mock_ensure_uv, mock_subprocess_run, tmp_path):
         """Should use uv run --project when no venv but project exists."""
         script = tmp_path / "bin" / "my-tool"
         script.parent.mkdir(parents=True)
@@ -223,9 +208,7 @@ class TestRun:
         assert "my_tool" in call_args
         assert "arg1" in call_args
 
-    def test_auto_installs_when_tool_not_found(
-        self, mock_ensure_uv, mock_console, mock_subprocess_run, tmp_path
-    ):
+    def test_auto_installs_when_tool_not_found(self, mock_ensure_uv, mock_console, mock_subprocess_run, tmp_path):
         """Should auto-install and retry when tool not found."""
         script = tmp_path / "bin" / "my-tool"
         script.parent.mkdir(parents=True)
@@ -250,9 +233,7 @@ class TestRun:
         install_call = mock_subprocess_run.call_args_list[1][0][0]
         assert install_call[:3] == ["uv", "tool", "install"]
 
-    def test_exits_with_error_when_no_project_in_dev_mode(
-        self, mock_ensure_uv, tmp_path, capsys
-    ):
+    def test_exits_with_error_when_no_project_in_dev_mode(self, mock_ensure_uv, tmp_path, capsys):
         """Should exit with error when no venv or project in dev mode."""
         script = tmp_path / "bin" / "my-tool"
         script.parent.mkdir(parents=True)
@@ -274,9 +255,7 @@ class TestRun:
         script.parent.mkdir(parents=True)
         script.write_text("#!/usr/bin/env python")
 
-        mock_subprocess_run.return_value = subprocess.CompletedProcess(
-            args=[], returncode=1
-        )
+        mock_subprocess_run.return_value = subprocess.CompletedProcess(args=[], returncode=1)
 
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(SystemExit) as exc_info:

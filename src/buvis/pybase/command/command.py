@@ -1,5 +1,5 @@
-from pathlib import Path
 import warnings
+from pathlib import Path
 from typing import Any, cast
 
 import yaml

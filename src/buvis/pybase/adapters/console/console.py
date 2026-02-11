@@ -94,9 +94,7 @@ class ConsoleAdapter:
         """
         self.console.print(self.format_warning(message))
 
-    def format_failure(
-        self: ConsoleAdapter, message: str, details: str | None = None
-    ) -> str:
+    def format_failure(self: ConsoleAdapter, message: str, details: str | None = None) -> str:
         """Return a red crossmark Rich markup string with optional details.
 
         Args:
@@ -106,9 +104,7 @@ class ConsoleAdapter:
         Returns:
             str: Rich markup string with crossmark and red styling.
         """
-        formatted_message = (
-            f" {CROSSMARK} [{STYLE_FAILURE_MSG}]{message}[/{STYLE_FAILURE_MSG}]"
-        )
+        formatted_message = f" {CROSSMARK} [{STYLE_FAILURE_MSG}]{message}[/{STYLE_FAILURE_MSG}]"
 
         if details:
             formatted_message += f" \n\n Details:\n\n {details}"
@@ -177,7 +173,7 @@ class ConsoleAdapter:
         """
         return self.console.print(_stylize_text(message, mode))
 
-    def print_side_by_side(  # noqa: PLR0913
+    def print_side_by_side(
         self: ConsoleAdapter,
         title_left: str,
         text_left: str,
@@ -267,9 +263,7 @@ def _stylize_text_md_frontmatter(markdown_text: str) -> list[RenderableType]:
         return highlighted_lines
 
     md = Markdown(markdown_content)
-    output_lines: list[RenderableType] = [
-        line for line in highlight_yaml(yaml_content) if str(line).rstrip() != "---"
-    ]
+    output_lines: list[RenderableType] = [line for line in highlight_yaml(yaml_content) if str(line).rstrip() != "---"]
     output_lines.append(md)
 
     return output_lines

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import os
 import re
-from typing import Any, Iterator, Protocol, cast, get_args, get_origin
+from collections.abc import Iterator
+from typing import Any, Protocol, cast, get_args, get_origin
 
 from pydantic import BaseModel, model_validator
 
@@ -94,10 +95,7 @@ def validate_nesting_depth(model_class: type[BaseModel]) -> None:
     """
     depth = get_model_depth(model_class)
     if depth > MAX_NESTING_DEPTH:
-        raise ValueError(
-            f"{model_class.__name__} exceeds max nesting depth "
-            f"{MAX_NESTING_DEPTH} (found depth={depth})."
-        )
+        raise ValueError(f"{model_class.__name__} exceeds max nesting depth {MAX_NESTING_DEPTH} (found depth={depth}).")
 
 
 def validate_json_env_size(env_var_name: str) -> None:
@@ -116,10 +114,7 @@ def validate_json_env_size(env_var_name: str) -> None:
 
     byte_length = len(env_value.encode("utf-8"))
     if byte_length > MAX_JSON_ENV_SIZE:
-        raise ValueError(
-            f"{env_var_name} exceeds max JSON size {MAX_JSON_ENV_SIZE} bytes "
-            f"(found {byte_length} bytes)."
-        )
+        raise ValueError(f"{env_var_name} exceeds max JSON size {MAX_JSON_ENV_SIZE} bytes (found {byte_length} bytes).")
 
 
 class SecureSettingsMixin:
@@ -178,10 +173,7 @@ class SafeLoggingMixin:
             if _SENSITIVE_PATTERNS.search(name):
                 fields.append(f"{name}='***'")
             elif isinstance(value, dict):
-                safe_dict = {
-                    k: "***" if _SENSITIVE_PATTERNS.search(str(k)) else v
-                    for k, v in value.items()
-                }
+                safe_dict = {k: "***" if _SENSITIVE_PATTERNS.search(str(k)) else v for k, v in value.items()}
                 fields.append(f"{name}={safe_dict}")
             else:
                 fields.append(f"{name}={value!r}")

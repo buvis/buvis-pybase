@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import functools
+from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
 
 import click
 
@@ -27,9 +28,7 @@ def get_settings(ctx: click.Context) -> GlobalSettings: ...
 def get_settings(ctx: click.Context, settings_class: type[T]) -> T: ...
 
 
-def get_settings(
-    ctx: click.Context, settings_class: type[T] | None = None
-) -> T | GlobalSettings:
+def get_settings(ctx: click.Context, settings_class: type[T] | None = None) -> T | GlobalSettings:
     """Get settings from Click context.
 
     Args:
@@ -84,9 +83,7 @@ def _create_buvis_options(settings_class: type[T]) -> Callable[[F], F]:
         )
         @click.option(
             "--log-level",
-            type=click.Choice(
-                ["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False
-            ),
+            type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
             default=None,
             help="Logging level.",
         )
@@ -119,11 +116,7 @@ def _create_buvis_options(settings_class: type[T]) -> Callable[[F], F]:
                     raise click.ClickException(str(e)) from e
                 ctx.exit(0)
 
-            cli_overrides = {
-                k: v
-                for k, v in {"debug": debug, "log_level": log_level}.items()
-                if v is not None
-            }
+            cli_overrides = {k: v for k, v in {"debug": debug, "log_level": log_level}.items() if v is not None}
 
             resolver = ConfigResolver()
             settings = resolver.resolve(
@@ -181,9 +174,7 @@ def buvis_options(  # type: ignore[misc]
                 click.echo("Debug mode enabled")
     """
 
-    if callable(settings_class_or_func) and not isinstance(
-        settings_class_or_func, type
-    ):
+    if callable(settings_class_or_func) and not isinstance(settings_class_or_func, type):
         return _create_buvis_options(GlobalSettings)(settings_class_or_func)
 
     if settings_class is not None:

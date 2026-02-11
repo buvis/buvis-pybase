@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import importlib
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from types import ModuleType
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
@@ -34,23 +34,17 @@ def win32com_dispatch() -> MagicMock:
 
 
 @pytest.fixture
-def outlook_local_module(
-    monkeypatch: pytest.MonkeyPatch, win32com_dispatch: MagicMock
-) -> ModuleType:
+def outlook_local_module(monkeypatch: pytest.MonkeyPatch, win32com_dispatch: MagicMock) -> ModuleType:
     """Import outlook_local with Windows defaults for tests."""
     sys.modules.pop("buvis.pybase.adapters.outlook_local.outlook_local", None)
-    module = importlib.import_module(
-        "buvis.pybase.adapters.outlook_local.outlook_local"
-    )
+    module = importlib.import_module("buvis.pybase.adapters.outlook_local.outlook_local")
     monkeypatch.setattr(module.os, "name", "nt")
     monkeypatch.setattr(module, "_win32com_available", True)
     return module
 
 
 @pytest.fixture
-def mock_win32com(
-    win32com_dispatch: MagicMock, outlook_local_module: ModuleType
-) -> MagicMock:
+def mock_win32com(win32com_dispatch: MagicMock, outlook_local_module: ModuleType) -> MagicMock:
     """Mock win32com.client.Dispatch for COM automation."""
     mock_app = MagicMock()
     mock_namespace = MagicMock()
@@ -62,9 +56,7 @@ def mock_win32com(
 
 
 @pytest.fixture
-def outlook_adapter(
-    mock_win32com: MagicMock, outlook_local_module: ModuleType
-) -> OutlookLocalAdapter:
+def outlook_adapter(mock_win32com: MagicMock, outlook_local_module: ModuleType) -> OutlookLocalAdapter:
     """Create an OutlookLocalAdapter instance with mocked COM objects."""
     return outlook_local_module.OutlookLocalAdapter()
 
@@ -72,9 +64,7 @@ def outlook_adapter(
 class TestOutlookLocalAdapterInit:
     """Tests for OutlookLocalAdapter initialization."""
 
-    def test_connects_to_outlook(
-        self, mock_win32com: MagicMock, outlook_local_module: ModuleType
-    ) -> None:
+    def test_connects_to_outlook(self, mock_win32com: MagicMock, outlook_local_module: ModuleType) -> None:
         """Init connects to Outlook via COM and gets MAPI namespace."""
         outlook_local_module.OutlookLocalAdapter()
 
@@ -84,23 +74,17 @@ class TestOutlookLocalAdapterInit:
         mock_namespace = mock_app.GetNamespace.return_value
         mock_namespace.GetDefaultFolder.assert_called_once_with(9)
 
-    def test_panics_when_dispatch_fails(
-        self, outlook_local_module: ModuleType, win32com_dispatch: MagicMock
-    ) -> None:
+    def test_panics_when_dispatch_fails(self, outlook_local_module: ModuleType, win32com_dispatch: MagicMock) -> None:
         """Init calls console.panic when COM connection fails."""
         win32com_dispatch.side_effect = Exception("boom")
         with (
-            patch.object(
-                outlook_local_module.console, "panic", side_effect=SystemExit
-            ) as mock_panic,
+            patch.object(outlook_local_module.console, "panic", side_effect=SystemExit) as mock_panic,
         ):
             with pytest.raises(SystemExit):
                 outlook_local_module.OutlookLocalAdapter()
             mock_panic.assert_called_once()
 
-    def test_raises_on_non_windows(
-        self, outlook_local_module: ModuleType, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_raises_on_non_windows(self, outlook_local_module: ModuleType, monkeypatch: pytest.MonkeyPatch) -> None:
         """Init raises when running on non-Windows platforms."""
         monkeypatch.setattr(outlook_local_module.os, "name", "posix")
 
@@ -155,20 +139,19 @@ class TestCreateTimeblock:
         outlook_local_module: ModuleType,
     ) -> None:
         """Uses current hour when start time not provided."""
-        from datetime import timezone
 
         mock_app = mock_win32com.return_value
         appointment = MagicMock()
         mock_app.CreateItem.return_value = appointment
 
-        fake_now = datetime(2024, 3, 15, 9, 37, 22, tzinfo=timezone.utc)
+        fake_now = datetime(2024, 3, 15, 9, 37, 22, tzinfo=UTC)
         expected_start = fake_now.replace(minute=0, second=0)
 
         with (
             patch.object(
                 outlook_local_module.tzlocal,
                 "get_localzone",
-                return_value=timezone.utc,
+                return_value=UTC,
             ),
             patch.object(outlook_local_module, "datetime") as mock_datetime,
         ):
@@ -186,9 +169,7 @@ class TestCreateTimeblock:
         assert appointment.Start == expected_start
         appointment.Save.assert_called_once()
 
-    def test_raises_on_save_failure(
-        self, outlook_adapter: OutlookLocalAdapter, mock_win32com: MagicMock
-    ) -> None:
+    def test_raises_on_save_failure(self, outlook_adapter: OutlookLocalAdapter, mock_win32com: MagicMock) -> None:
         """Raises OutlookAppointmentCreationFailedError when save fails."""
         from buvis.pybase.adapters.outlook_local.exceptions import (
             OutlookAppointmentCreationFailedError,
@@ -217,9 +198,7 @@ class TestCreateTimeblock:
 class TestGetAppointments:
     """Tests for appointment retrieval methods."""
 
-    def test_get_all_appointments_includes_recurrences(
-        self, outlook_adapter: OutlookLocalAdapter
-    ) -> None:
+    def test_get_all_appointments_includes_recurrences(self, outlook_adapter: OutlookLocalAdapter) -> None:
         """Returns calendar items with recurrences included and sorted."""
         items = MagicMock()
         outlook_adapter.calendar.Items = items
@@ -230,9 +209,7 @@ class TestGetAppointments:
         assert items.IncludeRecurrences is True
         items.Sort.assert_called_once_with("[Start]")
 
-    def test_get_day_appointments_filters_by_date(
-        self, outlook_adapter: OutlookLocalAdapter
-    ) -> None:
+    def test_get_day_appointments_filters_by_date(self, outlook_adapter: OutlookLocalAdapter) -> None:
         """Restricts appointments to specified date."""
         appointments = MagicMock()
 
@@ -248,9 +225,7 @@ class TestGetAppointments:
         result = outlook_adapter.get_day_appointments(appointments, date)
 
         assert result == [matching]
-        appointments.Restrict.assert_called_once_with(
-            "[Start] >= '2024-03-15' AND [End] <= '2024-03-16'"
-        )
+        appointments.Restrict.assert_called_once_with("[Start] >= '2024-03-15' AND [End] <= '2024-03-16'")
 
 
 class TestGetConflictingAppointment:
@@ -268,17 +243,11 @@ class TestGetConflictingAppointment:
         desired_start = datetime(2024, 3, 15, 10, 0)
 
         with (
-            patch.object(
-                outlook_adapter, "get_all_appointments", return_value=MagicMock()
-            ),
-            patch.object(
-                outlook_adapter, "get_day_appointments", return_value=[appointment]
-            ),
+            patch.object(outlook_adapter, "get_all_appointments", return_value=MagicMock()),
+            patch.object(outlook_adapter, "get_day_appointments", return_value=[appointment]),
             patch.object(outlook_local_module.console, "print"),
         ):
-            result = outlook_adapter.get_conflicting_appointment(
-                desired_start, 60, debug_level=1
-            )
+            result = outlook_adapter.get_conflicting_appointment(desired_start, 60, debug_level=1)
 
         assert result is appointment
 
@@ -291,12 +260,8 @@ class TestGetConflictingAppointment:
         desired_start = datetime(2024, 3, 15, 10, 0)
 
         with (
-            patch.object(
-                outlook_adapter, "get_all_appointments", return_value=MagicMock()
-            ),
-            patch.object(
-                outlook_adapter, "get_day_appointments", return_value=[appointment]
-            ),
+            patch.object(outlook_adapter, "get_all_appointments", return_value=MagicMock()),
+            patch.object(outlook_adapter, "get_day_appointments", return_value=[appointment]),
         ):
             result = outlook_adapter.get_conflicting_appointment(desired_start, 60)
 

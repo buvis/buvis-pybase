@@ -15,16 +15,12 @@ def console_stream() -> StringIO:
 
 @pytest.fixture
 def console(console_stream: StringIO) -> Console:
-    return Console(
-        file=console_stream, force_terminal=True, color_system=None, width=80
-    )
+    return Console(file=console_stream, force_terminal=True, color_system=None, width=80)
 
 
 @pytest.fixture
 def log_record() -> LogRecord:
-    return LogRecord(
-        __name__, logging.INFO, __file__, 1, "fixture message", args=(), exc_info=None
-    )
+    return LogRecord(__name__, logging.INFO, __file__, 1, "fixture message", args=(), exc_info=None)
 
 
 def test_init_stores_console(console: Console) -> None:
@@ -49,9 +45,7 @@ def test_emit_calls_format_render_and_print_in_order(
         assert message == "formatted message"
         return "message renderable"
 
-    def fake_render(
-        record: LogRecord, traceback: object, message_renderable: str
-    ) -> str:
+    def fake_render(record: LogRecord, traceback: object, message_renderable: str) -> str:
         calls.append("render")
         assert record is log_record
         assert traceback is None
@@ -72,9 +66,7 @@ def test_emit_calls_format_render_and_print_in_order(
     assert calls == ["format", "render_message", "render", "print"]
 
 
-def test_emit_outputs_to_console(
-    console_stream: StringIO, console: Console, log_record: LogRecord
-) -> None:
+def test_emit_outputs_to_console(console_stream: StringIO, console: Console, log_record: LogRecord) -> None:
     handler = CapturingRichHandler(console, show_time=False, show_path=False)
     handler.emit(log_record)
     assert "fixture message" in console_stream.getvalue()

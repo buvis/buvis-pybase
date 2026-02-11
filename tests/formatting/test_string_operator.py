@@ -83,41 +83,31 @@ class TestPrepend:
 
 
 class TestStringCaseDelegation:
-    @patch(
-        "buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.humanize"
-    )
+    @patch("buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.humanize")
     def test_humanize_delegates(self, mock_humanize) -> None:
         mock_humanize.return_value = "Humanized"
         assert StringOperator.humanize("first_name") == "Humanized"
         mock_humanize.assert_called_once_with("first_name")
 
-    @patch(
-        "buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.underscore"
-    )
+    @patch("buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.underscore")
     def test_underscore_delegates(self, mock_underscore) -> None:
         mock_underscore.return_value = "first_name"
         assert StringOperator.underscore("FirstName") == "first_name"
         mock_underscore.assert_called_once_with("FirstName")
 
-    @patch(
-        "buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.as_note_field_name"
-    )
+    @patch("buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.as_note_field_name")
     def test_as_note_field_name_delegates(self, mock_note_field) -> None:
         mock_note_field.return_value = "note-name"
         assert StringOperator.as_note_field_name("NoteName") == "note-name"
         mock_note_field.assert_called_once_with("NoteName")
 
-    @patch(
-        "buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.as_graphql_field_name"
-    )
+    @patch("buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.as_graphql_field_name")
     def test_as_graphql_field_name_delegates(self, mock_graphql_field) -> None:
         mock_graphql_field.return_value = "NoteName"
         assert StringOperator.as_graphql_field_name("note_name") == "NoteName"
         mock_graphql_field.assert_called_once_with("note_name")
 
-    @patch(
-        "buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.camelize"
-    )
+    @patch("buvis.pybase.formatting.string_operator.string_case_tools.StringCaseTools.camelize")
     def test_camelize_delegates(self, mock_camelize) -> None:
         mock_camelize.return_value = "FirstName"
         assert StringOperator.camelize("first_name") == "FirstName"
@@ -149,9 +139,7 @@ class TestSingularize:
 class TestReplaceAbbreviationsDelegation:
     """Test replace_abbreviations delegates to Abbr."""
 
-    @patch(
-        "buvis.pybase.formatting.string_operator.string_operator.Abbr.replace_abbreviations"
-    )
+    @patch("buvis.pybase.formatting.string_operator.string_operator.Abbr.replace_abbreviations")
     def test_delegates_to_abbr(self, mock_replace) -> None:
         mock_replace.return_value = "Expanded"
         result = StringOperator.replace_abbreviations("API", [{"API": "Test"}], 2)

@@ -13,8 +13,8 @@ from rich.status import Status
 from buvis.pybase.adapters.console.capturing_rich_handler import CapturingRichHandler
 from buvis.pybase.adapters.console.console import (
     ConsoleAdapter,
-    console,
     _stylize_text,
+    console,
     logging_to_console,
 )
 
@@ -115,9 +115,7 @@ def test_windows_stdout_wrapping() -> None:
             self.buffer = io.BytesIO()
 
     class DummyConsole:
-        def __init__(
-            self, file: io.TextIOWrapper | None = None, log_path: bool = True
-        ) -> None:
+        def __init__(self, file: io.TextIOWrapper | None = None, log_path: bool = True) -> None:
             self.file = file
             self.log_path = log_path
 
@@ -147,16 +145,12 @@ def test_confirm_returns_mocked_answer(console_adapter: ConsoleAdapter) -> None:
     console_module = importlib.import_module("buvis.pybase.adapters.console.console")
     answers = iter([True, False])
 
-    with patch.object(
-        console_module.Confirm, "ask", side_effect=lambda _: next(answers)
-    ):
+    with patch.object(console_module.Confirm, "ask", side_effect=lambda _: next(answers)):
         assert console_adapter.confirm("Proceed?")
         assert not console_adapter.confirm("Proceed?")
 
 
-def test_print_side_by_side_renders_columns(
-    console_adapter: ConsoleAdapter, monkeypatch
-) -> None:
+def test_print_side_by_side_renders_columns(console_adapter: ConsoleAdapter, monkeypatch) -> None:
     mock_print = Mock()
     monkeypatch.setattr(console_adapter.console, "print", mock_print)
 
@@ -207,8 +201,7 @@ def test_logging_to_console_manages_handler_and_level(monkeypatch) -> None:
             (
                 handler
                 for handler in logger.handlers
-                if isinstance(handler, CapturingRichHandler)
-                and id(handler) not in initial_handler_ids
+                if isinstance(handler, CapturingRichHandler) and id(handler) not in initial_handler_ids
             ),
             None,
         )

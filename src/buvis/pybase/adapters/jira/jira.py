@@ -87,7 +87,8 @@ class JiraAdapter:
             feature -> customfield_10001, region -> customfield_12900.
 
         Note:
-            Custom fields customfield_10001 (feature) and customfield_12900 (region) require post-creation update due to JIRA API limitations.
+            Custom fields customfield_10001 (feature) and customfield_12900 (region)
+            require post-creation update due to JIRA API limitations.
         """
         field_mappings = self._settings.field_mappings
 

@@ -31,7 +31,8 @@ class OutlookLocalAdapter:
     Example:
         >>> from buvis.pybase.adapters.outlook_local.outlook_local import OutlookLocalAdapter
         >>> adapter = OutlookLocalAdapter()
-        >>> adapter.create_timeblock({"subject": "Check-in", "body": "Daily sync", "duration": 30, "location": "Desk", "categories": "Work"})
+        >>> adapter.create_timeblock({"subject": "Check-in",
+        ...     "body": "Daily sync", "duration": 30, "categories": "Work"})
     """
 
     def __init__(self: OutlookLocalAdapter) -> None:
@@ -52,7 +53,7 @@ class OutlookLocalAdapter:
             self.app: Any = win32com.client.Dispatch("Outlook.Application")
             self.api: Any = self.app.GetNamespace("MAPI")
             self.calendar: Any = self.api.GetDefaultFolder(9)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             console.panic(f"Outook connection failed:\n{e}")
 
     def create_timeblock(
@@ -109,7 +110,7 @@ class OutlookLocalAdapter:
 
     def get_day_appointments(
         self: OutlookLocalAdapter,
-        appointments: Any,  # noqa: ANN401 (The win32com.client library dynamically creates Python wrappers for COM objects, which means the exact type of the object can vary and is not known at compile time.)
+        appointments: Any,
         date: datetime,
     ) -> list[Any]:
         """Filter appointments to a single day.
@@ -123,9 +124,7 @@ class OutlookLocalAdapter:
         """
         restrict_from = date.strftime("%Y-%m-%d")
         restrict_to_str = (date + timedelta(days=1)).strftime("%Y-%m-%d")
-        restrict_query = (
-            f"[Start] >= '{restrict_from}' AND [End] <= '{restrict_to_str}'"
-        )
+        restrict_query = f"[Start] >= '{restrict_from}' AND [End] <= '{restrict_to_str}'"
         appointments = appointments.Restrict(restrict_query)
         return [
             appointment
@@ -142,7 +141,7 @@ class OutlookLocalAdapter:
         desired_start: datetime,
         desired_duration: int,
         debug_level: int = 0,
-    ) -> Any | None:  # noqa: ANN401 (The win32com.client library dynamically creates Python wrappers for COM objects, which means the exact type of the object can vary and is not known at compile time.)
+    ) -> Any | None:
         """Find appointment conflicting with proposed time slot.
 
         Appointments are sorted by `Start`, so the method terminates early when possible.
@@ -169,7 +168,8 @@ class OutlookLocalAdapter:
             if debug_level > 0:
                 console.print(
                     f"Checking if desired block ({desired_start_time} - {desired_end_time}) "
-                    f"collides with appointment {appointment.Subject} ({appointment_start_time} - {appointment_end_time})",
+                    f"collides with appointment {appointment.Subject} "
+                    f"({appointment_start_time} - {appointment_end_time})",
                 )
 
             if (

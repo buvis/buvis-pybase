@@ -18,7 +18,8 @@ _EXPECT_TIMEOUT = 2
 
 class ShellAdapter:
     """
-    A class for executing shell commands and logging their output, with support for command aliases and environment variables.
+    A class for executing shell commands and logging their output,
+    with support for command aliases and environment variables.
 
     It executes shell commands, logs the output, and handles errors.
     """
@@ -114,9 +115,7 @@ class ShellAdapter:
 
                 if index == _EXPECT_PROMPT:
                     print(
-                        child.before.decode("utf-8")
-                        if isinstance(child.before, bytes)
-                        else child.before,
+                        child.before.decode("utf-8") if isinstance(child.before, bytes) else child.before,
                     )
                     user_input = input(prompt)
                     child.sendline(user_input)

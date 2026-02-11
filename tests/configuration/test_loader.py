@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import inspect
 import types
-import pytest
-
 from pathlib import Path
+
+import pytest
 
 from buvis.pybase.configuration.exceptions import MissingEnvVarError
 from buvis.pybase.configuration.loader import (
-    ConfigurationLoader,
     _ENV_PATTERN,
+    ConfigurationLoader,
     _substitute,
 )
 
@@ -26,9 +26,7 @@ class TestConfigurationLoaderScaffold:
 class TestFindConfigFiles:
     """Tests for find_config_files method."""
 
-    def test_no_files_returns_empty(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_no_files_returns_empty(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Empty directory returns empty list."""
         monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
         monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
@@ -37,9 +35,7 @@ class TestFindConfigFiles:
 
         assert result == []
 
-    def test_single_buvis_yaml_found(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_single_buvis_yaml_found(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Single buvis.yaml is returned."""
         monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
         config = tmp_path / "buvis.yaml"
@@ -50,9 +46,7 @@ class TestFindConfigFiles:
         assert len(result) == 1
         assert result[0] == config.resolve()
 
-    def test_tool_specific_file_found(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_tool_specific_file_found(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Tool-specific config file is found."""
         monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
         tool_config = tmp_path / "buvis-cli.yaml"
@@ -62,9 +56,7 @@ class TestFindConfigFiles:
 
         assert any("buvis-cli.yaml" in str(p) for p in result)
 
-    def test_both_buvis_and_tool_config_found(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_both_buvis_and_tool_config_found(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Both buvis.yaml and tool-specific are found."""
         monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
         (tmp_path / "buvis.yaml").write_text("base: true\n")
@@ -74,9 +66,7 @@ class TestFindConfigFiles:
 
         assert len(result) == 2
 
-    def test_permission_denied_skipped(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_permission_denied_skipped(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Permission error skips file without crashing."""
         monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
         config = tmp_path / "buvis.yaml"
@@ -175,9 +165,7 @@ class TestSubstitute:
         assert result == "host: localhost"
         assert missing == []
 
-    def test_var_unset_tracked_in_missing(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_var_unset_tracked_in_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """${VAR} with VAR unset -> tracked in missing list."""
         monkeypatch.delenv("UNSET_VAR", raising=False)
 
@@ -263,9 +251,7 @@ class TestLoadYaml:
 
         assert result == {}
 
-    def test_env_var_substituted(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_env_var_substituted(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """${VAR} is substituted with env value."""
         monkeypatch.setenv("DB_HOST", "localhost")
         yaml_file = tmp_path / "config.yaml"
@@ -275,9 +261,7 @@ class TestLoadYaml:
 
         assert result == {"host": "localhost"}
 
-    def test_env_var_with_default(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_env_var_with_default(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """${VAR:-default} uses default when var unset."""
         monkeypatch.delenv("DB_PORT", raising=False)
         yaml_file = tmp_path / "config.yaml"
@@ -287,9 +271,7 @@ class TestLoadYaml:
 
         assert result == {"port": 5432}  # YAML parses as int
 
-    def test_missing_required_var_raises(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_missing_required_var_raises(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Missing required env var raises MissingEnvVarError."""
         monkeypatch.delenv("REQUIRED_VAR", raising=False)
         yaml_file = tmp_path / "config.yaml"
@@ -351,9 +333,7 @@ class TestGetSearchPaths:
         assert paths[0] == Path("/custom/config")
         assert paths[1] == Path("/custom/xdg/buvis")
 
-    def test_buvis_config_dir_empty_string(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_buvis_config_dir_empty_string(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("BUVIS_CONFIG_DIR", "")
         monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
 
@@ -363,9 +343,7 @@ class TestGetSearchPaths:
         assert len(paths) == 3
         assert paths[0] == Path.home() / ".config" / "buvis"
 
-    def test_xdg_config_home_empty_fallback(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_xdg_config_home_empty_fallback(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("BUVIS_CONFIG_DIR", raising=False)
         monkeypatch.setenv("XDG_CONFIG_HOME", "")
 
@@ -599,8 +577,8 @@ class TestFindConfigFilesLogging:
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Unsafe symlink path is logged as warning and skipped."""
-        from unittest.mock import patch
         import logging
+        from unittest.mock import patch
 
         monkeypatch.setenv("BUVIS_CONFIG_DIR", str(tmp_path))
         config_file = tmp_path / "buvis.yaml"

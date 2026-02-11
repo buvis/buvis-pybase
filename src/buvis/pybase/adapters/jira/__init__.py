@@ -1,3 +1,4 @@
+from .domain import JiraCommentDTO, JiraIssueDTO, JiraSearchResult
 from .exceptions import (
     JiraError,
     JiraLinkError,
@@ -6,7 +7,6 @@ from .exceptions import (
 )
 from .jira import JiraAdapter
 from .settings import JiraFieldMappings, JiraSettings
-from .domain import JiraCommentDTO, JiraIssueDTO, JiraSearchResult
 
 __all__ = [
     "JiraAdapter",

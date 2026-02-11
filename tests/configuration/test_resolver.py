@@ -6,12 +6,12 @@ from pathlib import Path
 import pytest
 
 from buvis.pybase.configuration import ConfigurationError
-from buvis.pybase.configuration.settings import GlobalSettings
 from buvis.pybase.configuration.resolver import (
     ConfigResolver,
     _extract_tool_name,
     _load_yaml_config,
 )
+from buvis.pybase.configuration.settings import GlobalSettings
 
 
 class TestExtractToolName:
@@ -75,9 +75,7 @@ class TestConfigResolverResolve:
 class TestConfigResolverPrecedence:
     """Tests for CLI > ENV > YAML > Defaults precedence."""
 
-    def test_cli_wins_when_all_sources_set(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_cli_wins_when_all_sources_set(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """CLI overrides take precedence over ENV and YAML."""
         config = tmp_path / "config.yaml"
         config.write_text("debug: false\nlog_level: WARNING\n")
@@ -94,9 +92,7 @@ class TestConfigResolverPrecedence:
         assert settings.debug is True
         assert settings.log_level == "DEBUG"
 
-    def test_env_wins_when_no_cli(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_env_wins_when_no_cli(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """ENV overrides YAML when no CLI provided."""
         config = tmp_path / "config.yaml"
         config.write_text("debug: false\nlog_level: WARNING\n")
@@ -129,9 +125,7 @@ class TestConfigResolverPrecedence:
         assert settings.debug is False
         assert settings.log_level == "INFO"
 
-    def test_cli_none_falls_through(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_cli_none_falls_through(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """CLI=None falls through to ENV value."""
         config = tmp_path / "config.yaml"
         config.write_text("debug: false\n")
@@ -198,9 +192,7 @@ class TestLoadYamlConfig:
 
         assert ":2:" in str(exc_info.value) or ":3:" in str(exc_info.value)
 
-    def test_permission_denied_returns_empty(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_permission_denied_returns_empty(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """PermissionError returns empty dict."""
         config = tmp_path / "locked.yaml"
         config.write_text("key: value")
@@ -218,9 +210,7 @@ class TestLoadYamlConfig:
 
         assert result == {}
 
-    def test_env_var_override(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_env_var_override(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """BUVIS_CONFIG_FILE env var takes precedence."""
         config = tmp_path / "custom.yaml"
         config.write_text("custom: true\n")
@@ -439,9 +429,7 @@ class TestConfigResolverSourceTracking:
         assert resolver.sources["debug"] == ConfigSource.DEFAULT
         assert resolver.sources["log_level"] == ConfigSource.DEFAULT
 
-    def test_mixed_sources(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_mixed_sources(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Different fields can have different sources."""
         from buvis.pybase.configuration import ConfigSource
 
@@ -473,9 +461,7 @@ class TestConfigResolverLogging:
         assert "debug" in caplog.text
         assert "log_level" in caplog.text
 
-    def test_source_tracking_logs_no_values(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_source_tracking_logs_no_values(self, caplog: pytest.LogCaptureFixture) -> None:
         """Source tracking log messages contain field names but no values."""
         import logging
 

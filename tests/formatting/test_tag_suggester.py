@@ -10,9 +10,7 @@ from buvis.pybase.formatting.string_operator.tag_suggester import (
 
 
 def test_download_nltk_dependencies_invokes_all_packages(mocker) -> None:
-    mock_download = mocker.patch(
-        "buvis.pybase.formatting.string_operator.tag_suggester.nltk.download"
-    )
+    mock_download = mocker.patch("buvis.pybase.formatting.string_operator.tag_suggester.nltk.download")
 
     NLTKPreprocessor.download_nltk_dependencies()
 
@@ -25,9 +23,7 @@ def test_download_nltk_dependencies_invokes_all_packages(mocker) -> None:
         "omw-1.4",
         "punkt_tab",
     ]
-    assert mock_download.call_args_list == [
-        call(dependency, quiet=True) for dependency in expected_dependencies
-    ]
+    assert mock_download.call_args_list == [call(dependency, quiet=True) for dependency in expected_dependencies]
 
 
 def test_extract_by_frequency_filters_non_nouns(mocker) -> None:
@@ -175,9 +171,7 @@ def test_suggest_prioritizes_used_tags(mocker) -> None:
         "buvis.pybase.formatting.string_operator.tag_suggester.torch.backends.mps.is_available",
         return_value=False,
     )
-    mocker.patch(
-        "buvis.pybase.formatting.string_operator.tag_suggester.NLTKPreprocessor.download_nltk_dependencies"
-    )
+    mocker.patch("buvis.pybase.formatting.string_operator.tag_suggester.NLTKPreprocessor.download_nltk_dependencies")
 
     suggester = TagSuggester()
     mocker.patch.object(

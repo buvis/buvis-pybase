@@ -52,9 +52,7 @@ class TestJiraSettings:
 
         assert settings.field_mappings == JiraFieldMappings()
 
-    def test_nested_delimiter_parses_overrides(
-        self, base_env: pytest.MonkeyPatch
-    ) -> None:
+    def test_nested_delimiter_parses_overrides(self, base_env: pytest.MonkeyPatch) -> None:
         """Nested field mapping overrides load via the nested delimiter."""
         base_env.setenv("BUVIS_JIRA_FIELD_MAPPINGS__TICKET", "custom_ticket")
         base_env.setenv("BUVIS_JIRA_FIELD_MAPPINGS__REGION", "custom_region")

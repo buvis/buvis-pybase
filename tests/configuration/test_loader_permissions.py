@@ -60,9 +60,7 @@ class TestWorldWritableWarning:
     """Tests for world-writable warning in load_yaml."""
 
     @pytest.mark.skipif(sys.platform == "win32", reason="Unix permissions only")
-    def test_warns_on_world_writable_file(
-        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_warns_on_world_writable_file(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
         """World-writable config file triggers warning."""
         config = tmp_path / "config.yaml"
         config.write_text("key: value\n")
@@ -74,9 +72,7 @@ class TestWorldWritableWarning:
         assert "world-writable" in caplog.text
         assert str(config) in caplog.text
 
-    def test_no_warning_on_normal_file(
-        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_no_warning_on_normal_file(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
         """Normal file does not trigger warning."""
         config = tmp_path / "config.yaml"
         config.write_text("key: value\n")

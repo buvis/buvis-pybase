@@ -27,9 +27,9 @@ Example:
 
 from __future__ import annotations
 
-import re
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -75,9 +75,7 @@ def _load_yaml_config(file_path: Path | None = None) -> dict[str, Any]:
     except yaml.YAMLError as e:
         mark = getattr(e, "problem_mark", None)
         line_num = mark.line + 1 if mark else "unknown"
-        raise ConfigurationError(
-            f"YAML syntax error in {file_path}:{line_num}: {e}"
-        ) from e
+        raise ConfigurationError(f"YAML syntax error in {file_path}:{line_num}: {e}") from e
     except PermissionError:
         logger.warning("Permission denied reading %s, skipping", file_path)
         return {}
@@ -217,9 +215,7 @@ class ConfigResolver:
                     self.loader.load_yaml(path)
                     for path in reversed(discovered_files)  # lowest -> highest
                 ]
-                yaml_config = (
-                    self.loader.merge_configs(*loaded_configs) if loaded_configs else {}
-                )
+                yaml_config = self.loader.merge_configs(*loaded_configs) if loaded_configs else {}
             logger.debug("Loaded YAML config: %s", yaml_config)
 
             try:
@@ -245,18 +241,12 @@ class ConfigResolver:
 
                 # Build final settings
                 if merged:
-                    final_settings = settings_class.model_validate(
-                        base_settings.model_dump() | merged
-                    )
+                    final_settings = settings_class.model_validate(base_settings.model_dump() | merged)
                 else:
                     final_settings = base_settings
 
                 # Track sources for each field
-                env_keys = {
-                    k.removeprefix(env_prefix).lower()
-                    for k in os.environ
-                    if k.startswith(env_prefix)
-                }
+                env_keys = {k.removeprefix(env_prefix).lower() for k in os.environ if k.startswith(env_prefix)}
 
                 self._sources.clear()
                 for field in settings_class.model_fields:

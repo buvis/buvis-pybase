@@ -3,7 +3,6 @@ from __future__ import annotations
 import subprocess
 from unittest.mock import Mock, patch
 
-
 from buvis.pybase.adapters.uv.uv import UvAdapter
 
 

@@ -3,16 +3,16 @@ from __future__ import annotations
 from unittest.mock import MagicMock, call, patch
 
 import pytest
+from jira.exceptions import JIRAError
 
 from buvis.pybase.adapters.jira.domain import JiraCommentDTO, JiraIssueDTO
-from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.exceptions import (
     JiraLinkError,
     JiraNotFoundError,
     JiraTransitionError,
 )
+from buvis.pybase.adapters.jira.jira import JiraAdapter
 from buvis.pybase.adapters.jira.settings import JiraFieldMappings, JiraSettings
-from jira.exceptions import JIRAError
 
 
 @pytest.fixture
@@ -46,9 +46,7 @@ class TestJiraAdapterInit:
     """Test JiraAdapter initialization."""
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_creates_client_with_server_and_token(
-        self, mock_jira: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_creates_client_with_server_and_token(self, mock_jira: MagicMock, jira_settings: JiraSettings) -> None:
         """Valid settings create a JIRA client."""
         JiraAdapter(jira_settings)
 
@@ -58,9 +56,7 @@ class TestJiraAdapterInit:
         )
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_sets_proxy_when_configured(
-        self, mock_jira: MagicMock, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_sets_proxy_when_configured(self, mock_jira: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
         """Proxy config passes proxies dict to JIRA constructor."""
         monkeypatch.setenv("BUVIS_JIRA_SERVER", "https://jira.example.com")
         monkeypatch.setenv("BUVIS_JIRA_TOKEN", "test-token")
@@ -72,9 +68,7 @@ class TestJiraAdapterInit:
         assert kwargs["proxies"] == {"https": "http://proxy.example.com:8080"}
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_multiple_adapters_with_different_proxies(
-        self, mock_jira: MagicMock
-    ) -> None:
+    def test_multiple_adapters_with_different_proxies(self, mock_jira: MagicMock) -> None:
         """Multiple adapters with different proxies don't conflict."""
         proxy1 = "http://proxy-one.example.com:8080"
         proxy2 = "http://proxy-two.example.com:8080"
@@ -189,9 +183,7 @@ class TestJiraAdapterCreate:
         mock_created_issue.key = "PROJ-123"
         mock_fetched_issue = MagicMock()
         mock_fetched_issue.key = "PROJ-123"
-        mock_fetched_issue.permalink.return_value = (
-            "https://jira.example.com/browse/PROJ-123"
-        )
+        mock_fetched_issue.permalink.return_value = "https://jira.example.com/browse/PROJ-123"
         mock_fetched_issue.fields.project.key = "PROJ"
         mock_fetched_issue.fields.summary = "Test Issue"
         mock_fetched_issue.fields.description = "Test description"
@@ -213,17 +205,11 @@ class TestJiraAdapterCreate:
         mock_jira.issue.assert_called_once_with("PROJ-123")
         assert mock_fetched_issue.update.call_count == 2
         field_mappings = jira_settings.field_mappings
-        mock_fetched_issue.update.assert_any_call(
-            **{field_mappings.feature: "EPIC-456"}
-        )
-        mock_fetched_issue.update.assert_any_call(
-            **{field_mappings.region: {"value": "US"}}
-        )
+        mock_fetched_issue.update.assert_any_call(**{field_mappings.feature: "EPIC-456"})
+        mock_fetched_issue.update.assert_any_call(**{field_mappings.region: {"value": "US"}})
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_create_omits_team_field_when_none(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_create_omits_team_field_when_none(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """create() does not send team field when issue.team is None."""
         mock_jira = mock_jira_cls.return_value
         mock_issue = MagicMock()
@@ -267,9 +253,7 @@ class TestJiraAdapterCreate:
         assert field_mappings.team not in call_fields
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_create_omits_region_field_when_none(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_create_omits_region_field_when_none(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """create() does not send region field when issue.region is None."""
         mock_jira = mock_jira_cls.return_value
         mock_issue = MagicMock()
@@ -320,9 +304,7 @@ class TestJiraAdapterGet:
     """Test JiraAdapter.get() method."""
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_returns_dto_for_valid_key(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_returns_dto_for_valid_key(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """get() returns a populated DTO when Jira returns an issue."""
         mock_jira = mock_jira_cls.return_value
         mock_issue = MagicMock()
@@ -356,9 +338,7 @@ class TestJiraAdapterGet:
         assert result.region == "US"
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_raises_not_found_for_404(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_raises_not_found_for_404(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """A 404 from Jira is wrapped in JiraNotFoundError."""
         mock_jira = mock_jira_cls.return_value
         error = JIRAError("not found")
@@ -370,9 +350,7 @@ class TestJiraAdapterGet:
             adapter.get("PROJ-404")
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_propagates_other_jira_errors(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_propagates_other_jira_errors(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """Non-404 errors bubble up unchanged."""
         mock_jira = mock_jira_cls.return_value
         error = JIRAError("server error")
@@ -434,9 +412,7 @@ class TestJiraAdapterUpdate:
     """Test JiraAdapter.update() method."""
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_calls_update_with_fields(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_calls_update_with_fields(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """update() forwards provided fields to JIRA."""
         mock_jira = mock_jira_cls.return_value
         mock_issue = MagicMock()
@@ -467,9 +443,7 @@ class TestJiraAdapterUpdate:
         mock_get.assert_called_once_with("PROJ-1")
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_returns_refreshed_dto(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_returns_refreshed_dto(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """update() returns the DTO from the final get()."""
         mock_jira = mock_jira_cls.return_value
         mock_issue = MagicMock()
@@ -497,9 +471,7 @@ class TestJiraAdapterUpdate:
         assert result is refreshed_dto
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_raises_not_found_for_missing_issue(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_raises_not_found_for_missing_issue(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """update() surfaces JiraNotFoundError when issue can't be found."""
         mock_jira = mock_jira_cls.return_value
         error = JIRAError("not found")
@@ -516,9 +488,7 @@ class TestJiraAdapterSearch:
     """Test JiraAdapter.search() pagination helper."""
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_returns_search_result_with_issues(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_returns_search_result_with_issues(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """Search returns DTOs for each matching issue."""
         mock_jira = mock_jira_cls.return_value
         mock_issue = MagicMock()
@@ -562,9 +532,7 @@ class TestJiraAdapterSearch:
         assert issue_dto.region == "EU"
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_returns_empty_results(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_returns_empty_results(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """Empty search results still return a JiraSearchResult instance."""
         mock_jira = mock_jira_cls.return_value
         results = MagicMock()
@@ -579,9 +547,7 @@ class TestJiraAdapterSearch:
         assert result.issues == []
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_passes_pagination_params(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_passes_pagination_params(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """start_at/max_results propagate to the underlying adapter."""
         mock_jira = mock_jira_cls.return_value
         results = MagicMock()
@@ -592,16 +558,12 @@ class TestJiraAdapterSearch:
         adapter = JiraAdapter(jira_settings)
         result = adapter.search("project = PROJ", start_at=5, max_results=25)
 
-        mock_jira.search_issues.assert_called_once_with(
-            "project = PROJ", startAt=5, maxResults=25, fields=None
-        )
+        mock_jira.search_issues.assert_called_once_with("project = PROJ", startAt=5, maxResults=25, fields=None)
         assert result.start_at == 5
         assert result.max_results == 25
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_passes_fields_filter(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_passes_fields_filter(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """fields argument is forwarded to JIRA."""
         mock_jira = mock_jira_cls.return_value
         results = MagicMock()
@@ -634,9 +596,7 @@ class TestJiraAdapterTransitions:
             {"id": "2", "name": "Done"},
         ]
 
-        with patch.object(
-            JiraAdapter, "get", return_value=sample_issue_dto
-        ) as mock_get:
+        with patch.object(JiraAdapter, "get", return_value=sample_issue_dto) as mock_get:
             adapter = JiraAdapter(jira_settings)
             result = adapter.get_transitions("PROJ-1")
 
@@ -648,14 +608,10 @@ class TestJiraAdapterTransitions:
         mock_get.assert_called_once_with("PROJ-1")
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_get_transitions_raises_not_found(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_get_transitions_raises_not_found(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """Missing issues propagate JiraNotFoundError."""
         mock_jira = mock_jira_cls.return_value
-        with patch.object(
-            JiraAdapter, "get", side_effect=JiraNotFoundError("PROJ-404")
-        ) as mock_get:
+        with patch.object(JiraAdapter, "get", side_effect=JiraNotFoundError("PROJ-404")) as mock_get:
             adapter = JiraAdapter(jira_settings)
             with pytest.raises(JiraNotFoundError):
                 adapter.get_transitions("PROJ-404")
@@ -664,16 +620,12 @@ class TestJiraAdapterTransitions:
         mock_get.assert_called_once_with("PROJ-404")
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_transition_executes_by_name(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_transition_executes_by_name(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """Transitions can be triggered by name."""
         mock_jira = mock_jira_cls.return_value
         transitions = [{"id": "1", "name": "In Progress"}]
 
-        with patch.object(
-            JiraAdapter, "get_transitions", return_value=transitions
-        ) as mock_get_transitions:
+        with patch.object(JiraAdapter, "get_transitions", return_value=transitions) as mock_get_transitions:
             adapter = JiraAdapter(jira_settings)
             adapter.transition("PROJ-1", "In Progress")
 
@@ -686,16 +638,12 @@ class TestJiraAdapterTransitions:
         )
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_transition_executes_by_id(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_transition_executes_by_id(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """Transitions can be triggered by id."""
         mock_jira = mock_jira_cls.return_value
         transitions = [{"id": "42", "name": "Done"}]
 
-        with patch.object(
-            JiraAdapter, "get_transitions", return_value=transitions
-        ) as mock_get_transitions:
+        with patch.object(JiraAdapter, "get_transitions", return_value=transitions) as mock_get_transitions:
             adapter = JiraAdapter(jira_settings)
             adapter.transition("PROJ-1", "42")
 
@@ -708,16 +656,12 @@ class TestJiraAdapterTransitions:
         )
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_transition_raises_when_unavailable(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_transition_raises_when_unavailable(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """Unavailable transitions raise JiraTransitionError."""
         mock_jira = mock_jira_cls.return_value
         transitions = [{"id": "7", "name": "Start"}]
 
-        with patch.object(
-            JiraAdapter, "get_transitions", return_value=transitions
-        ) as mock_get_transitions:
+        with patch.object(JiraAdapter, "get_transitions", return_value=transitions) as mock_get_transitions:
             adapter = JiraAdapter(jira_settings)
             with pytest.raises(JiraTransitionError):
                 adapter.transition("PROJ-1", "Close")
@@ -726,18 +670,14 @@ class TestJiraAdapterTransitions:
         mock_jira.transition_issue.assert_not_called()
 
     @patch("buvis.pybase.adapters.jira.jira.JIRA")
-    def test_transition_passes_fields_and_comment(
-        self, mock_jira_cls: MagicMock, jira_settings: JiraSettings
-    ) -> None:
+    def test_transition_passes_fields_and_comment(self, mock_jira_cls: MagicMock, jira_settings: JiraSettings) -> None:
         """Fields and comments are forwarded to JIRA transitions."""
         mock_jira = mock_jira_cls.return_value
         transitions = [{"id": "123", "name": "Review"}]
         fields = {"resolution": {"name": "Done"}}
         comment = "moving to review"
 
-        with patch.object(
-            JiraAdapter, "get_transitions", return_value=transitions
-        ) as mock_get_transitions:
+        with patch.object(JiraAdapter, "get_transitions", return_value=transitions) as mock_get_transitions:
             adapter = JiraAdapter(jira_settings)
             adapter.transition("PROJ-1", "Review", fields=fields, comment=comment)
 
@@ -897,9 +837,7 @@ class TestJiraAdapterComments:
         adapter = JiraAdapter(jira_settings)
         result = adapter.add_comment("PROJ-1", "Test comment")
 
-        mock_jira.add_comment.assert_called_once_with(
-            "PROJ-1", "Test comment", visibility=None
-        )
+        mock_jira.add_comment.assert_called_once_with("PROJ-1", "Test comment", visibility=None)
         assert isinstance(result, JiraCommentDTO)
         assert result.id == "C-1"
         assert result.author == "reporter"

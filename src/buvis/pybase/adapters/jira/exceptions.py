@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-
 __all__ = [
     "JiraError",
+    "JiraLinkError",
     "JiraNotFoundError",
     "JiraTransitionError",
-    "JiraLinkError",
 ]
 
 

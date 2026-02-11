@@ -17,10 +17,7 @@ class TestAbbr:
             level=1,
         )
 
-        assert (
-            result
-            == "Use the Application Programming Interface and Command Line Interface"
-        )
+        assert result == "Use the Application Programming Interface and Command Line Interface"
 
     def test_no_abbreviations_returns_original_text(self) -> None:
         result = Abbr.replace_abbreviations("Use the API", level=1)

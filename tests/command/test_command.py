@@ -5,8 +5,8 @@ import warnings
 import pytest
 
 from buvis.pybase.command.command import (
-    BuvisCommand,
     FILENAME_COMMAND_INPUT_SPECIFICATION,
+    BuvisCommand,
 )
 from buvis.pybase.configuration.exceptions import ConfigurationKeyNotFoundError
 
@@ -14,7 +14,7 @@ from buvis.pybase.configuration.exceptions import ConfigurationKeyNotFoundError
 class _PanicKey(str):
     """String subclass that supports panic metadata for the deprecated logic."""
 
-    def __new__(cls, value: str, panic_value: str) -> "_PanicKey":
+    def __new__(cls, value: str, panic_value: str) -> _PanicKey:
         obj = str.__new__(cls, value)
         obj._panic_value = panic_value
         return obj

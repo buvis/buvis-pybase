@@ -36,7 +36,7 @@ class UvAdapter:
         try:
             if system == "Windows":
                 subprocess.check_call(
-                    [  # noqa: S607 - trusted installer
+                    [
                         "powershell",
                         "-ExecutionPolicy",
                         "ByPass",
@@ -51,7 +51,7 @@ class UvAdapter:
                 ]
             else:
                 subprocess.check_call(  # noqa: S602 - trusted installer
-                    "curl -LsSf https://astral.sh/uv/install.sh | sh",  # noqa: S607
+                    "curl -LsSf https://astral.sh/uv/install.sh | sh",
                     shell=True,
                 )
                 home = Path(os.environ.get("HOME", ""))

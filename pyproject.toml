@@ -105,6 +105,37 @@ explicit_package_bases = true
 module = ["torch.*", "transformers.*", "jira.*", "pexpect.*", "rake_nltk.*", "xattr.*", "inflection.*", "nltk.*", "win32com.*"]
 ignore_missing_imports = true
 
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+  "E",      # pycodestyle errors
+  "W",      # pycodestyle warnings
+  "F",      # pyflakes
+  "I",      # isort
+  "S",      # bandit (security)
+  "ANN",    # annotations
+  "ARG",    # unused arguments
+  "SLF",    # private member access
+  "PLR",    # pylint refactor
+  "UP",     # pyupgrade (modernize syntax)
+  "RUF",    # ruff-specific rules
+]
+ignore = [
+  "ANN401",  # any-type allowed for adapter wrappers
+  "S105",    # hardcoded password strings in settings defaults
+  "S106",    # hardcoded password func args in tests
+  "S108",    # hardcoded temp file in tests
+  "S607",    # partial executable path (using "uv")
+  "PLR0911", # too-many-return-statements
+  "PLR0912", # too-many-branches
+  "PLR0913", # too-many-arguments
+  "PLR2004", # magic value comparison
+  "UP047",   # non-pep695 generics (requires 3.12+ syntax migration)
+]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
   "S101",    # assert is expected in tests
@@ -112,4 +143,6 @@ ignore_missing_imports = true
   "ARG",     # unused args are often fixtures
   "SLF001",  # private member access allowed in tests
   "PLR2004", # magic values ok in tests
+  "RUF059",  # unused unpacked variables in assertions
+  "UP007",   # Union syntax in tests testing Union handling
 ]

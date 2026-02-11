@@ -13,9 +13,7 @@ from buvis.pybase.configuration.settings import GlobalSettings
 class TestEnvEmptyString:
     """ENV empty string behavior: empty string is a value, not missing."""
 
-    def test_env_empty_string_for_output_format(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_env_empty_string_for_output_format(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Empty string ENV is used, not default."""
         # output_format accepts string, set to empty
         monkeypatch.setenv("BUVIS_OUTPUT_FORMAT", "")
@@ -69,9 +67,7 @@ class TestYamlAbsentKey:
 class TestCliNoneFallthrough:
     """CLI None values fall through to lower priority sources."""
 
-    def test_cli_none_falls_through_to_env(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_cli_none_falls_through_to_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """CLI=None falls through to ENV value."""
         monkeypatch.setenv("BUVIS_DEBUG", "true")
 
@@ -86,9 +82,7 @@ class TestCliNoneFallthrough:
         config.write_text("debug: true\n")
 
         resolver = ConfigResolver()
-        settings = resolver.resolve(
-            GlobalSettings, config_path=config, cli_overrides={"debug": None}
-        )
+        settings = resolver.resolve(GlobalSettings, config_path=config, cli_overrides={"debug": None})
 
         assert settings.debug is True  # YAML wins
 
@@ -137,9 +131,7 @@ class TestInvalidValueFromAnySources:
 class TestPrecedenceEdgeCases:
     """Edge cases in precedence chain."""
 
-    def test_all_sources_set_cli_wins(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_all_sources_set_cli_wins(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """When all sources set, CLI wins."""
         config = tmp_path / "config.yaml"
         config.write_text("debug: false\nlog_level: WARNING\n")
@@ -156,9 +148,7 @@ class TestPrecedenceEdgeCases:
         assert settings.debug is False  # CLI
         assert settings.log_level == "DEBUG"  # CLI
 
-    def test_partial_cli_overrides(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_partial_cli_overrides(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """CLI only overrides specified fields."""
         config = tmp_path / "config.yaml"
         config.write_text("debug: true\nlog_level: WARNING\n")

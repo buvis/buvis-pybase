@@ -67,9 +67,7 @@ class TestSensitiveFieldLogging:
         assert any("debug" in r.message for r in debug_records)
         assert not any("'debug'" in r.message for r in info_records)
 
-    def test_no_actual_values_in_logs(
-        self, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_no_actual_values_in_logs(self, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch) -> None:
         """Actual secret values never appear in log messages."""
         from buvis.pybase.configuration.resolver import ConfigResolver
 
@@ -105,9 +103,7 @@ class TestSensitiveFieldLogging:
         assert "database_password" in info_text
         assert "auth_token" in info_text
 
-    def test_log_contains_source_type(
-        self, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_log_contains_source_type(self, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch) -> None:
         """Log messages include source type (ENV, CLI, etc.)."""
         from buvis.pybase.configuration.resolver import ConfigResolver
 

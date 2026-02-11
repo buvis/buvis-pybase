@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import types
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Literal, Union, cast, get_args, get_origin
+from typing import Any, Literal, Union, cast, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
@@ -57,7 +58,7 @@ class ConfigWriter:
             args = get_args(annotation)
             if args:
                 formatted_args = ", ".join(ConfigWriter._format_type(a) for a in args)
-                return f"{str(origin.__name__)}[{formatted_args}]"
+                return f"{origin.__name__!s}[{formatted_args}]"
             return str(origin.__name__)
 
         if annotation is type(None):
@@ -87,11 +88,7 @@ class ConfigWriter:
             special_chars = ":{}[]#&*!|>'\"%@`\\\n\r\t"
             if not value or any(c in value for c in special_chars):
                 escaped = value.replace("\\", "\\\\").replace('"', '\\"')
-                escaped = (
-                    escaped.replace("\n", "\\n")
-                    .replace("\r", "\\r")
-                    .replace("\t", "\\t")
-                )
+                escaped = escaped.replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t")
                 return f'"{escaped}"'
             return value
         if isinstance(value, Path):
@@ -104,9 +101,7 @@ class ConfigWriter:
         if isinstance(value, dict):
             if not value:
                 return "{}"
-            items = ", ".join(
-                f"{k}: {ConfigWriter._format_value(v)}" for k, v in value.items()
-            )
+            items = ", ".join(f"{k}: {ConfigWriter._format_value(v)}" for k, v in value.items())
             return "{" + items + "}"
         return str(value)
 
@@ -138,10 +133,7 @@ class ConfigWriter:
         Returns:
             True if field has no default value.
         """
-        return (
-            field_info.default is PydanticUndefined
-            and field_info.default_factory is None
-        )
+        return field_info.default is PydanticUndefined and field_info.default_factory is None
 
     @staticmethod
     def _is_nested_model(annotation: Any) -> bool:
@@ -212,9 +204,7 @@ class ConfigWriter:
                 nested_class = ConfigWriter._extract_model_class(field_info.annotation)
                 if nested_class:
                     lines.append(f"{prefix}{name}:")
-                    lines.append(
-                        ConfigWriter._format_nested_model(nested_class, indent + 2)
-                    )
+                    lines.append(ConfigWriter._format_nested_model(nested_class, indent + 2))
                     continue
 
             formatted_value = ConfigWriter._format_value(value)
@@ -327,9 +317,7 @@ class ConfigWriter:
         return "\n".join(lines)
 
     @staticmethod
-    def write(
-        settings_class: type[BaseModel], output_path: Path, command_name: str
-    ) -> None:
+    def write(settings_class: type[BaseModel], output_path: Path, command_name: str) -> None:
         """Write YAML config template to file.
 
         Args:

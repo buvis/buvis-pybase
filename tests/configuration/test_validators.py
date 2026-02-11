@@ -90,14 +90,10 @@ class TestValidateJsonEnvSize:
         with pytest.raises(ValueError):
             validate_json_env_size(env_var)
 
-    def test_utf8_multibyte_chars_counted_correctly(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_utf8_multibyte_chars_counted_correctly(self, monkeypatch: pytest.MonkeyPatch) -> None:
         env_var = "TEST_JSON_ENV"
         multibyte_char = "é"
-        payload = multibyte_char * (
-            MAX_JSON_ENV_SIZE // len(multibyte_char.encode("utf-8"))
-        )
+        payload = multibyte_char * (MAX_JSON_ENV_SIZE // len(multibyte_char.encode("utf-8")))
         monkeypatch.setenv(env_var, payload)
 
         validate_json_env_size(env_var)
@@ -110,9 +106,7 @@ class TestValidateJsonEnvSize:
 
 
 class TestSecureSettingsMixin:
-    def test_validates_oversized_env_raises(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_validates_oversized_env_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Oversized prefixed env var raises ValueError."""
         from pydantic_settings import BaseSettings, SettingsConfigDict
 

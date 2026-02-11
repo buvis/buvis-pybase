@@ -56,13 +56,14 @@ class FileMetadataReader:
             file_path (Path): Path to the file.
 
         Returns:
-            datatime | None: Datetime of the first commit involving the file or None if the file wasn't committed to any Git repository.
+            datatime | None: Datetime of the first commit involving the file
+                or None if the file wasn't committed to any Git repository.
         """
         try:
             file_path_obj = Path(file_path)
             git_repo_path = file_path_obj.parent
             output = subprocess.check_output(  # noqa: S603
-                [  # noqa: S607
+                [
                     "git",
                     "log",
                     "--pretty=format:%ad",

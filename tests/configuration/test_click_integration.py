@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from pydantic import BaseModel
 
 import click
 import pytest
 from click.testing import CliRunner
+from pydantic import BaseModel
 
 from buvis.pybase.configuration import buvis_options, get_settings
 from buvis.pybase.configuration.settings import GlobalSettings
@@ -197,9 +197,7 @@ class TestBuvisOptionsParameterized:
         assert isinstance(settings, GlobalSettings)
         assert settings is resolved
 
-    def test_custom_settings_class(
-        self, runner: CliRunner, custom_settings_cls: type[GlobalSettings]
-    ) -> None:
+    def test_custom_settings_class(self, runner: CliRunner, custom_settings_cls: type[GlobalSettings]) -> None:
         """Custom settings class is used and includes custom_field."""
         captured = []
 
@@ -215,9 +213,7 @@ class TestBuvisOptionsParameterized:
         assert isinstance(settings, custom_settings_cls)
         assert settings.custom_field == "default"
 
-    def test_settings_cached_by_class(
-        self, runner: CliRunner, custom_settings_cls: type[GlobalSettings]
-    ) -> None:
+    def test_settings_cached_by_class(self, runner: CliRunner, custom_settings_cls: type[GlobalSettings]) -> None:
         """Settings instance is stored by class key in ctx.obj."""
         captured = []
 
@@ -368,9 +364,7 @@ class TestGetSettings:
         with pytest.raises(RuntimeError, match="buvis_options decorator not applied"):
             get_settings(ctx)
 
-    def test_returns_custom_settings_class(
-        self, custom_settings_cls: type[GlobalSettings]
-    ) -> None:
+    def test_returns_custom_settings_class(self, custom_settings_cls: type[GlobalSettings]) -> None:
         """get_settings returns requested custom settings instance."""
         from unittest.mock import MagicMock
 
@@ -382,9 +376,7 @@ class TestGetSettings:
 
         assert resolved is settings
 
-    def test_raises_when_settings_class_not_in_context(
-        self, custom_settings_cls: type[GlobalSettings]
-    ) -> None:
+    def test_raises_when_settings_class_not_in_context(self, custom_settings_cls: type[GlobalSettings]) -> None:
         """RuntimeError raised when requested class is missing in ctx.obj."""
         from unittest.mock import MagicMock
 
@@ -394,9 +386,7 @@ class TestGetSettings:
         with pytest.raises(RuntimeError, match=custom_settings_cls.__name__):
             get_settings(ctx, custom_settings_cls)
 
-    def test_error_message_includes_class_name(
-        self, custom_settings_cls: type[GlobalSettings]
-    ) -> None:
+    def test_error_message_includes_class_name(self, custom_settings_cls: type[GlobalSettings]) -> None:
         """Error message includes class name and decorator hint."""
         from unittest.mock import MagicMock
 
@@ -408,9 +398,7 @@ class TestGetSettings:
 
         message = str(excinfo.value)
         assert custom_settings_cls.__name__ in message
-        assert (
-            f"@buvis_options(settings_class={custom_settings_cls.__name__})" in message
-        )
+        assert f"@buvis_options(settings_class={custom_settings_cls.__name__})" in message
 
 
 class TestClickIntegration:
@@ -436,9 +424,7 @@ class TestClickIntegration:
         assert "debug=True" in result.output
         assert result.exit_code == 0
 
-    def test_get_settings_returns_same_object_in_group_and_subcommand(
-        self, runner: CliRunner
-    ) -> None:
+    def test_get_settings_returns_same_object_in_group_and_subcommand(self, runner: CliRunner) -> None:
         """get_settings returns identical object in group and subcommand (PRD #6)."""
         results: list[int] = []
 
@@ -532,9 +518,7 @@ class TestConfigCreate:
         assert output.exists()
         assert "Config written to" in result.output
 
-    def test_config_create_command_not_executed(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_config_create_command_not_executed(self, runner: CliRunner, tmp_path: Path) -> None:
         output = tmp_path / "config.yaml"
         executed = []
 
@@ -547,9 +531,7 @@ class TestConfigCreate:
         assert result.exit_code == 0
         assert len(executed) == 0  # Command body never runs
 
-    def test_config_create_existing_file_error(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_config_create_existing_file_error(self, runner: CliRunner, tmp_path: Path) -> None:
         existing = tmp_path / "config.yaml"
         existing.write_text("old")
 
@@ -562,9 +544,7 @@ class TestConfigCreate:
         assert result.exit_code != 0
         assert "already exists" in result.output
 
-    def test_config_create_uses_command_name(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_config_create_uses_command_name(self, runner: CliRunner, tmp_path: Path) -> None:
         output = tmp_path / "config.yaml"
 
         @click.command(name="mycommand")
@@ -576,9 +556,7 @@ class TestConfigCreate:
         content = output.read_text()
         assert "Configuration for mycommand" in content
 
-    def test_config_create_with_custom_settings_class(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_config_create_with_custom_settings_class(self, runner: CliRunner, tmp_path: Path) -> None:
         class CustomAppSettings(BaseModel):
             custom_value: str = "test"
             api_key: str | None = None

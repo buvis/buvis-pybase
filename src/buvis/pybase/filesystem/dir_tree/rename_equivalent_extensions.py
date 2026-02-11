@@ -15,7 +15,8 @@ def rename_equivalent_extensions(
 
     :param directory: Path to the directory to process
     :type directory: :class:`Path`
-    :param equivalent_extensions: List of lists containing equivalent extensions. First item is the target the rest of the list will be renamed to
+    :param equivalent_extensions: List of lists containing equivalent extensions.
+        First item is the target the rest of the list will be renamed to
     :type equivalent_extensions: List[List[str]]
     :return: None. The function modifies the <directory> in place.
     """

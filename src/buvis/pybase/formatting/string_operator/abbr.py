@@ -78,9 +78,7 @@ class Abbr:
                 case 1:
                     return short
                 case 2:
-                    return (
-                        f"{short} ({abbr_correct})" if short != abbr_correct else short
-                    )
+                    return f"{short} ({abbr_correct})" if short != abbr_correct else short
                 case 3:
                     return long
                 case _:

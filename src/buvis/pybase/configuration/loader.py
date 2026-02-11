@@ -11,7 +11,6 @@ import yaml
 
 from .exceptions import MissingEnvVarError
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -70,7 +69,11 @@ def _deep_merge(target: dict[str, Any], source: dict[str, Any]) -> None:
 
 
 class ConfigurationLoader:
-    """Load YAML configs with env var substitution. Provides static methods for loading configuration files with support for environment variable interpolation using ${VAR} or ${VAR:-default} syntax."""
+    """Load YAML configs with env var substitution.
+
+    Provides static methods for loading configuration files with support for
+    environment variable interpolation using ${VAR} or ${VAR:-default} syntax.
+    """
 
     @staticmethod
     def _get_search_paths() -> list[Path]:

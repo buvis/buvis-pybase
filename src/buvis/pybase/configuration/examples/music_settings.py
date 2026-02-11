@@ -26,4 +26,4 @@ class MusicSettings(GlobalSettings):
     )
 
     library_path: Path = Path.home() / "Music"
-    formats: list[str] = ["mp3", "flac", "wav"]
+    formats: list[str] = ["mp3", "flac", "wav"]  # noqa: RUF012

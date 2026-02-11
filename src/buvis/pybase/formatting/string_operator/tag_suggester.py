@@ -16,9 +16,7 @@ try:
     from rake_nltk import Rake
     from transformers import pipeline
 except ImportError as _err:
-    raise ImportError(
-        "Install buvis-pybase[ml] for NLP features: pip install buvis-pybase[ml]"
-    ) from _err
+    raise ImportError("Install buvis-pybase[ml] for NLP features: pip install buvis-pybase[ml]") from _err
 
 MIN_KEYWORD_LENGTH = 2
 
@@ -58,11 +56,7 @@ class KeywordExtractor:
         tokens = word_tokenize(text.lower())
         stop_words = set(stopwords.words("english"))
 
-        filtered_tokens = [
-            word
-            for word in tokens
-            if word not in stop_words and word not in string.punctuation
-        ]
+        filtered_tokens = [word for word in tokens if word not in stop_words and word not in string.punctuation]
 
         tagged = pos_tag(filtered_tokens)
         nouns = [word for word, pos in tagged if pos.startswith("NN")]
@@ -74,18 +68,14 @@ class KeywordExtractor:
         self.rake.extract_keywords_from_text(text)
         keywords = self.rake.get_ranked_phrases()
 
-        lemmatized = [
-            " ".join(self.lemmatizer.lemmatize(word.lower()) for word in kw.split())
-            for kw in keywords
-        ]
+        lemmatized = [" ".join(self.lemmatizer.lemmatize(word.lower()) for word in kw.split()) for kw in keywords]
 
         unique_keywords = {kw for kw in lemmatized if len(kw) >= MIN_KEYWORD_LENGTH}
 
         return [
             kw
             for kw in unique_keywords
-            if kw.replace(" ", "").isalpha()
-            and not any(kw != other and kw in other for other in unique_keywords)
+            if kw.replace(" ", "").isalpha() and not any(kw != other and kw in other for other in unique_keywords)
         ]
 
 
@@ -109,11 +99,7 @@ class TagSuggester:
 
     def _get_used_tags(self: TagSuggester) -> list[str]:
         """Retrieve previously used tags from file."""
-        return (
-            self.used_tags_path.read_text().split("\n")
-            if self.used_tags_path.is_file()
-            else []
-        )
+        return self.used_tags_path.read_text().split("\n") if self.used_tags_path.is_file() else []
 
     def _classify_candidates(
         self: TagSuggester,
@@ -143,23 +129,17 @@ class TagSuggester:
             extractor = KeywordExtractor()
             candidate_tags = list(
                 set(
-                    extractor.extract_by_rake(text)
-                    + extractor.extract_by_frequency(text),
+                    extractor.extract_by_rake(text) + extractor.extract_by_frequency(text),
                 ),
             )
 
         used_tags = self._get_used_tags()
-        top_candidates = [
-            tag for tag in candidate_tags if tag.replace(" ", "-") in used_tags
-        ]
-        bottom_candidates = [
-            tag for tag in candidate_tags if tag.replace(" ", "-") not in used_tags
-        ]
+        top_candidates = [tag for tag in candidate_tags if tag.replace(" ", "-") in used_tags]
+        bottom_candidates = [tag for tag in candidate_tags if tag.replace(" ", "-") not in used_tags]
 
         # Classify and combine results
         top_scores = [
-            (label, score + self.limit_score)
-            for label, score in self._classify_candidates(text, top_candidates)
+            (label, score + self.limit_score) for label, score in self._classify_candidates(text, top_candidates)
         ]
         bottom_scores = self._classify_candidates(text, bottom_candidates)
 
@@ -168,11 +148,7 @@ class TagSuggester:
         return [
             label.replace(" ", "-")
             for label, _ in sorted(
-                [
-                    (label, score)
-                    for label, score in all_scores
-                    if score > self.limit_score
-                ],
+                [(label, score) for label, score in all_scores if score > self.limit_score],
                 key=lambda x: x[1],
                 reverse=True,
             )

@@ -52,17 +52,17 @@ class UvToolManager:
         cmd = ["uv", "tool", "install", "--force", "--upgrade", str(project_path)]
 
         try:
-            subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603, S607
+            subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
             console.success(f"Installed {pkg_name}")
         except subprocess.CalledProcessError:
             # Clean only this tool's cache and retry
-            subprocess.run(  # noqa: S603, S607
+            subprocess.run(  # noqa: S603
                 ["uv", "cache", "clean", pkg_name],
                 check=False,
                 capture_output=True,
             )
             try:
-                subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603, S607
+                subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
                 console.success(f"Installed {pkg_name} (after cache clean)")
             except subprocess.CalledProcessError as e:
                 console.failure(f"Failed to install {pkg_name}: {e}")
@@ -109,7 +109,7 @@ class UvToolManager:
                 sys.exit(result.returncode)
 
             if project_dir.exists() and (project_dir / "pyproject.toml").exists():
-                result = subprocess.run(  # noqa: S603, S607
+                result = subprocess.run(  # noqa: S603
                     ["uv", "run", "--project", str(project_dir), "-m", pkg_name, *args],
                     check=False,
                 )
@@ -118,7 +118,7 @@ class UvToolManager:
             print(f"No venv or project found at {project_dir}", file=sys.stderr)
             sys.exit(1)
 
-        result = subprocess.run(  # noqa: S603, S607
+        result = subprocess.run(  # noqa: S603
             ["uv", "tool", "run", tool_cmd, *args],
             check=False,
         )
@@ -128,7 +128,7 @@ class UvToolManager:
         # Tool not found - try auto-install
         if project_dir.exists() and (project_dir / "pyproject.toml").exists():
             cls.install_tool(project_dir)
-            result = subprocess.run(  # noqa: S603, S607
+            result = subprocess.run(  # noqa: S603
                 ["uv", "tool", "run", tool_cmd, *args],
                 check=False,
             )

@@ -389,10 +389,7 @@ class TestFormatNestedModel:
         lines = result.splitlines()
         for idx, line in enumerate(lines):
             if line.strip().startswith("password:"):
-                assert (
-                    lines[idx - 1].strip()
-                    == "# SENSITIVE - do not commit to version control"
-                )
+                assert lines[idx - 1].strip() == "# SENSITIVE - do not commit to version control"
                 break
         else:
             pytest.fail("password field not found in nested output")
@@ -435,10 +432,7 @@ class TestFormatModelInstance:
         lines = result.splitlines()
         for idx, line in enumerate(lines):
             if line.strip().startswith("password:"):
-                assert (
-                    lines[idx - 1].strip()
-                    == "# SENSITIVE - do not commit to version control"
-                )
+                assert lines[idx - 1].strip() == "# SENSITIVE - do not commit to version control"
                 break
         else:
             pytest.fail("password field not found or SENSITIVE comment missing")
@@ -682,10 +676,9 @@ class TestSensitiveFieldInModelInstance:
         lines = result.splitlines()
         for idx, line in enumerate(lines):
             if "password:" in line and not line.strip().startswith("#"):
-                assert (
-                    lines[idx - 1].strip()
-                    == "# SENSITIVE - do not commit to version control"
-                ), f"Expected SENSITIVE comment before password, got: {lines[idx - 1]}"
+                assert lines[idx - 1].strip() == "# SENSITIVE - do not commit to version control", (
+                    f"Expected SENSITIVE comment before password, got: {lines[idx - 1]}"
+                )
                 break
         else:
             pytest.fail("password field not found in generate output")

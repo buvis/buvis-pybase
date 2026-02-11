@@ -196,9 +196,7 @@ class TestShellAdapterExe:
 
         # Verify subprocess.run was called with the correct cwd
         call_args = mock_run.call_args
-        assert (
-            call_args[1]["cwd"] == Path.cwd()
-        )  # Should use current dir when working_dir doesn't exist
+        assert call_args[1]["cwd"] == Path.cwd()  # Should use current dir when working_dir doesn't exist
 
     @patch("subprocess.run")
     def test_exe_with_invalid_working_directory(

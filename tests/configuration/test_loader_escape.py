@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from buvis.pybase.configuration.loader import ConfigurationLoader, _ESCAPE_PLACEHOLDER
+from buvis.pybase.configuration.loader import _ESCAPE_PLACEHOLDER, ConfigurationLoader
 
 
 class TestEscapeLiterals:
