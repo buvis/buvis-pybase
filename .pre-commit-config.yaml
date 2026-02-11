@@ -8,8 +8,8 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: .venv/bin/pytest
-        language: script
+        entry: uv run pytest
+        language: system
         pass_filenames: false
         always_run: true
       - id: build-docs
