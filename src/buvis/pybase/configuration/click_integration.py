@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import functools
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast, overload
 
 import click
 
@@ -48,18 +48,19 @@ def get_settings(
     if ctx.obj is None:
         raise RuntimeError(msg)
 
+    obj = cast(dict[object, object], ctx.obj)
     if settings_class is None:
         # Backward compat: return ctx.obj['settings']
-        if "settings" not in ctx.obj:
+        if "settings" not in obj:
             raise RuntimeError(msg)
-        return ctx.obj["settings"]
+        return cast(GlobalSettings, obj["settings"])
 
-    if settings_class not in ctx.obj:
+    if settings_class not in obj:
         raise RuntimeError(
             f"Settings class {settings_class.__name__} not found. "
             f"Did you use @buvis_options(settings_class={settings_class.__name__})?"
         )
-    return ctx.obj[settings_class]
+    return cast(T, obj[settings_class])
 
 
 def _create_buvis_options(settings_class: type[T]) -> Callable[[F], F]:
@@ -126,7 +127,7 @@ def _create_buvis_options(settings_class: type[T]) -> Callable[[F], F]:
 
             resolver = ConfigResolver()
             settings = resolver.resolve(
-                settings_class,
+                settings_class,  # type: ignore[type-var]
                 config_dir=config_dir,
                 config_path=Path(config) if config else None,
                 cli_overrides=cli_overrides,
@@ -156,7 +157,7 @@ def buvis_options(
 ) -> Callable[[F], F]: ...
 
 
-def buvis_options(
+def buvis_options(  # type: ignore[misc]
     settings_class_or_func: type[T] | F | None = None,
     *,
     settings_class: type[T] | None = None,
@@ -185,6 +186,11 @@ def buvis_options(
     ):
         return _create_buvis_options(GlobalSettings)(settings_class_or_func)
 
-    chosen_settings_class = settings_class or settings_class_or_func or GlobalSettings
+    if settings_class is not None:
+        chosen_settings_class: type[T] = settings_class
+    elif isinstance(settings_class_or_func, type):
+        chosen_settings_class = settings_class_or_func
+    else:
+        chosen_settings_class = GlobalSettings  # type: ignore[assignment]
 
     return _create_buvis_options(chosen_settings_class)

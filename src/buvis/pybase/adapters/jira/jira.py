@@ -11,7 +11,7 @@ Configuration via JiraSettings pydantic model with env vars.
 """
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from jira import JIRA
 from jira.exceptions import JIRAError
@@ -112,9 +112,9 @@ class JiraAdapter:
         # some custom fields aren't populated on issue creation
         # so I have to update them after issue creation
         new_issue = self._jira.issue(new_issue.key)
-        new_issue.update(**{field_mappings.feature: issue.feature})
+        new_issue.update(**{field_mappings.feature: issue.feature})  # type: ignore[arg-type]
         if issue.region is not None:
-            new_issue.update(**{field_mappings.region: {"value": issue.region}})
+            new_issue.update(**{field_mappings.region: {"value": issue.region}})  # type: ignore[arg-type]
 
         ticket_value = getattr(new_issue.fields, field_mappings.ticket, None)
         feature_value = getattr(new_issue.fields, field_mappings.feature, None)
@@ -128,14 +128,14 @@ class JiraAdapter:
             issue_type=new_issue.fields.issuetype.name,
             labels=new_issue.fields.labels or [],
             priority=new_issue.fields.priority.name,
-            ticket=ticket_value,
-            feature=feature_value,
-            assignee=new_issue.fields.assignee.key,
-            reporter=new_issue.fields.reporter.key,
+            ticket=str(ticket_value) if ticket_value else "",
+            feature=str(feature_value) if feature_value else "",
+            assignee=cast(Any, new_issue.fields.assignee).key,
+            reporter=cast(Any, new_issue.fields.reporter).key,
             team=getattr(team_field_value, "value", None),
             region=getattr(region_field_value, "value", None),
             id=new_issue.key,
-            link=new_issue.permalink(),
+            link=new_issue.permalink(),  # type: ignore[no-untyped-call]
         )
 
     def _issue_to_dto(self, issue: "Issue") -> JiraIssueDTO:
@@ -157,7 +157,7 @@ class JiraAdapter:
             team=getattr(team_val, "value", None) if team_val else None,
             region=getattr(region_val, "value", None) if region_val else None,
             id=issue.key,
-            link=issue.permalink(),
+            link=issue.permalink(),  # type: ignore[no-untyped-call]
         )
 
     def get(self, issue_key: str) -> JiraIssueDTO:

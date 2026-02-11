@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import re
-from typing import Any, Iterator, get_args, get_origin
+from typing import Any, Iterator, Protocol, cast, get_args, get_origin
 
 from pydantic import BaseModel, model_validator
 
@@ -12,6 +12,10 @@ _SENSITIVE_PATTERNS = re.compile(
     r"(authorization|api[_-]?key|secret|token|password|bearer|credential)",
     re.IGNORECASE,
 )
+
+
+class _ModelFieldsOwner(Protocol):
+    model_fields: dict[str, Any]
 
 
 def is_sensitive_field(field_path: str) -> bool:
@@ -168,7 +172,8 @@ class SafeLoggingMixin:
     def __repr__(self) -> str:
         """Repr with sensitive values masked."""
         fields = []
-        for name in self.__class__.model_fields:
+        model_fields = cast(_ModelFieldsOwner, self.__class__).model_fields
+        for name in model_fields:
             value = getattr(self, name, None)
             if _SENSITIVE_PATTERNS.search(name):
                 fields.append(f"{name}='***'")

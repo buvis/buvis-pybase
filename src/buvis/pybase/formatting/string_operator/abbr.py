@@ -17,6 +17,9 @@ import re
 
 abbr_pattern = r"\b(\w+)\b(?!\s*\))"
 
+AbbreviationInput = dict[str, str | None] | str
+AbbreviationReplacements = dict[str, tuple[str, str, str]]
+
 
 class Abbr:
     """Abbreviation replacement utility.
@@ -27,7 +30,7 @@ class Abbr:
     @staticmethod
     def replace_abbreviations(
         text: str = "",
-        abbreviations: list[dict] | None = None,
+        abbreviations: list[AbbreviationInput] | None = None,
         level: int = 0,
     ) -> str:
         """Expand abbreviations found in the provided text.
@@ -62,7 +65,7 @@ class Abbr:
         # 3: replace with expanded long text
         # 4: replace with expanded long text followed by abbreviation in paranthesis
 
-        def replace_by_level(match: re.Match) -> str:
+        def replace_by_level(match: re.Match[str]) -> str:
             abbr = match.group(1)
             if abbr.lower() not in replacements:
                 return abbr
@@ -87,8 +90,8 @@ class Abbr:
 
 
 def _get_abbreviations_replacements(
-    abbreviations: list[dict] | None = None,
-) -> dict:
+    abbreviations: list[AbbreviationInput] | None = None,
+) -> AbbreviationReplacements:
     """Parse abbreviation definitions into replacement metadata.
 
     Args:
@@ -103,9 +106,10 @@ def _get_abbreviations_replacements(
     if not abbreviations:
         return {}
 
-    replacements = {}
+    replacements: AbbreviationReplacements = {}
 
     for abbreviation in abbreviations:
+        abbreviation_dict: dict[str, str | None]
         if not isinstance(abbreviation, dict):
             abbreviation_dict = {abbreviation: abbreviation}
         else:

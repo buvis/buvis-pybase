@@ -32,7 +32,7 @@ dev = [
     "pre-commit>=4.5.1,<5",
     "python-semantic-release>=10.5.3,<11.0.0",
 ]
-test = ["pytest>=9.0.2,<10", "pytest-mock>=3.15.1,<4", "pytest-cov>=7,<8"]
+test = ["pytest>=9.0.2,<10", "pytest-mock>=3.15.1,<4", "pytest-cov>=7,<8", "mypy>=1.15,<2", "types-PyYAML>=6,<7"]
 docs = ["sphinx>=8.2.3,<9", "sphinx-rtd-theme>=3.0.2,<4"]
 
 [tool.hatch.build.targets.wheel]
@@ -79,6 +79,19 @@ exclude_commit_patterns = [
 [tool.semantic_release.remote]
 type = "github"
 token = { env = "GH_TOKEN" }
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+mypy_path = "src"
+namespace_packages = true
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["torch.*", "transformers.*", "jira.*", "pexpect.*", "rake_nltk.*", "xattr.*", "inflection.*", "nltk.*", "win32com.*"]
+ignore_missing_imports = true
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [

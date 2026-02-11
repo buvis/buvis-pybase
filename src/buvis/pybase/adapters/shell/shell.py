@@ -28,7 +28,7 @@ class ShellAdapter:
         Initialize the ShellCommandExecutor and set up the logger.
         """
         self.aliases: dict[str, str] = {}
-        self.child = None
+        self.child: pexpect.spawn | None = None
         self.is_logging = not suppress_logging
 
     def alias(self: ShellAdapter, alias: str, command: str) -> None:
@@ -100,10 +100,11 @@ class ShellAdapter:
             cwd = Path(working_dir)
 
         try:
-            self.child = pexpect.spawn(expanded_command, encoding="utf-8", cwd=cwd)
+            child = pexpect.spawn(expanded_command, encoding="utf-8", cwd=cwd)
+            self.child = child
 
             while True:
-                index = self.child.expect(
+                index = child.expect(
                     [
                         prompt,
                         pexpect.EOF,
@@ -113,12 +114,12 @@ class ShellAdapter:
 
                 if index == _EXPECT_PROMPT:
                     print(
-                        self.child.before.decode("utf-8")
-                        if isinstance(self.child.before, bytes)
-                        else self.child.before,
+                        child.before.decode("utf-8")
+                        if isinstance(child.before, bytes)
+                        else child.before,
                     )
                     user_input = input(prompt)
-                    self.child.sendline(user_input)
+                    child.sendline(user_input)
                 elif index == _EXPECT_EOF:
                     break
                 elif index == _EXPECT_TIMEOUT:
@@ -130,6 +131,7 @@ class ShellAdapter:
         finally:
             if self.child:
                 self.child.close()
+                self.child = None
 
     def is_command_available(self: ShellAdapter, command: str) -> bool:
         """

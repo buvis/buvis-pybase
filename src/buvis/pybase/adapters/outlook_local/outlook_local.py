@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 import tzlocal
 
@@ -15,10 +15,10 @@ try:
 
     _win32com_available = True
 except ImportError:  # pragma: no cover - not importable on CI when not on Windows
-    win32com = None  # type: ignore[assignment]
+    win32com = None
     _win32com_available = False
 
-from buvis.pybase.adapters import console
+from buvis.pybase.adapters.console.console import console
 
 
 class OutlookLocalAdapter:
@@ -49,15 +49,15 @@ class OutlookLocalAdapter:
             raise OSError("win32com.client is not available on this platform")
 
         try:
-            self.app = win32com.client.Dispatch("Outlook.Application")
-            self.api = self.app.GetNamespace("MAPI")
-            self.calendar = self.api.GetDefaultFolder(9)
+            self.app: Any = win32com.client.Dispatch("Outlook.Application")
+            self.api: Any = self.app.GetNamespace("MAPI")
+            self.calendar: Any = self.api.GetDefaultFolder(9)
         except Exception as e:  # noqa: BLE001
             console.panic(f"Outook connection failed:\n{e}")
 
     def create_timeblock(
         self: OutlookLocalAdapter,
-        appointment_input: dict,
+        appointment_input: dict[str, Any],
     ) -> None:
         """Create a calendar appointment.
 
@@ -96,7 +96,7 @@ class OutlookLocalAdapter:
             msg = f"Appointment creation failed:\n{e}"
             raise OutlookAppointmentCreationFailedError(msg) from e
 
-    def get_all_appointments(self: OutlookLocalAdapter) -> list:
+    def get_all_appointments(self: OutlookLocalAdapter) -> list[Any]:
         """Retrieve all calendar appointments sorted by start time.
 
         Returns:
@@ -105,13 +105,13 @@ class OutlookLocalAdapter:
         appointments: Any = self.calendar.Items
         appointments.IncludeRecurrences = True
         appointments.Sort("[Start]")
-        return appointments
+        return cast(list[Any], appointments)
 
     def get_day_appointments(
         self: OutlookLocalAdapter,
         appointments: Any,  # noqa: ANN401 (The win32com.client library dynamically creates Python wrappers for COM objects, which means the exact type of the object can vary and is not known at compile time.)
         date: datetime,
-    ) -> list:
+    ) -> list[Any]:
         """Filter appointments to a single day.
 
         Args:
@@ -122,9 +122,10 @@ class OutlookLocalAdapter:
             list: AppointmentItems for that day.
         """
         restrict_from = date.strftime("%Y-%m-%d")
-        restrict_to = date + timedelta(days=1)
-        restrict_to = restrict_to.strftime("%Y-%m-%d")
-        restrict_query = f"[Start] >= '{restrict_from}' AND [End] <= '{restrict_to}'"
+        restrict_to_str = (date + timedelta(days=1)).strftime("%Y-%m-%d")
+        restrict_query = (
+            f"[Start] >= '{restrict_from}' AND [End] <= '{restrict_to_str}'"
+        )
         appointments = appointments.Restrict(restrict_query)
         return [
             appointment

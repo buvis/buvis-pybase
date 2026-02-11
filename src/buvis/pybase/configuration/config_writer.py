@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import types
 from pathlib import Path
-from typing import Any, Literal, Union, get_args, get_origin
+from typing import Any, Callable, Literal, Union, cast, get_args, get_origin
 
 from pydantic import BaseModel
-from pydantic.fields import FieldInfo, PydanticUndefined
+from pydantic.fields import FieldInfo
+from pydantic_core import PydanticUndefined
 
 from .validators import is_sensitive_field
 
@@ -56,15 +57,15 @@ class ConfigWriter:
             args = get_args(annotation)
             if args:
                 formatted_args = ", ".join(ConfigWriter._format_type(a) for a in args)
-                return f"{origin.__name__}[{formatted_args}]"
-            return origin.__name__
+                return f"{str(origin.__name__)}[{formatted_args}]"
+            return str(origin.__name__)
 
         if annotation is type(None):
             return "None"
 
         # Simple types: str, int, bool, Path, BaseModel subclass
         if hasattr(annotation, "__name__"):
-            return annotation.__name__
+            return str(annotation.__name__)
         return str(annotation)
 
     @staticmethod
@@ -201,7 +202,8 @@ class ConfigWriter:
             if field_info.default is not PydanticUndefined:
                 value = field_info.default
             elif field_info.default_factory is not None:
-                value = field_info.default_factory()
+                default_factory = cast(Callable[[], Any], field_info.default_factory)
+                value = default_factory()
             else:
                 value = ""  # Required field gets empty string
 
@@ -287,7 +289,8 @@ class ConfigWriter:
         if field_info.default is not PydanticUndefined:
             value = field_info.default
         elif field_info.default_factory is not None:
-            value = field_info.default_factory()
+            default_factory = cast(Callable[[], Any], field_info.default_factory)
+            value = default_factory()
         else:
             value = ""  # Required fields get empty string
 

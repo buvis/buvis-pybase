@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 
-from buvis.pybase.formatting.string_operator.abbr import Abbr
+from buvis.pybase.formatting.string_operator.abbr import Abbr, AbbreviationInput
 from buvis.pybase.formatting.string_operator.string_case_tools import StringCaseTools
 from buvis.pybase.formatting.string_operator.tag_suggester import TagSuggester
 from buvis.pybase.formatting.string_operator.word_level_tools import WordLevelTools
@@ -221,7 +221,7 @@ class StringOperator:
     @staticmethod
     def replace_abbreviations(
         text: str = "",
-        abbreviations: list[dict] | None = None,
+        abbreviations: list[AbbreviationInput] | None = None,
         level: int = 0,
     ) -> str:
         """Replace abbreviations within the text using configured levels.
@@ -243,7 +243,7 @@ class StringOperator:
         return Abbr.replace_abbreviations(text, abbreviations, level)
 
     @staticmethod
-    def suggest_tags(text: str, limit_count: int = 10) -> list:
+    def suggest_tags(text: str, limit_count: int = 10) -> list[str]:
         """Suggest tags for the text using NLP and zero-shot classification.
 
         Args:

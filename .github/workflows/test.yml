@@ -22,3 +22,5 @@ jobs:
       - name: Download NLTK data
         run: uv run python -m nltk.downloader stopwords
       - run: uv run pytest
+      - name: Type check
+        run: uv run mypy src/

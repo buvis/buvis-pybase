@@ -1,6 +1,6 @@
 from pathlib import Path
 import warnings
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -24,16 +24,17 @@ class BuvisCommand:
         cfg: Any,
         child_module_path: str,
     ) -> None:
-        input_spec_file = Path(child_module_path).parent.joinpath(
+        input_spec_path = Path(child_module_path).parent.joinpath(
             FILENAME_COMMAND_INPUT_SPECIFICATION,
         )
 
-        with input_spec_file.open("r") as input_spec_file:
+        with input_spec_path.open("r") as input_spec_file:
             input_spec = yaml.safe_load(input_spec_file)
+        input_spec_dict = cast(dict[str, Any], input_spec)
 
-        for key, spec in input_spec.items():
+        for key, spec in input_spec_dict.items():
             try:
                 self.__setattr__(key, cfg.get_configuration_item(key, spec["default"]))
             except ConfigurationKeyNotFoundError as _:
                 if spec.get("panic"):
-                    console.panic(key["panic"])
+                    console.panic(key["panic"])  # type: ignore[index]

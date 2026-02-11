@@ -245,12 +245,12 @@ def _stylize_text(text: str, mode: str) -> RenderableType:
     return text
 
 
-def _stylize_text_md_frontmatter(markdown_text: str) -> list:
+def _stylize_text_md_frontmatter(markdown_text: str) -> list[RenderableType]:
     yaml_content, _, markdown_content = markdown_text.partition("\n---\n")
 
-    def highlight_yaml(yaml_text: str) -> list:
+    def highlight_yaml(yaml_text: str) -> list[RenderableType]:
         lines = yaml_text.split("\n")
-        highlighted_lines = []
+        highlighted_lines: list[RenderableType] = []
 
         for line in lines:
             if ":" in line:
@@ -267,7 +267,7 @@ def _stylize_text_md_frontmatter(markdown_text: str) -> list:
         return highlighted_lines
 
     md = Markdown(markdown_content)
-    output_lines = [
+    output_lines: list[RenderableType] = [
         line for line in highlight_yaml(yaml_content) if str(line).rstrip() != "---"
     ]
     output_lines.append(md)
@@ -304,7 +304,7 @@ def logging_to_console(
         ...     logging.info("Hello Rich")
     """
     handler = CapturingRichHandler(
-        console=console,
+        console=console.console,
         show_level=show_level,
         show_time=show_time,
         show_path=show_path,
