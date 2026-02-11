@@ -64,12 +64,16 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
     { name = "pyyaml" },
-    { name = "rake-nltk" },
     { name = "rich" },
-    { name = "torch" },
-    { name = "transformers" },
     { name = "tzlocal" },
     { name = "xattr", marker = "sys_platform != 'win32'" },
+]
+
+[package.optional-dependencies]
+ml = [
+    { name = "rake-nltk" },
+    { name = "torch" },
+    { name = "transformers" },
 ]
 
 [package.dev-dependencies]
@@ -99,13 +103,14 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.0,<3" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = "==311" },
     { name = "pyyaml", specifier = ">=6.0.3,<7" },
-    { name = "rake-nltk", specifier = ">=1.0.6,<2" },
+    { name = "rake-nltk", marker = "extra == 'ml'", specifier = ">=1.0.6,<2" },
     { name = "rich", specifier = ">=14.2.0,<15" },
-    { name = "torch", specifier = ">=2.9.1,<3" },
-    { name = "transformers", specifier = ">=5.1,<6" },
+    { name = "torch", marker = "extra == 'ml'", specifier = ">=2.9.1,<3" },
+    { name = "transformers", marker = "extra == 'ml'", specifier = ">=5.1,<6" },
     { name = "tzlocal", specifier = ">=5.3.1,<6" },
     { name = "xattr", marker = "sys_platform != 'win32'", specifier = ">=1.3.0,<2" },
 ]
+provides-extras = ["ml"]
 
 [package.metadata.requires-dev]
 dev = [

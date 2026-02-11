@@ -6,14 +6,19 @@ import string
 from collections import Counter
 from pathlib import Path
 
-import nltk
-import torch
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from nltk.tag import pos_tag
-from nltk.tokenize import word_tokenize
-from rake_nltk import Rake
-from transformers import pipeline
+try:
+    import nltk
+    import torch
+    from nltk.corpus import stopwords
+    from nltk.stem import WordNetLemmatizer
+    from nltk.tag import pos_tag
+    from nltk.tokenize import word_tokenize
+    from rake_nltk import Rake
+    from transformers import pipeline
+except ImportError as _err:
+    raise ImportError(
+        "Install buvis-pybase[ml] for NLP features: pip install buvis-pybase[ml]"
+    ) from _err
 
 MIN_KEYWORD_LENGTH = 2
 
