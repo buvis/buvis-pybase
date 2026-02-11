@@ -685,7 +685,7 @@ class TestSensitiveFieldInModelInstance:
                 assert (
                     lines[idx - 1].strip()
                     == "# SENSITIVE - do not commit to version control"
-                ), f"Expected SENSITIVE comment before password, got: {lines[idx-1]}"
+                ), f"Expected SENSITIVE comment before password, got: {lines[idx - 1]}"
                 break
         else:
             pytest.fail("password field not found in generate output")

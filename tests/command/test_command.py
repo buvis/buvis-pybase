@@ -50,10 +50,7 @@ def test_setattr_from_config_sets_attributes(tmp_path, mocker) -> None:
 
     spec_file = child_dir / FILENAME_COMMAND_INPUT_SPECIFICATION
     spec_file.write_text(
-        "source_dir:\n"
-        "  default: /tmp/source\n"
-        "output_format:\n"
-        "  default: json\n",
+        "source_dir:\n  default: /tmp/source\noutput_format:\n  default: json\n",
     )
 
     module_file = child_dir / "foo.py"
@@ -113,7 +110,7 @@ def test_setattr_from_config_ignores_missing_key_without_panic(
 
     spec_file = child_dir / FILENAME_COMMAND_INPUT_SPECIFICATION
     spec_file.write_text(
-        "normal_item:\n" "  default: fallback\n",
+        "normal_item:\n  default: fallback\n",
     )
 
     module_file = child_dir / "foo.py"
