@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Preview what the next release would look like (dry run)
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+# --- dependency check ---
+for cmd in gum uv git; do
+  command -v "$cmd" >/dev/null || { echo "Missing: $cmd"; exit 1; }
+done
+
+# --- current version ---
+current=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+
+# --- next version ---
+next=$(uv run semantic-release version --print 2>/dev/null || echo "unknown")
+
+# --- pending commits ---
+if [ "$current" != "none" ]; then
+  commits=$(git log "${current}..HEAD" --oneline)
+else
+  commits=$(git log --oneline)
+fi
+
+# --- display ---
+gum style --border rounded --padding "0 1" --bold \
+  "Release Preview (dry run)"
+
+gum style --border rounded --padding "0 1" \
+  "Current: $current" \
+  "Next:    $next"
+
+if [ -n "$commits" ]; then
+  echo ""
+  gum style --bold "Commits since $current:"
+  echo "$commits" | gum format
+else
+  echo ""
+  gum style --foreground 3 "No commits since $current"
+fi
